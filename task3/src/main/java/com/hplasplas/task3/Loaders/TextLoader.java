@@ -48,20 +48,20 @@ public class TextLoader extends AsyncTaskLoader<String> {
         }
         InputStream inputStream = null;
         StringBuilder builder = new StringBuilder();
-        
+        String data;
         try {
             inputStream = myContext.getAssets().open(fileName);
             InputStreamReader isr = new InputStreamReader(inputStream);
             BufferedReader reader = new BufferedReader(isr);
-            String line;
-            
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
+
+            while ((data = reader.readLine()) != null) {
+                builder.append(data);
                 builder.append('\n');
             }
+            data = builder.toString();
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            data = null;
         } finally {
             if (inputStream != null) {
                 try {
@@ -71,7 +71,7 @@ public class TextLoader extends AsyncTaskLoader<String> {
                 }
             }
         }
-        return builder.toString();
+        return data;
     }
     
     @Override
