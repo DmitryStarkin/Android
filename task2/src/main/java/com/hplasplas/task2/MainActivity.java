@@ -1,4 +1,4 @@
-package com.hplasplas.homeworks;
+package com.hplasplas.task2;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
