@@ -14,10 +14,11 @@ import android.widget.TextView;
 import com.hplasplas.task3.Loaders.TextLoader;
 import com.hplasplas.task3.R;
 
+import static com.hplasplas.task3.Setting.Constants.DEBUG;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<String> {
     
     private final String TAG = getClass().getSimpleName();
-    private final boolean DEBUG = true;
     private final int LOADER_ID = 0;
     private ProgressBar myProgressBar;
     private TextView myTextView;
@@ -112,7 +113,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (DEBUG) {
             Log.d(TAG, "onLoadFinished: ");
         }
-        setText(data);
+        if (data != null) {
+            setText(data);
+        } else {
+            setText(getResources().getString(R.string.load_failure));
+        }
     }
     
     @Override

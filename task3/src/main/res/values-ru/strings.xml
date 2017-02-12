@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">task3</string>
+    <string name="load_button_text">Загрузить текст</string>
+    <string name="load_failure">Ошибка при загрузке</string>
+</resources>

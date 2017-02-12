@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import static com.hplasplas.task3.Setting.Constants.DEBUG;
+
 /**
  * Created by StarkinDG on 11.02.2017.
  */
@@ -17,7 +19,6 @@ import java.io.InputStreamReader;
 public class TextLoader extends AsyncTaskLoader<String> {
     
     private final String TAG = getClass().getSimpleName();
-    private final boolean DEBUG = true;
     private String fileName;
     private Context myContext;
     private String textData;

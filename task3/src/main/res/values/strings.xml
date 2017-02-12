@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">task3</string>
     <string name="load_button_text">Load text</string>
-    <string name="title">Кот программиста</string>
-    <string name="file_name">text.txt</string>
+    <string name="title" translatable="false">Кот программиста</string>
+    <string name="file_name" translatable="false">text.txt</string>
+    <string name="load_failure">Load error</string>
 </resources>
