@@ -52,7 +52,7 @@ public class TwoActivity extends AppCompatActivity implements View.OnClickListen
         }
 
         if (DEBUG) {
-            Log.d(TAG, "onCreate: currentHashCode");
+            Log.d(TAG, "onCreate: currentHashCode" + currentHashCode);
         }
     }
 

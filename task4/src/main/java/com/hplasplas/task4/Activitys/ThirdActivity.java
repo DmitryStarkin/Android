@@ -51,7 +51,7 @@ public class ThirdActivity extends AppCompatActivity implements View.OnClickList
         }
 
         if (DEBUG) {
-            Log.d(TAG, "onCreate: currentHashCode");
+            Log.d(TAG, "onCreate: currentHashCode" + currentHashCode);
         }
     }
 
