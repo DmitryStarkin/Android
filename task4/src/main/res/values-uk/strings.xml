@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="back_button">"Кнопка назад "</string>
-    <string name="home_button">"Кнопка додому "</string>
-    <string name="pressed">натиснута</string>
+    <string name="back_button">Кнопка назад</string>
+    <string name="home_button">Кнопка додому</string>
+    <string name="pressed">" натиснута"</string>
     <string name="next_activity">Наступна</string>
     <string name="previous_activity">Повернутись</string>
     <string name="previous_hash_code">Перестворена попередньій код - %s</string>
     <string name="current_hash_code">Дійсний код - %S</string>
     <string name="first_created">Активність не перестворювалась</string>
+    <string name="menu_button">Кнопка меню</string>
+    <string name="unknown_button">Невідома кнопка</string>
+    <string name="volume_down_button">Зменшити гучність</string>
+    <string name="volume_up_button">Збільшити гучність</string>
+    <string name="back">Повернутись</string>
 </resources>

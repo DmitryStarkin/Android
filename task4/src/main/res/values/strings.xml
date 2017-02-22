@@ -2,9 +2,14 @@
     <string name="app_name" translatable="false">Task4</string>
     <string name="next_activity">Next Activity</string>
     <string name="previous_activity">Back</string>
-    <string name="pressed">pressed</string>
+    <string name="pressed">" pressed"</string>
+    <string name="back">Back</string>
     <string name="back_button">Back button</string>
     <string name="home_button">Home button</string>
+    <string name="volume_up_button">Volume up button</string>
+    <string name="volume_down_button">Volume down button</string>
+    <string name="menu_button">Menu button</string>
+    <string name="unknown_button">Unknown button</string>
     <string name="current_hash_code">Current HashCode - %s</string>
     <string name="previous_hash_code">Recreated previous HashCode - %s</string>
     <string name="first_created">Activity not recreated</string>

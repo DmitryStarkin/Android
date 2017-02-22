@@ -1,10 +1,11 @@
 package com.hplasplas.task4.Activitys;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,39 +16,36 @@ import static com.hplasplas.task4.Setting.Constants.DEBUG;
 public class FirstActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String TAG = getClass().getSimpleName();
-    Button myButton;
-    TextView myDesk;
-    TextView mHashCode;
-    TextView mPreviousHashCode;
-    String pressedText;
-    String backButtonText;
-    String homeButtonText;
-    String currentHashCode = ((Integer) this.hashCode()).toString();
-    String previousHashCode;
+    private Button myButton;
+    private TextView myDesk;
+    private TextView myHashCode;
+    private TextView myPreviousHashCode;
+    private String myPressedText;
+    private String myCurrentHashCode = ((Integer) this.hashCode()).toString();
+    private String myPreviousHashCodeText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
-        myButton = (Button) findViewById(R.id.StartButton);
+        myButton = ((Button) findViewById(R.id.StartButton));
         myDesk = (TextView) findViewById(R.id.ActivityDeck);
-        mHashCode = (TextView) findViewById(R.id.HashCode);
-        mPreviousHashCode = (TextView) findViewById(R.id.previousHashCode);
+        myHashCode = (TextView) findViewById(R.id.HashCode);
+        myPreviousHashCode = (TextView) findViewById(R.id.previousHashCode);
         myButton.setText(R.string.next_activity);
         myButton.setOnClickListener(this);
         myDesk.setText(TAG);
-        pressedText = getResources().getString(R.string.pressed);
-        backButtonText = getResources().getString(R.string.back_button);
-        homeButtonText = getResources().getString(R.string.home_button);
-        mHashCode.setText(getResources().getString(R.string.current_hash_code, currentHashCode));
+        myPressedText = getResources().getString(R.string.pressed);
+        myHashCode.setText(getResources().getString(R.string.current_hash_code, myCurrentHashCode));
 
         if (savedInstanceState != null) {
-            previousHashCode = getResources().getString(R.string.previous_hash_code, savedInstanceState.getString("hashCode"));
+            myPreviousHashCodeText = getResources().getString(R.string.previous_hash_code, savedInstanceState.getString("hashCode"));
         }
 
         if (DEBUG) {
-            Log.d(TAG, "onCreate: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onCreate: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -56,7 +54,16 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
 
         super.onPostCreate(savedInstanceState);
         if (DEBUG) {
-            Log.d(TAG, "onPostCreate: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onPostCreate: myCurrentHashCode " + myCurrentHashCode);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+
+        super.onConfigurationChanged(newConfig);
+        if (DEBUG) {
+            Log.d(TAG, "onConfigurationChanged: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -65,7 +72,7 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
 
         super.onStart();
         if (DEBUG) {
-            Log.d(TAG, "onStart: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onStart: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -74,7 +81,7 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
 
         super.onStop();
         if (DEBUG) {
-            Log.d(TAG, "onStop: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onStop: myCurrentHashCode" + myCurrentHashCode);
         }
     }
 
@@ -83,7 +90,7 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
 
         super.onDestroy();
         if (DEBUG) {
-            Log.d(TAG, "onDestroy: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onDestroy: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -91,19 +98,19 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
     protected void onSaveInstanceState(Bundle outState) {
 
         super.onSaveInstanceState(outState);
-        outState.putString("hashCode", currentHashCode);
+        outState.putString("hashCode", myCurrentHashCode);
         if (DEBUG) {
-            Log.d(TAG, "onSaveInstanceState: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onSaveInstanceState: myCurrentHashCode " + myCurrentHashCode);
         }
 
     }
 
     @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
 
-        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        super.onRestoreInstanceState(savedInstanceState);
         if (DEBUG) {
-            Log.d(TAG, "onRestoreInstanceState: " + currentHashCode);
+            Log.d(TAG, "onRestoreInstanceState: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -112,7 +119,7 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
 
         super.onRestart();
         if (DEBUG) {
-            Log.d(TAG, "onRestart: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onRestart: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
@@ -120,55 +127,84 @@ public class FirstActivity extends AppCompatActivity implements View.OnClickList
     protected void onUserLeaveHint() {
 
         super.onUserLeaveHint();
-        Toast.makeText(this, homeButtonText + pressedText, Toast.LENGTH_SHORT).show();
         if (DEBUG) {
-            Log.d(TAG, "onUserLeaveHint: Home button pressed");
+            Log.d(TAG, "onUserLeaveHint: myCurrentHashCode " + myCurrentHashCode);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (DEBUG) {
+            Log.d(TAG, "onKeyDown: myCurrentHashCode " + myCurrentHashCode + " Key code " + keyCode);
+        }
+
+        switch (keyCode) {
+
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                Toast.makeText(this, getResources().getString(R.string.volume_down_button) + myPressedText, Toast.LENGTH_SHORT).show();
+                break;
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                Toast.makeText(this, getResources().getString(R.string.volume_up_button) + myPressedText, Toast.LENGTH_SHORT).show();
+                break;
+            case KeyEvent.KEYCODE_HOME:
+                Toast.makeText(this, getResources().getString(R.string.home_button) + myPressedText, Toast.LENGTH_SHORT).show();
+                break;
+            case KeyEvent.KEYCODE_MENU:
+                Toast.makeText(this, getResources().getString(R.string.menu_button) + myPressedText, Toast.LENGTH_SHORT).show();
+                break;
+            case KeyEvent.KEYCODE_BACK:
+                break;
+            default:
+                Toast.makeText(this, getResources().getString(R.string.unknown_button) + myPressedText, Toast.LENGTH_SHORT).show();
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public void onBackPressed() {
 
         super.onBackPressed();
-
-        Toast.makeText(this, backButtonText + pressedText, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getResources().getString(R.string.back_button) + myPressedText, Toast.LENGTH_SHORT).show();
         if (DEBUG) {
-            Log.d(TAG, "onBackPressed: ");
+            Log.d(TAG, "onBackPressed: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
     @Override
     protected void onPause() {
 
-        previousHashCode = null;
+        myPreviousHashCodeText = null;
         super.onPause();
         if (DEBUG) {
-            Log.d(TAG, "onPause: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onPause: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
     @Override
     protected void onResume() {
 
-        if (previousHashCode != null) {
-            mPreviousHashCode.setText(previousHashCode);
+        if (myPreviousHashCodeText != null) {
+            myPreviousHashCode.setText(myPreviousHashCodeText);
         } else {
-            mPreviousHashCode.setText(getResources().getString(R.string.first_created));
+            myPreviousHashCode.setText(getResources().getString(R.string.first_created));
         }
         super.onResume();
         if (DEBUG) {
-            Log.d(TAG, "onResume: currentHashCode" + currentHashCode);
+            Log.d(TAG, "onResume: myCurrentHashCode " + myCurrentHashCode);
         }
     }
 
     @Override
     public void onClick(View v) {
 
-        Toast.makeText(this, ((Button) v).getText() + pressedText, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, ((Button) v).getText() + myPressedText, Toast.LENGTH_SHORT).show();
         if (DEBUG) {
-            Log.d(TAG, "onClick: ");
+            Log.d(TAG, "onClick: myCurrentHashCode " + myCurrentHashCode);
         }
         Intent intent = new Intent(this, TwoActivity.class);
         startActivity(intent);
     }
+
 }
