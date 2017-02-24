@@ -20,13 +20,11 @@ public class TextLoader extends AsyncTaskLoader<String> {
     
     private final String TAG = getClass().getSimpleName();
     private String fileName;
-    private Context myContext;
     private String textData;
     
     public TextLoader(Context context, Bundle args) {
         
         super(context);
-        myContext = context;
         if (args != null) {
             fileName = args.getString("fileName");
         }
@@ -50,7 +48,7 @@ public class TextLoader extends AsyncTaskLoader<String> {
         StringBuilder builder = new StringBuilder();
         String data;
         try {
-            inputStream = myContext.getAssets().open(fileName);
+            inputStream = getContext().getAssets().open(fileName);
             InputStreamReader isr = new InputStreamReader(inputStream);
             BufferedReader reader = new BufferedReader(isr);
 
