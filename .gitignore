@@ -11,3 +11,5 @@
 /gradlew
 /gradlew.bat
 /settings.gradle
+/task5/proguard-rules.pro
+/LongRuningReceverUtil/proguard-rules.pro

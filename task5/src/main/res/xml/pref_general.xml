@@ -1,0 +1,44 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/pref_header"
+        android:key="pref_key_settings">
+
+        <SwitchPreference
+            android:key="notifications_enabled"
+            android:summaryOff="@string/notifications_disabled_description"
+            android:summaryOn="@string/notifications_enabled_description"
+            android:switchTextOff="@string/no"
+            android:switchTextOn="@string/yes"
+            android:defaultValue="false"
+            android:clickable="true"
+            android:enabled="true"
+            android:selectable="true"/>
+        <EditTextPreference
+            android:defaultValue="400"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/notification_period"
+            android:key="notification_interval"
+            android:inputType="numberDecimal"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_header_other_general"
+        android:key="pref_key_other_settings">
+
+        <EditTextPreference
+            android:key="notifications_text"
+            android:title="@string/default_notifications_text"
+            android:defaultValue="@string/default_notifications_text"
+            android:selectAllOnFocus="true"
+            android:inputType="textPersonName"
+            android:capitalize="words"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
