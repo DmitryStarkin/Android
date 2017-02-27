@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications_title_text" translatable="false">New Notifications</string>
+    <string name="start_activity_action_text" translatable="false">Edit notification setting</string>
+    <string name="default_notifications_text" translatable="false">Drink a Cup of tea</string>
+    <string name="notifications_extra_text" translatable="false">You missed ten of the notification, think again</string>
+</resources>

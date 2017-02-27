@@ -12,7 +12,7 @@ import android.os.Build;
 
 public class AlarmManagerUtil {
 
-    private static void setUpAlarm(AlarmManager alarmManager, PendingIntent pi, int timeInterval) {
+    private static void setUpAlarm(AlarmManager alarmManager, PendingIntent pi, long timeInterval) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             final AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(System.currentTimeMillis() + timeInterval, pi);
@@ -24,38 +24,39 @@ public class AlarmManagerUtil {
         }
     }
 
-    public static boolean isServiceAlarmOn(Context context, Intent intent, int identifier) {
+    public static synchronized boolean isServiceAlarmOn(Context context, Intent intent, int identifier) {
 
         PendingIntent pi = PendingIntent.getService(context, identifier, intent, PendingIntent.FLAG_NO_CREATE);
         return pi != null;
     }
 
-    public static boolean isBroadcastAlarmOn(Context context, Intent intent, int identifier) {
+    public static synchronized boolean isBroadcastAlarmOn(Context context, Intent intent, int identifier) {
 
         PendingIntent pi = PendingIntent.getBroadcast(context, identifier, intent, PendingIntent.FLAG_NO_CREATE);
         return pi != null;
     }
 
-    public static void setBroadcastAlarm(Context context, Intent intent, int timeInterval, int identifier) {
+    public static synchronized void setBroadcastAlarm(Context context, Intent intent, long timeInterval, int identifier) {
 
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = PendingIntent.getBroadcast(context, identifier, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         setUpAlarm(am, pi, timeInterval);
     }
 
-    public static void setServiceAlarm(Context context, Intent intent, int timeInterval, int identifier) {
+    public static synchronized void setServiceAlarm(Context context, Intent intent, long timeInterval, int identifier) {
 
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = PendingIntent.getService(context, identifier, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         setUpAlarm(am, pi, timeInterval);
     }
 
-    public static void cancelServiceAlarm(Context context, Intent intent, int identifier) {
+    public static synchronized void cancelServiceAlarm(Context context, Intent intent, int identifier) {
 
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = PendingIntent.getService(context, identifier, intent, PendingIntent.FLAG_NO_CREATE);
         if(pi!=null){
             am.cancel(pi);
+            pi.cancel();
         }
 
     }

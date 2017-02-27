@@ -1,4 +1,4 @@
-package com.starsoft.longRuningReceverUtil.Recevers;
+package com.starsoft.longRuningReceverUtil.Receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

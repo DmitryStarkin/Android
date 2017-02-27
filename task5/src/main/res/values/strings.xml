@@ -4,7 +4,7 @@
     <string name="notifications_enabled_description" translatable="false">Notifications enable</string>
     <string name="notification_period" translatable="false">Notification period min</string>
     <string name="pref_header_other_general" translatable="false">Notifications text</string>
-    <string name="default_notifications_text" translatable="false">Drink a Cup of tea</string>
+
     <string name="pref_header" translatable="false">Notification Setting</string>
     <string name="yes" translatable="false">Yes</string>
     <string name="no" translatable="false">No</string>

@@ -1,13 +1,16 @@
 package com.hplasplas.task5.Services;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
+import android.support.v7.app.NotificationCompat.Builder;
 
+import com.hplasplas.task5.Activitys.R;
 import com.hplasplas.task5.Activitys.SettingsActivity;
 import com.starsoft.longRuningReceverUtil.Services.LongRunningBroadcastService;
 import com.starsoft.longRuningReceverUtil.Util.AlarmManagerUtil;
@@ -18,12 +21,14 @@ import com.starsoft.longRuningReceverUtil.Util.AlarmManagerUtil;
 
 public class NotificationService extends LongRunningBroadcastService {
 
-    SharedPreferences myPreferences = null;
+    final int NOTIFY_ID = 1;
+    final int ALARM_PENDING_INTENT_ID = 0;
+    SharedPreferences myDefaultPreferences = null;
 
 
-    public NotificationService(String name) {
+    public NotificationService() {
 
-        super(name);
+        super("com.hplasplas.task5.Services.NotificationService");
     }
 
     @SuppressLint("CommitPrefEdits")
@@ -31,14 +36,23 @@ public class NotificationService extends LongRunningBroadcastService {
     protected boolean handleIntent(Intent intent) {
 
         Intent nextIntent;
-        myPreferences = getPreferences();
+        myDefaultPreferences = getDefaultPreferences();
+        long lastAlarmSetTime;
+        long previousAlarmInterval;
+        long notificationInterval;
+        int unReadNotificationsCounter;
+        String message;
 
         //TODO check if read one
         if (intent.getBooleanExtra("currentNotificationRead", false)) {
-            Editor preferencesEditor = myPreferences.edit();
-            long unReadNotificationsCounter = myPreferences.getInt("unReadNotificationsCounter", 0);
+            Editor preferencesEditor = myDefaultPreferences.edit();
+            unReadNotificationsCounter = myDefaultPreferences.getInt("unReadNotificationsCounter", 0);
             preferencesEditor.putLong("unReadNotificationsCounter", --unReadNotificationsCounter);
             preferencesEditor.commit();
+            if (intent.getBooleanExtra("SettingActivityNeedStart", false)) {
+                Intent startActivityIntent = new Intent(this.getApplicationContext(), SettingsActivity.class);
+                startActivity(startActivityIntent);
+            }
             return true;
         }
 
@@ -48,59 +62,90 @@ public class NotificationService extends LongRunningBroadcastService {
             nextIntent = intent;
         }
 
-        if (!myPreferences.getBoolean("notifications_enabled", false)) {
-            AlarmManagerUtil.cancelServiceAlarm(this, nextIntent, 0);
-            Editor preferencesEditor = myPreferences.edit();
+        if (!myDefaultPreferences.getBoolean("notifications_enabled", false)) {
+            AlarmManagerUtil.cancelServiceAlarm(this.getApplicationContext(), nextIntent, ALARM_PENDING_INTENT_ID);
+            Editor preferencesEditor = myDefaultPreferences.edit();
             preferencesEditor.putLong("lastAlarmSetTime", 0);
+            preferencesEditor.putLong("previousAlarmInterval", 0);
             preferencesEditor.commit();
             return true;
         }
+        message = myDefaultPreferences.getString("notifications_text", getResources().getString(R.string.default_notifications_text));
+        notificationInterval = Long.parseLong(myDefaultPreferences.getString("notification_interval", "180000"));
 
-        if (myPreferences.getBoolean("firstStart", true)) {
-            Editor preferencesEditor = myPreferences.edit();
-            preferencesEditor.putLong("lastAlarmSetTime", 0);
-            preferencesEditor.putLong("previousAlarmInterval", 0);
-            preferencesEditor.putLong("unReadNotificationsCounter", 0);
+        if (myDefaultPreferences.getBoolean("firstStart", true)) {
+            lastAlarmSetTime = 0;
+            unReadNotificationsCounter =0;
+            previousAlarmInterval = notificationInterval;
+            Editor preferencesEditor = myDefaultPreferences.edit();
+            preferencesEditor.putLong("lastAlarmSetTime", lastAlarmSetTime);
+            preferencesEditor.putLong("previousAlarmInterval", previousAlarmInterval);
+            preferencesEditor.putLong("unReadNotificationsCounter", unReadNotificationsCounter);
+            preferencesEditor.putBoolean("firstStart", false);
             preferencesEditor.commit();
         } else {
-            long lastAlarmSetTime = myPreferences.getLong("lastAlarmSetTime", 0);
-            long previousAlarmInterval = myPreferences.getLong("previousAlarmInterval", 0);
-            long notificationInterval = Long.parseLong(myPreferences.getString("notification_interval", "180000"));
-            int unReadNotificationsCounter = myPreferences.getInt("unReadNotificationsCounter", 0);
+            lastAlarmSetTime = myDefaultPreferences.getLong("lastAlarmSetTime", 0);
+            previousAlarmInterval = myDefaultPreferences.getLong("previousAlarmInterval", 0);
+
+            if (previousAlarmInterval == 0) {
+                previousAlarmInterval = notificationInterval;
+                Editor preferencesEditor = myDefaultPreferences.edit();
+                preferencesEditor.putLong("previousAlarmInterval", previousAlarmInterval);
+                preferencesEditor.commit();
+            }
+            unReadNotificationsCounter = myDefaultPreferences.getInt("unReadNotificationsCounter", 0);
+
         }
+        //TODO need logic implement
 
 
-
-
-
-
+        showNotifications(message, unReadNotificationsCounter, 1);
+        AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), nextIntent,  notificationInterval, ALARM_PENDING_INTENT_ID);
         return true;
     }
 
-    private int showNotifications(int StartNotificationNumber, int endNotificationNumber) {
+    private void showNotifications(String message, int StartNotificationNumber, int notificationCount) {
 
-        //TODO
-        return StartNotificationNumber;
-    }
-
-    private Notification createNotifications(String message, int number) {
-        //TODO
+        String expandedMessage = message + getResources().getString(R.string.notifications_extra_text);
 
         Intent startServiceIntent = new Intent(this.getApplicationContext(), NotificationService.class);
-        Intent startActivityIntent = new Intent(this.getApplicationContext(), SettingsActivity.class);
+        Intent startActivityIntent = new Intent(this.getApplicationContext(), NotificationService.class);
         startServiceIntent.putExtra("currentNotificationRead", true);
-        PendingIntent pendingServiceIntent = PendingIntent.getService(this.getApplicationContext(), number, startServiceIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        PendingIntent pendingActivityIntent = PendingIntent.getActivity(this.getApplicationContext(), number, startActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        startActivityIntent.putExtra("currentNotificationRead", true);
+        startActivityIntent.putExtra("SettingActivityNeedStart", true);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 
-        return null;
-    }
+        Builder mNotifyBuilder = (Builder) new Builder(this)
+                .setContentTitle(getResources().getString(R.string.notifications_title_text))
+                .setSmallIcon(R.mipmap.ic_launcher);
 
-    private SharedPreferences getPreferences() {
 
-        if (myPreferences == null) {
-            myPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        for (int i = StartNotificationNumber; i < notificationCount; i++) {
+            PendingIntent pendingServiceIntent = PendingIntent.getService(this.getApplicationContext(), i, startServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+            PendingIntent pendingActivityIntent = PendingIntent.getService(this.getApplicationContext(), i, startActivityIntent, PendingIntent.FLAG_ONE_SHOT);
+            if (i>9 & i % 10 == 0) {
+                mNotifyBuilder.setContentText(expandedMessage).setNumber(i);
+            } else {
+                mNotifyBuilder.setContentText(message).setNumber(i);
+            }
+            mNotifyBuilder
+                    .setContentIntent(pendingActivityIntent).setNumber(i)
+                    .setDeleteIntent(pendingServiceIntent).setNumber(i)
+                    .setAutoCancel(true).setNumber(i);
+            mNotificationManager.notify(NOTIFY_ID, mNotifyBuilder.build());
         }
-        return myPreferences;
     }
+
+
+    private SharedPreferences getDefaultPreferences() {
+
+        if (myDefaultPreferences == null) {
+            myDefaultPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        }
+        return myDefaultPreferences;
+    }
+
+
 }
