@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
-import com.hplasplas.task5.Activitys.R;
+import com.hplasplas.task5.R;
 import com.hplasplas.task5.Services.NotificationService;
 
 
