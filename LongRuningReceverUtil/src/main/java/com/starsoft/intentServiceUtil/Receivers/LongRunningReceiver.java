@@ -1,10 +1,10 @@
-package com.starsoft.longRuningReceverUtil.Receivers;
+package com.starsoft.intentServiceUtil.Receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.starsoft.longRuningReceverUtil.Managers.WakeLockManager;
+import com.starsoft.intentServiceUtil.Managers.WakeLockManager;
 
 /**
  * Created by StarkinDG on 26.02.2017.

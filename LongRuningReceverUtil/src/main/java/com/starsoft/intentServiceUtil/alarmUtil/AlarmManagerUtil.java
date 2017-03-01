@@ -1,4 +1,4 @@
-package com.starsoft.longRuningReceverUtil.Util;
+package com.starsoft.intentServiceUtil.alarmUtil;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

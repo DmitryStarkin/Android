@@ -3,7 +3,7 @@ package com.hplasplas.task5.Receivers;
 import android.util.Log;
 
 import com.hplasplas.task5.Services.NotificationService;
-import com.starsoft.longRuningReceverUtil.Receivers.LongRunningReceiver;
+import com.starsoft.intentServiceUtil.Receivers.LongRunningReceiver;
 
 import static com.hplasplas.task5.Setting.Constants.DEBUG;
 
