@@ -16,7 +16,6 @@
 /experemental/proguard-rules.pro
 /experemental/
 .gitignore
-build.gradle
 libs/
 proguard-rules.pro
 

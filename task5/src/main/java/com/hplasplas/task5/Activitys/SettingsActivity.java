@@ -24,6 +24,17 @@ public class SettingsActivity extends PreferenceActivity {
             Log.d(TAG, "onCreate: ");
         }
         super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
+        if(intent != null) {
+            if(intent.getBooleanExtra("currentNotificationRead", false)){
+                Intent startServiceIntent = new Intent(this.getApplicationContext(), NotificationService.class);
+                startServiceIntent.putExtra("currentNotificationRead", true);
+                startService(startServiceIntent);
+            }
+        }
+
+
+
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
     }
     
