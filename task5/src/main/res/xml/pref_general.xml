@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+                  xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="@string/pref_header"
         android:key="pref_key_settings">
@@ -13,13 +14,18 @@
             android:clickable="true"
             android:enabled="true"
             android:selectable="true"/>
-        <EditTextPreference
-            android:defaultValue="400"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/notification_period"
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/pref_sync_frequency_titles"
+            android:entryValues="@array/pref_sync_frequency_values"
+            android:summary = "@string/max_period"
             android:key="notification_interval"
-            android:inputType="numberDecimal"/>
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/notification_period"/>
+
+
 
     </PreferenceCategory>
 
@@ -29,16 +35,14 @@
 
         <EditTextPreference
             android:key="notifications_text"
-            android:title="@string/default_notifications_text"
+            android:title="@string/disp_text"
+            android:summary = "@string/enter_text"
             android:defaultValue="@string/default_notifications_text"
             android:selectAllOnFocus="true"
             android:inputType="textPersonName"
             android:capitalize="words"
-            android:singleLine="true"
+            android:singleLine="false"
             android:maxLines="1" />
-
-
-
     </PreferenceCategory>
 
 </PreferenceScreen>

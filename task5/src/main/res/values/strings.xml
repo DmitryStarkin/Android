@@ -1,11 +1,3 @@
 <resources>
     <string name="app_name" translatable="false">Task5</string>
-    <string name="notifications_disabled_description" translatable="false">Notifications disable</string>
-    <string name="notifications_enabled_description" translatable="false">Notifications enable</string>
-    <string name="notification_period" translatable="false">Notification period min</string>
-    <string name="pref_header_other_general" translatable="false">Notifications text</string>
-
-    <string name="pref_header" translatable="false">Notification Setting</string>
-    <string name="yes" translatable="false">Yes</string>
-    <string name="no" translatable="false">No</string>
 </resources>

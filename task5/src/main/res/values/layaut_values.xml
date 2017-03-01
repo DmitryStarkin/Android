@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications_disabled_description" translatable="false">Notifications disable</string>
+    <string name="notifications_enabled_description" translatable="false">Notifications enable</string>
+    <string name="notification_period" translatable="false">Enter notification period</string>
+    <string name="pref_header" translatable="false">Notification Setting</string>
+    <string name="pref_header_other_general" translatable="false">Notifications values</string>
+    <string name="disp_text" translatable="false">Text to notifications</string>
+    <string name="max_period" translatable="false">max 30 minutes</string>
+    <string name="enter_text" translatable="false">Enter text here</string>
+    <string name="yes" translatable="false">Yes</string>
+    <string name="no" translatable="false">No</string>
+
+    <string-array name="pref_sync_frequency_titles">
+        <item>1 min</item>
+        <item>2 min</item>
+        <item>3 min</item>
+        <item>4 min</item>
+        <item>5 min</item>
+        <item>6 min</item>
+        <item>7 min</item>
+        <item>8 min</item>
+        <item>9 min</item>
+        <item>10 min</item>
+        <item>11 min</item>
+        <item>12 min</item>
+        <item>13 min</item>
+        <item>14 min</item>
+        <item>15 min</item>
+        <item>16 min</item>
+        <item>17 min</item>
+        <item>18 min</item>
+        <item>19 min</item>
+        <item>20 min</item>
+        <item>22 min</item>
+        <item>23 min</item>
+        <item>24 min</item>
+        <item>25 min</item>
+        <item>26 min</item>
+        <item>27 min</item>
+        <item>28 min</item>
+        <item>29 min</item>
+        <item>30 min</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+    </string-array>
+
+</resources>
