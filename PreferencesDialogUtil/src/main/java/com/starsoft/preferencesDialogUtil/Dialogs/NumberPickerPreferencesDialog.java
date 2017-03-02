@@ -22,14 +22,25 @@ public class NumberPickerPreferencesDialog extends DialogPreference {
     private final int DEFAULT_MAX_VALUE = 1500;
     private final int DEFAULT_VALUE = 1;
     private int currentValue;
-    private Integer minValue = null;
-    private Integer maxValue = null;
+    private int minValue;
+    private int maxValue;
     private NumberPicker intPicker;
 
 
     public NumberPickerPreferencesDialog(Context context, AttributeSet attributeSet) {
 
         super(context, attributeSet);
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attributeSet,
+                R.styleable.NumberPickerPreferenceDialogAttrs,
+                0, 0);
+
+        try {
+            maxValue = a.getInteger(R.styleable.NumberPickerPreferenceDialogAttrs_maxValue, DEFAULT_MAX_VALUE);
+            minValue = a.getInteger(R.styleable.NumberPickerPreferenceDialogAttrs_minValue, DEFAULT_MIN_VALUE);
+        } finally {
+            a.recycle();
+        }
 
         setDialogLayoutResource(R.layout.int_picker_preferences_dialog);
         setPositiveButtonText(android.R.string.ok);
@@ -70,8 +81,8 @@ public class NumberPickerPreferencesDialog extends DialogPreference {
         View view = inflater.inflate(R.layout.int_picker_preferences_dialog, null);
 
         intPicker = (NumberPicker) view.findViewById(R.id.int_number_picker);
-        intPicker.setMaxValue(this.getMaxValue());
-        intPicker.setMinValue(this.getMinValue());
+        intPicker.setMaxValue(maxValue);
+        intPicker.setMinValue(minValue);
         intPicker.setValue(this.getPersistedInt(DEFAULT_VALUE));
         intPicker.setWrapSelectorWheel(false);
 
@@ -80,20 +91,14 @@ public class NumberPickerPreferencesDialog extends DialogPreference {
 
     private int getMinValue() {
 
-        if (minValue == null) {
-            return DEFAULT_MIN_VALUE;
-        } else {
-            return minValue;
-        }
+        return minValue;
+
     }
 
     private int getMaxValue() {
 
-        if (minValue == null) {
-            return DEFAULT_MAX_VALUE;
-        } else {
-            return maxValue;
-        }
+        return maxValue;
+
     }
 
     public void setMinValue(int minValue) {

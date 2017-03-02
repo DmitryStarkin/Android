@@ -1,6 +1,6 @@
 <PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.hplasplas.task5">
     <PreferenceCategory
         android:key="pref_key_settings"
         android:title="@string/pref_header">
@@ -20,7 +20,9 @@
             android:defaultValue="1"
             android:key="@string/notification_interval_pref_name"
             android:summary="@string/max_period"
-            android:title="@string/notification_period"/>
+            android:title="@string/notification_period"
+            custom:maxValue="30"
+            custom:minValue="1"/>
 
     </PreferenceCategory>
 
