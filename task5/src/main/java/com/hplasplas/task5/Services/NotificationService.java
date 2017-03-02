@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat.Builder;
 import android.util.Log;
@@ -18,12 +17,21 @@ import com.starsoft.intentServiceUtil.alarmUtil.AlarmManagerUtil;
 
 import static com.hplasplas.task5.Setting.Constants.ACTIVITY_PENDING_INTENT_ID;
 import static com.hplasplas.task5.Setting.Constants.ALARM_PENDING_INTENT_ID;
+import static com.hplasplas.task5.Setting.Constants.CURRENT_NOTIFICATION_READ;
 import static com.hplasplas.task5.Setting.Constants.DEBUG;
+import static com.hplasplas.task5.Setting.Constants.DEFAULT_NOTIFICATIONS_INTERVAL;
 import static com.hplasplas.task5.Setting.Constants.INTERVAL_ACCURACY;
 import static com.hplasplas.task5.Setting.Constants.MLL_PER_MIN;
+import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_ENABLED;
+import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_INTERVAL;
 import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_PREFERENCES_FILE;
+import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_TEXT;
 import static com.hplasplas.task5.Setting.Constants.NOTIFY_ID;
+import static com.hplasplas.task5.Setting.Constants.NOT_INITIALIZED;
+import static com.hplasplas.task5.Setting.Constants.PREVIOUS_ALARM_INTERVAL;
 import static com.hplasplas.task5.Setting.Constants.SERVICE_PENDING_INTENT_ID;
+import static com.hplasplas.task5.Setting.Constants.START_POINT_TIME;
+import static com.hplasplas.task5.Setting.Constants.UNREAD_NOTIFICATIONS_COUNTER;
 
 /**
  * Created by StarkinDG on 27.02.2017.
@@ -47,7 +55,6 @@ public class NotificationService extends LongRunningBroadcastService {
         if (DEBUG) {
             Log.d(TAG, "handleIntent: ");
         }
-
         Intent nextIntent;
         SharedPreferences myDefaultPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences notificationPreferences = this.getSharedPreferences(NOTIFICATIONS_PREFERENCES_FILE, MODE_PRIVATE);
@@ -61,11 +68,13 @@ public class NotificationService extends LongRunningBroadcastService {
         int countMessagesToShow;
         String message;
 
-
-        if (intent.getBooleanExtra("currentNotificationRead", false)) {
-            Editor preferencesEditor = notificationPreferences.edit();
-            preferencesEditor.putInt("unReadNotificationsCounter", 0);
-            preferencesEditor.commit();
+        if (intent.getBooleanExtra(CURRENT_NOTIFICATION_READ, false)) {
+            if (DEBUG) {
+                Log.d(TAG, "handleIntent: Clear unReadNotificationsCounter");
+            }
+            notificationPreferences.edit()
+                    .putInt(UNREAD_NOTIFICATIONS_COUNTER, 0)
+                    .commit();
             return true;
         }
 
@@ -75,32 +84,38 @@ public class NotificationService extends LongRunningBroadcastService {
             nextIntent = intent;
         }
 
-        if (!myDefaultPreferences.getBoolean("notifications_enabled", false)) {
+        if (!myDefaultPreferences.getBoolean(NOTIFICATIONS_ENABLED, false)) {
+            if (DEBUG) {
+                Log.d(TAG, "handleIntent: notifications is disabled write default values");
+            }
             AlarmManagerUtil.cancelServiceAlarm(this.getApplicationContext(), nextIntent, ALARM_PENDING_INTENT_ID);
-            Editor preferencesEditor = notificationPreferences.edit();
-            preferencesEditor.putLong("startPointTime", 0);
-            preferencesEditor.putLong("previousAlarmInterval", 0);
-            preferencesEditor.commit();
+            notificationPreferences.edit()
+                    .putLong(START_POINT_TIME, 0)
+                    .putLong(PREVIOUS_ALARM_INTERVAL, 0)
+                    .commit();
             return true;
         }
 
-        message = myDefaultPreferences.getString("notifications_text", getResources().getString(R.string.default_notifications_text));
-        notificationInterval = myDefaultPreferences.getInt("notification_interval", 30) * MLL_PER_MIN;
+        message = myDefaultPreferences.getString(NOTIFICATIONS_TEXT, getResources().getString(R.string.default_notifications_text));
+        notificationInterval = myDefaultPreferences.getInt(NOTIFICATIONS_INTERVAL, DEFAULT_NOTIFICATIONS_INTERVAL) * MLL_PER_MIN;
 
-        if (notificationPreferences.getBoolean("firstStart", true)) {
+        if (notificationPreferences.getBoolean(NOT_INITIALIZED, true)) {
+            if (DEBUG) {
+                Log.d(TAG, "handleIntent: notificationPreferences not Initialized, initialise");
+            }
             startPointTime = System.currentTimeMillis();
             unReadNotificationsCounter = 0;
             previousAlarmInterval = notificationInterval;
-            Editor preferencesEditor = notificationPreferences.edit();
-            preferencesEditor.putBoolean("firstStart", false);
-            preferencesEditor.commit();
+            notificationPreferences.edit()
+                    .putBoolean(NOT_INITIALIZED, false)
+                    .commit();
         } else {
-            startPointTime = notificationPreferences.getLong("startPointTime", System.currentTimeMillis());
+            startPointTime = notificationPreferences.getLong(START_POINT_TIME, System.currentTimeMillis());
             if (startPointTime == 0) {
                 startPointTime = System.currentTimeMillis();
             }
-            unReadNotificationsCounter = notificationPreferences.getInt("unReadNotificationsCounter", 0);
-            previousAlarmInterval = notificationPreferences.getLong("previousAlarmInterval", 0);
+            unReadNotificationsCounter = notificationPreferences.getInt(UNREAD_NOTIFICATIONS_COUNTER, 0);
+            previousAlarmInterval = notificationPreferences.getLong(PREVIOUS_ALARM_INTERVAL, 0);
             if (previousAlarmInterval == 0) {
                 previousAlarmInterval = notificationInterval;
             }
@@ -131,26 +146,25 @@ public class NotificationService extends LongRunningBroadcastService {
 
         showNotifications(message, unReadNotificationsCounter, countMessagesToShow);
 
-        Editor preferencesEditor = notificationPreferences.edit();
-        preferencesEditor.putLong("startPointTime", startPointTime);
-        preferencesEditor.putLong("previousAlarmInterval", previousAlarmInterval);
-        preferencesEditor.putInt("unReadNotificationsCounter", unReadNotificationsCounter + countMessagesToShow);
-        preferencesEditor.commit();
+        notificationPreferences.edit()
+                .putLong(START_POINT_TIME, startPointTime)
+                .putLong(PREVIOUS_ALARM_INTERVAL, previousAlarmInterval)
+                .putInt(UNREAD_NOTIFICATIONS_COUNTER, unReadNotificationsCounter + countMessagesToShow)
+                .commit();
 
         return true;
     }
 
-    private void showNotifications(String message, int StartNotificationNumber, int notificationToShow) {
+    private void showNotifications(String defaultMessage, int StartNotificationNumber, int notificationToShow) {
 
         if (notificationToShow != 0) {
             int notificationCounter = StartNotificationNumber + notificationToShow;
-            String expandedMessage = message + " " + getResources().getString(R.string.notifications_extra_text) + " " + getResources().getString(R.string.unread_messages);
-            String defaultMessage = message + " " + getResources().getString(R.string.unread_messages);
+            String expandedMessage = getResources().getString(R.string.notifications_extra_text);
 
             Intent startServiceIntent = new Intent(this.getApplicationContext(), NotificationService.class);
-            startServiceIntent.putExtra("currentNotificationRead", true);
+            startServiceIntent.putExtra(CURRENT_NOTIFICATION_READ, true);
             Intent startActivityIntent = new Intent(this.getApplicationContext(), SettingsActivity.class);
-            startActivityIntent.putExtra("currentNotificationRead", true);
+            startActivityIntent.putExtra(CURRENT_NOTIFICATION_READ, true);
             PendingIntent pendingServiceIntent = PendingIntent.getService(this.getApplicationContext(), SERVICE_PENDING_INTENT_ID, startServiceIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             PendingIntent pendingActivityIntent = PendingIntent.getActivity(this.getApplicationContext(), ACTIVITY_PENDING_INTENT_ID, startActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 

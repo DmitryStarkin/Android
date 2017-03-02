@@ -1,42 +1,43 @@
-<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
-                  xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
     <PreferenceCategory
-        android:title="@string/pref_header"
-        android:key="pref_key_settings">
+        android:key="pref_key_settings"
+        android:title="@string/pref_header">
 
         <SwitchPreference
-            android:key="notifications_enabled"
+            android:clickable="true"
+            android:defaultValue="false"
+            android:enabled="true"
+            android:key="@string/notifications_enabled_pref_name"
+            android:selectable="true"
             android:summaryOff="@string/notifications_disabled_description"
             android:summaryOn="@string/notifications_enabled_description"
             android:switchTextOff="@string/no"
-            android:switchTextOn="@string/yes"
-            android:defaultValue="false"
-            android:clickable="true"
-            android:enabled="true"
-            android:selectable="true"/>
+            android:switchTextOn="@string/yes"/>
 
         <com.starsoft.preferencesDialogUtil.Dialogs.NumberPickerPreferencesDialog
-            android:key="notification_interval"
-            android:title="@string/notification_period"
+            android:defaultValue="1"
+            android:key="@string/notification_interval_pref_name"
             android:summary="@string/max_period"
-            android:defaultValue="1"/>
+            android:title="@string/notification_period"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/pref_header_other_general"
-        android:key="pref_key_other_settings">
+        android:key="pref_key_other_settings"
+        android:title="@string/pref_header_other_general">
 
         <EditTextPreference
-            android:key="notifications_text"
-            android:title="@string/disp_text"
-            android:summary = "@string/enter_text"
-            android:defaultValue="@string/default_notifications_text"
-            android:selectAllOnFocus="true"
-            android:inputType="textPersonName"
             android:capitalize="words"
+            android:defaultValue="@string/default_notifications_text"
+            android:inputType="textPersonName"
+            android:key="@string/notifications_text_pref_name"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
             android:singleLine="false"
-            android:maxLines="1" />
+            android:summary="@string/enter_text"
+            android:title="@string/notification_text"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications_disabled_description" translatable="false">Notifications disable</string>
+    <string name="notifications_enabled_description" translatable="false">Notifications enable</string>
+    <string name="notification_period" translatable="false">Notification period minutes</string>
+    <string name="pref_header" translatable="false">Notification Setting</string>
+    <string name="pref_header_other_general" translatable="false">Notifications values</string>
+    <string name="notification_text" translatable="false">Notification text</string>
+    <string name="max_period" translatable="false">max 30 minutes</string>
+    <string name="enter_text" translatable="false">Enter text here</string>
+    <string name="yes" translatable="false">Yes</string>
+    <string name="no" translatable="false">No</string>
+    <string name="notifications_text_pref_name" translatable="false">notifications_text</string>
+    <string name="notification_interval_pref_name" translatable="false">notification_interval</string>
+    <string name="notifications_enabled_pref_name" translatable="false">notifications_enabled</string>
+</resources>
