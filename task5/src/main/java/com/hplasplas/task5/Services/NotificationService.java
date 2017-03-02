@@ -85,7 +85,7 @@ public class NotificationService extends LongRunningBroadcastService {
         }
 
         message = myDefaultPreferences.getString("notifications_text", getResources().getString(R.string.default_notifications_text));
-        notificationInterval = Long.parseLong(myDefaultPreferences.getString("notification_interval", "30")) * MLL_PER_MIN;
+        notificationInterval = myDefaultPreferences.getInt("notification_interval", 30) * MLL_PER_MIN;
 
         if (notificationPreferences.getBoolean("firstStart", true)) {
             startPointTime = System.currentTimeMillis();
@@ -106,6 +106,9 @@ public class NotificationService extends LongRunningBroadcastService {
             }
         }
         sleepTimeInterval = System.currentTimeMillis() - startPointTime;
+        if (sleepTimeInterval < 0) {
+            sleepTimeInterval = 0;
+        }
         timeCorrection = sleepTimeInterval % previousAlarmInterval;
         countMessagesToShow = (int) (sleepTimeInterval / previousAlarmInterval);
         if (timeCorrection > (previousAlarmInterval - INTERVAL_ACCURACY)) {
