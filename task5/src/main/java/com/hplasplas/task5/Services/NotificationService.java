@@ -65,7 +65,7 @@ public class NotificationService extends LongRunningBroadcastService {
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     @Override
     protected boolean handleIntent(Intent intent) {
 
