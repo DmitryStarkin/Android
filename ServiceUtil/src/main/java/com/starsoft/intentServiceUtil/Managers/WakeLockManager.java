@@ -20,7 +20,7 @@ public class WakeLockManager {
         myWakeLock = this.createWakeLock(context);
     }
 
-    public static void create(Context context) {
+    public static synchronized void create(Context context) {
 
         if (sWakeLockManager == null) {
             sWakeLockManager = new WakeLockManager(context);

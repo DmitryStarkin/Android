@@ -1,9 +1,13 @@
 package com.hplasplas.task5.Activitys;
 
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -16,6 +20,7 @@ import com.hplasplas.task5.R;
 import com.hplasplas.task5.Services.NotificationService;
 
 import static com.hplasplas.task5.Setting.Constants.DEBUG;
+import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_ENABLED;
 import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_INTERVAL;
 import static com.hplasplas.task5.Setting.Constants.NOTIFICATIONS_TEXT;
 
@@ -34,18 +39,6 @@ public class SettingsActivity extends PreferenceActivity {
         }
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
 
-        Intent intent = getIntent();
-
-        if (intent != null) {
-            if (DEBUG) {
-                Log.d(TAG, "onCreate: currentNotificationRead " + intent.getBooleanExtra("currentNotificationRead", false));
-            }
-            if (intent.getBooleanExtra("currentNotificationRead", false)) {
-                Intent startServiceIntent = new Intent(this.getApplicationContext(), NotificationService.class);
-                startServiceIntent.putExtra("currentNotificationRead", true);
-                startService(startServiceIntent);
-            }
-        }
 
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
     }
@@ -68,6 +61,17 @@ public class SettingsActivity extends PreferenceActivity {
         this.preferencesChanged = preferencesChanged;
     }
 
+    public boolean notifiGlobalDisabled() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (!mNotificationManager.areNotificationsEnabled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static class MyPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
         
         private final String TAG = getClass().getSimpleName();
@@ -86,21 +90,24 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-            getPreferenceScreen().getSharedPreferences()
-                    .registerOnSharedPreferenceChangeListener(this);
-
+            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
             SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
             findPreference(NOTIFICATIONS_INTERVAL).setSummary(String.valueOf(sharedPreferences.getInt(NOTIFICATIONS_INTERVAL, 30)));
             findPreference(NOTIFICATIONS_TEXT).setSummary(sharedPreferences.getString(NOTIFICATIONS_TEXT, getResources().getString(R.string.default_notifications_text)));
+            if (((SettingsActivity) getActivity()).notifiGlobalDisabled()) {
+                Preference notifyEnabled = findPreference(NOTIFICATIONS_ENABLED);
+                notifyEnabled.setPersistent(false);
+                notifyEnabled.setEnabled(false);
+            }
+
             return super.onCreateView(inflater, container, savedInstanceState);
         }
 
         @Override
         public void onDestroyView() {
 
-            getPreferenceScreen().getSharedPreferences()
-                    .unregisterOnSharedPreferenceChangeListener(this);
+            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 
             super.onDestroyView();
         }
