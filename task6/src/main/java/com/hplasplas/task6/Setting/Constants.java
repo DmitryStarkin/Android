@@ -5,15 +5,17 @@ package com.hplasplas.task6.Setting;
  */
 
 public final class Constants {
+    
     public static final boolean DEBUG = true;
     
     //file system constants
-    public static final String NO_PICTURE = "noPicture.jpg";
+    public static final boolean NEED_PRIVATE_FOLDER = true;
+    public static final String NO_PICTURE_FILE_NAME = "noPicture.jpg";
     public static final String PICTURE_FOLDER_NAME = "myPhotoFolder";
     public static final String FILE_NAME_SUFFIX = ".jpg";
     public static final String FILE_NAME_PREFIX = "JPEG_";
-    public static final String FIRST_INIT_FILE_NAME = "Name";
-    public static final boolean GET_PRIVATE_FOLDER = true;
+    public static final String NO_EXISTING_FILE_NAME = "file";
+    public static final String TIME_STAMP_PATTERN = "yyyyMMdd_HHmmss";
     
     //preferences constants
     public static final String PREFERENCES_FILE = "myPref";
@@ -21,11 +23,19 @@ public final class Constants {
     
     //loaders values
     public static final int MAIN_PICTURE_LOADER_ID = 0;
-    public static final int PREVIEW_PICTURE_LOADER_ID = 1;
-    public static final String ARG_FILE_NAME_TO_LOAD = "fileNameToLoad";
-    public static final String ARG_REQUESTED_PICTURE_HEIGHT = "requestedHeight";
-    public static final String ARG_REQUESTED_PICTURE_WIDTH = "requestedWidth";
-    public static final String ARG_REQUESTED_PICTURE_ASPECT_RATIO = "requestedWidth";
+    public static final int PREVIEW_PICTURE_LOADER_START_ID = 1;
+    public static final String LOADED_PICTURE_INDEX = "index_of_loaded_picture";
+    public static final String FILE_NAME_TO_LOAD = "fileNameToLoad";
+    public static final String REQUESTED_PICTURE_HEIGHT = "requestedHeight";
+    public static final String REQUESTED_PICTURE_WIDTH = "requestedWidth";
+    public static final String CROP_TO_ASPECT_RATIO = "cropToAspectRatio";
+    
+    //preview values
+    public static final int PREVIEW_PICTURE_HEIGHT = 32;
+    public static final int PREVIEW_PICTURE_WIDTH = 32;
+    
+    //recycle view values
+    public static final String FILE_NOT_EXIST = "NO File";
     
     //request codes
     public static final int GET_PICTURE_REQUEST_CODE = 1;

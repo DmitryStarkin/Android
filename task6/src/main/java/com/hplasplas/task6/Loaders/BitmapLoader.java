@@ -10,12 +10,12 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.hplasplas.task6.Setting.Constants.ARG_FILE_NAME_TO_LOAD;
-import static com.hplasplas.task6.Setting.Constants.ARG_REQUESTED_PICTURE_ASPECT_RATIO;
-import static com.hplasplas.task6.Setting.Constants.ARG_REQUESTED_PICTURE_HEIGHT;
-import static com.hplasplas.task6.Setting.Constants.ARG_REQUESTED_PICTURE_WIDTH;
+import static com.hplasplas.task6.Setting.Constants.CROP_TO_ASPECT_RATIO;
+import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
+import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
+import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.DEBUG;
-import static com.hplasplas.task6.Setting.Constants.NO_PICTURE;
+import static com.hplasplas.task6.Setting.Constants.NO_PICTURE_FILE_NAME;
 
 /**
  * Created by StarkinDG on 11.02.2017.
@@ -26,19 +26,20 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
     private final String TAG = getClass().getSimpleName();
     private int requestedHeight;
     private int requestedWidth;
-    private double aspectRatio;
+    private boolean cropToAspectRatio;
     private String fileName;
     private Bitmap picture;
+    private int pictureIndex;
     private BitmapFactory.Options currentBitmapOptions;
     
     public BitmapLoader(Context context, Bundle args) {
         
         super(context);
         if (args != null) {
-            fileName = args.getString(ARG_FILE_NAME_TO_LOAD);
-            requestedHeight = args.getInt(ARG_REQUESTED_PICTURE_HEIGHT);
-            requestedWidth = args.getInt(ARG_REQUESTED_PICTURE_WIDTH);
-            aspectRatio = args.getDouble(ARG_REQUESTED_PICTURE_ASPECT_RATIO);
+            fileName = args.getString(FILE_NAME_TO_LOAD);
+            requestedHeight = args.getInt(REQUESTED_PICTURE_HEIGHT);
+            requestedWidth = args.getInt(REQUESTED_PICTURE_WIDTH);
+            cropToAspectRatio = args.getBoolean(CROP_TO_ASPECT_RATIO, false);
         }
     }
     
@@ -87,9 +88,9 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         Bitmap newBitmap;
         newBitmap = LoadPictureFromFile(fileName);
         if (newBitmap == null) {
-            newBitmap = loadPictureFromAssets(NO_PICTURE);
+            newBitmap = loadPictureFromAssets(NO_PICTURE_FILE_NAME);
         }
-        if (aspectRatio >= 1) {
+        if (cropToAspectRatio) {
             newBitmap = cropToAspectRatio(newBitmap);
         }
         return newBitmap;
@@ -106,7 +107,7 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         try {
             newBitmap = BitmapFactory.decodeFile(fileName, currentBitmapOptions);
         } catch (OutOfMemoryError e) {
-            newBitmap = BitmapFactory.decodeFile(fileName, reduceSize(currentBitmapOptions));
+            newBitmap = BitmapFactory.decodeFile(fileName, reduceSizeTwice(currentBitmapOptions));
         }
         return newBitmap;
     }
@@ -136,7 +137,7 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         return newBitmap;
     }
     
-    private BitmapFactory.Options reduceSize(BitmapFactory.Options options) {
+    private BitmapFactory.Options reduceSizeTwice(BitmapFactory.Options options) {
         
         int inSampleSize = options.inSampleSize;
         if (inSampleSize < 2) {
@@ -171,5 +172,10 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         } else {
             forceLoad();
         }
+    }
+    
+    public int getPictureIndex() {
+        
+        return pictureIndex;
     }
 }
