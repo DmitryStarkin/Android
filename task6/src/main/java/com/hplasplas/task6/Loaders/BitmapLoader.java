@@ -29,7 +29,6 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
     private boolean cropToAspectRatio;
     private String fileName;
     private Bitmap picture;
-    private int pictureIndex;
     private BitmapFactory.Options currentBitmapOptions;
     
     public BitmapLoader(Context context, Bundle args) {
@@ -172,10 +171,5 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         } else {
             forceLoad();
         }
-    }
-    
-    public int getPictureIndex() {
-        
-        return pictureIndex;
     }
 }

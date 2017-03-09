@@ -22,14 +22,12 @@ import com.hplasplas.task6.Adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.Loaders.BitmapLoader;
 import com.hplasplas.task6.Models.ListItemModel;
 import com.hplasplas.task6.R;
+import com.hplasplas.task6.Util.intQueue;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.AbstractQueue;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Locale;
 
 import static com.hplasplas.task6.Setting.Constants.CROP_TO_ASPECT_RATIO;
@@ -38,7 +36,6 @@ import static com.hplasplas.task6.Setting.Constants.FILE_NAME_PREFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_SUFFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.Setting.Constants.GET_PICTURE_REQUEST_CODE;
-import static com.hplasplas.task6.Setting.Constants.LOADED_PICTURE_INDEX;
 import static com.hplasplas.task6.Setting.Constants.MAIN_PICTURE_LOADER_ID;
 import static com.hplasplas.task6.Setting.Constants.NEED_PRIVATE_FOLDER;
 import static com.hplasplas.task6.Setting.Constants.NO_EXISTING_FILE_NAME;
@@ -46,14 +43,17 @@ import static com.hplasplas.task6.Setting.Constants.PICTURE_FOLDER_NAME;
 import static com.hplasplas.task6.Setting.Constants.PREFERENCES_FILE;
 import static com.hplasplas.task6.Setting.Constants.PREF_FOR_LAST_FILE_NAME;
 import static com.hplasplas.task6.Setting.Constants.PREVIEW_PICTURE_HEIGHT;
+import static com.hplasplas.task6.Setting.Constants.PREVIEW_PICTURE_LOADER_START_ID;
+import static com.hplasplas.task6.Setting.Constants.PREVIEW_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
+import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.TIME_STAMP_PATTERN;
 
 public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap> {
     
     private final String TAG = getClass().getSimpleName();
     public ArrayList<ListItemModel> filesItemList;
-    public ArrayDeque<Integer> previewInLoad;
+    public intQueue previewInLoad;
     private SharedPreferences myPreferences;
     private ImageView myImageView;
     private Button myButton;
@@ -69,16 +69,15 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
+        
         myImageView = (ImageView) findViewById(R.id.foto_frame);
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
         mainProgressBar.setVisibility(View.VISIBLE);
-        
         myButton = (Button) findViewById(R.id.foto_button);
         myButton.setOnClickListener(this);
         
-        getDirectory(NEED_PRIVATE_FOLDER);
-        filesItemList = new ArrayList<>();
-        //Collections.addAll(filesItemList, pictureDirectory.listFiles());
+        pictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
+        initFilesItemList();
         
         myRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
         myRecyclerView.setHasFixedSize(true);
@@ -93,6 +92,16 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         getSupportLoaderManager().initLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
     }
     
+    private void initFilesItemList() {
+        
+        filesItemList = new ArrayList<>();
+        File[] FilesInPictureFolder = pictureDirectory.listFiles();
+        for (int i = 0; i < FilesInPictureFolder.length; i++) {
+            filesItemList.add(new ListItemModel(FilesInPictureFolder[i]));
+            loadPreview(i);
+        }
+    }
+    
     private void loadBitmap(String fileName) {
         
         mainProgressBar.setVisibility(View.VISIBLE);
@@ -101,15 +110,32 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
     }
     
-    private void loadPreview(String fileName, int index) {
+    private void loadPreview(int index) {
+        
+        if (previewInLoad == null) {
+            previewInLoad = new intQueue();
+        }
+        previewInLoad.add(index);
+        if (previewInLoad.size() == 1) {
+            loadPreview();
+        }
+    }
+    
+    private void loadPreview() {
+        
+        if (!previewInLoad.isEmpty()) {
+            loadPreview(filesItemList.get(previewInLoad.peek()).getPictureFile().getPath());
+        }
+    }
+    
+    private void loadPreview(String fileName) {
         
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
         bundle.putInt(REQUESTED_PICTURE_HEIGHT, PREVIEW_PICTURE_HEIGHT);
-        bundle.putInt(REQUESTED_PICTURE_HEIGHT, PREVIEW_PICTURE_HEIGHT);
-        bundle.putInt(LOADED_PICTURE_INDEX, index);
+        bundle.putInt(REQUESTED_PICTURE_WIDTH, PREVIEW_PICTURE_WIDTH);
         bundle.putBoolean(CROP_TO_ASPECT_RATIO, true);
-        getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
+        getSupportLoaderManager().restartLoader(PREVIEW_PICTURE_LOADER_START_ID, bundle, this);
     }
     
     @Override
@@ -128,10 +154,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             myImageView.setImageBitmap(data);
             mainProgressBar.setVisibility(View.INVISIBLE);
         } else {
-            int position = ((BitmapLoader) loader).getPictureIndex();
-            filesItemList.get(position).setPicturePreview(data);
-            myPictureInFolderAdapter.notifyItemChanged(position);
-            loadNextPreview(position);
+            setPreview(data, previewInLoad.poll());
+            loadPreview();
         }
     }
     
@@ -140,17 +164,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
     }
     
-    private void loadNextPreview(int index) {
+    private void setPreview(Bitmap data, int position) {
         
-        //TODO
-    }
-    
-    private void loadPreview(int index) {
-        if (previewInLoad == null){
-            previewInLoad = new ArrayDeque<>();
-        }
-        
-        //TODO
+        filesItemList.get(position).setPicturePreview(data);
+        myPictureInFolderAdapter.notifyItemChanged(position);
     }
     
     @Override
@@ -164,12 +181,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
-    private void getDirectory(boolean needPrivate) {
+    private File getDirectory(boolean needPrivate) {
         
         if (needPrivate) {
-            pictureDirectory = getExternalFilesDir(PICTURE_FOLDER_NAME);
+            return getExternalFilesDir(PICTURE_FOLDER_NAME);
         } else {
-            pictureDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
+            return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
         }
     }
     
@@ -205,38 +222,5 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                     .apply();
         }
         super.onPause();
-    }
-    
-    private class PreviewQueue<E> extends AbstractQueue<E>{
-    
-        @Override
-        public boolean offer(E e) {
-        
-            return false;
-        }
-    
-        @Override
-        public E poll() {
-        
-            return null;
-        }
-    
-        @Override
-        public E peek() {
-        
-            return null;
-        }
-    
-        @Override
-        public Iterator<E> iterator() {
-        
-            return null;
-        }
-    
-        @Override
-        public int size() {
-        
-            return 0;
-        }
     }
 }

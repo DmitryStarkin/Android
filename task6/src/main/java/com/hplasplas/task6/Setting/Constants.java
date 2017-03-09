@@ -24,15 +24,14 @@ public final class Constants {
     //loaders values
     public static final int MAIN_PICTURE_LOADER_ID = 0;
     public static final int PREVIEW_PICTURE_LOADER_START_ID = 1;
-    public static final String LOADED_PICTURE_INDEX = "index_of_loaded_picture";
     public static final String FILE_NAME_TO_LOAD = "fileNameToLoad";
     public static final String REQUESTED_PICTURE_HEIGHT = "requestedHeight";
     public static final String REQUESTED_PICTURE_WIDTH = "requestedWidth";
     public static final String CROP_TO_ASPECT_RATIO = "cropToAspectRatio";
     
     //preview values
-    public static final int PREVIEW_PICTURE_HEIGHT = 32;
-    public static final int PREVIEW_PICTURE_WIDTH = 32;
+    public static final int PREVIEW_PICTURE_HEIGHT = 128;
+    public static final int PREVIEW_PICTURE_WIDTH = 128;
     
     //recycle view values
     public static final String FILE_NOT_EXIST = "NO File";
