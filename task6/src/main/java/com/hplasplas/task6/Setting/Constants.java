@@ -13,7 +13,7 @@ public final class Constants {
     public static final String NO_PICTURE_FILE_NAME = "noPicture.jpg";
     public static final String PICTURE_FOLDER_NAME = "myPhotoFolder";
     public static final String FILE_NAME_SUFFIX = ".jpg";
-    public static final String FILE_NAME_PREFIX = "JPEG_";
+    public static final String FILE_NAME_PREFIX = "";
     public static final String NO_EXISTING_FILE_NAME = "file";
     public static final String TIME_STAMP_PATTERN = "yyyyMMdd_HHmmss";
     
@@ -30,8 +30,8 @@ public final class Constants {
     public static final String CROP_TO_ASPECT_RATIO = "cropToAspectRatio";
     
     //preview values
-    public static final int PREVIEW_PICTURE_HEIGHT = 128;
-    public static final int PREVIEW_PICTURE_WIDTH = 128;
+    public static final int PREVIEW_PICTURE_HEIGHT = 192;
+    public static final int PREVIEW_PICTURE_WIDTH = 192;
     
     //recycle view values
     public static final String FILE_NOT_EXIST = "NO File";
