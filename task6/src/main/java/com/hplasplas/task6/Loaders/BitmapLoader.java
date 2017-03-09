@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.hplasplas.task6.Setting.Constants.CROP_TO_ASPECT_RATIO;
+import static com.hplasplas.task6.Setting.Constants.DEBUG;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
+import static com.hplasplas.task6.Setting.Constants.NO_PICTURE_FILE_NAME;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
-import static com.hplasplas.task6.Setting.Constants.DEBUG;
-import static com.hplasplas.task6.Setting.Constants.NO_PICTURE_FILE_NAME;
 
 /**
  * Created by StarkinDG on 11.02.2017.
@@ -54,7 +54,6 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         } else {
             currentBitmapOptions = new BitmapFactory.Options();
         }
-        
         return LoadPicture(fileName);
     }
     

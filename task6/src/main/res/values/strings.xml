@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Task6</string>
     <string name="button_text">Make the picture</string>
+    <string name="delete_menu_text">Delete</string>
 </resources>

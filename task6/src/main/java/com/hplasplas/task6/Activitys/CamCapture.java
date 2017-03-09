@@ -12,8 +12,10 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -51,11 +53,12 @@ import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.TIME_STAMP_PATTERN;
 
-public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap> {
+public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap>, PopupMenu.OnMenuItemClickListener {
     
     private final String TAG = getClass().getSimpleName();
     public ArrayList<ListItemModel> filesItemList;
     public intQueue previewInLoad;
+    private int contextMenuPosition = -1;
     private SharedPreferences myPreferences;
     private ImageView myImageView;
     private Button myButton;
@@ -90,7 +93,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
         myRecyclerView.addItemDecoration(itemDecoration);
         ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
-        
+        ItemClickSupport.addTo(myRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
         myPreferences = this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, myPreferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
@@ -99,7 +102,19 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void onMyRecyclerViewItemClicked(int position, View v) {
         
-        loadMainBitmap(filesItemList.get(position).getPictureFile().getPath());
+        currentPictureFile = filesItemList.get(position).getPictureFile();
+        loadMainBitmap(currentPictureFile.getPath());
+    }
+    
+    private boolean onMyRecyclerViewItemLongClicked(int position, View v) {
+        
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.inflate(R.menu.item_context_menu);
+        popup.setOnMenuItemClickListener(this);
+        contextMenuPosition = position;
+        popup.show();
+        
+        return false;
     }
     
     private void initFilesItemList() {
@@ -232,5 +247,18 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                     .apply();
         }
         super.onPause();
+    }
+    
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        
+        File fileForDelete = filesItemList.get(contextMenuPosition).getPictureFile();
+        if (fileForDelete.delete()) {
+            loadPreview(contextMenuPosition);
+        }
+        if (currentPictureFile == null || !currentPictureFile.exists()) {
+            loadMainBitmap(NO_EXISTING_FILE_NAME);
+        }
+        return false;
     }
 }
