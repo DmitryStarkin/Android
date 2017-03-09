@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,6 +24,7 @@ import com.hplasplas.task6.Loaders.BitmapLoader;
 import com.hplasplas.task6.Models.ListItemModel;
 import com.hplasplas.task6.R;
 import com.hplasplas.task6.Util.intQueue;
+import com.starsoft.recyclerViewItemClickSupport.ItemClickSupport;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -59,7 +61,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private Button myButton;
     private ProgressBar mainProgressBar;
     private RecyclerView myRecyclerView;
-    private RecyclerView.Adapter myPictureInFolderAdapter;
+    private PictureInFolderAdapter myPictureInFolderAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private File currentPictureFile;
     private File pictureDirectory;
@@ -85,11 +87,19 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         myRecyclerView.setLayoutManager(mLayoutManager);
         myPictureInFolderAdapter = new PictureInFolderAdapter(filesItemList);
         myRecyclerView.setAdapter(myPictureInFolderAdapter);
+        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
+        myRecyclerView.addItemDecoration(itemDecoration);
+        ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
         
         myPreferences = this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, myPreferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
         getSupportLoaderManager().initLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
+    }
+    
+    private void onMyRecyclerViewItemClicked(int position, View v) {
+        
+        loadMainBitmap(filesItemList.get(position).getPictureFile().getPath());
     }
     
     private void initFilesItemList() {
@@ -102,7 +112,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
-    private void loadBitmap(String fileName) {
+    private void loadMainBitmap(String fileName) {
         
         mainProgressBar.setVisibility(View.VISIBLE);
         Bundle bundle = new Bundle();
@@ -200,7 +210,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         
         if (requestCode == GET_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
-            loadBitmap(currentPictureFile.getPath());
+            loadMainBitmap(currentPictureFile.getPath());
             filesItemList.add(new ListItemModel(currentPictureFile));
             myPictureInFolderAdapter.notifyItemInserted(filesItemList.size() - 1);
             loadPreview(filesItemList.size() - 1);

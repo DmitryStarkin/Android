@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/foto_frame"
-        android:layout_width="0dp"
-        android:layout_height="346dp"
+        android:layout_width="361dp"
+        android:layout_height="377dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"

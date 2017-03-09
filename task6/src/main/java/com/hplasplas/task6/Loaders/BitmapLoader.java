@@ -48,7 +48,7 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         if (DEBUG) {
             Log.d(TAG, "loadInBackground: ");
         }
-        if (requestedHeight != 0 && requestedWidth != 0) {
+        if (requestedHeight != 0 & requestedWidth != 0) {
             currentBitmapOptions = readBitmapOptionsFromFile(fileName);
             currentBitmapOptions.inSampleSize = calculateInSampleSize(currentBitmapOptions, requestedWidth, requestedHeight);
         } else {
@@ -96,6 +96,7 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
     }
     
     private Bitmap cropToAspectRatio(Bitmap newBitmap) {
+        
         //TODO
         return newBitmap;
     }
