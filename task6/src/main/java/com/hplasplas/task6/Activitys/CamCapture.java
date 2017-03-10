@@ -102,8 +102,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void onMyRecyclerViewItemClicked(int position, View v) {
         
-        currentPictureFile = filesItemList.get(position).getPictureFile();
-        loadMainBitmap(currentPictureFile.getPath());
+        File clickedFile = filesItemList.get(position).getPictureFile();
+        if (!currentPictureFile.equals(clickedFile)) {
+            currentPictureFile = clickedFile;
+            loadMainBitmap(currentPictureFile.getPath());
+        }
     }
     
     private boolean onMyRecyclerViewItemLongClicked(int position, View v) {
@@ -198,6 +201,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     @Override
     public void onClick(View v) {
         
+        myButton.setEnabled(false);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         currentPictureFile = generateFileForPicture();
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(currentPictureFile));
@@ -236,6 +240,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 currentPictureFile = null;
             }
         }
+        myButton.setEnabled(true);
     }
     
     @Override
