@@ -36,7 +36,7 @@ import java.util.Locale;
 
 import static com.hplasplas.task6.Setting.Constants.CROP_TO_ASPECT_RATIO;
 import static com.hplasplas.task6.Setting.Constants.DEBUG;
-import static com.hplasplas.task6.Setting.Constants.FILE_NAME_PREFIX;
+import static com.hplasplas.task6.Setting.Constants.DEFAULT_FILE_NAME_PREFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_SUFFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.Setting.Constants.GET_PICTURE_REQUEST_CODE;
@@ -134,6 +134,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private void loadMainBitmap(String fileName) {
+        
         mainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
         Bundle bundle = new Bundle();
@@ -225,9 +226,15 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private File generateFileForPicture() {
         
-        String timeStamp = new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date());
-        return new File(pictureDirectory.getPath() + "/" + FILE_NAME_PREFIX + timeStamp + FILE_NAME_SUFFIX);
+        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date());
+        return generateFileForPicture(fileName);
     }
+    
+    private File generateFileForPicture(String fileName) {
+        
+        return new File(pictureDirectory.getPath() + "/" + fileName + FILE_NAME_SUFFIX);
+    }
+    
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -261,12 +268,18 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         
-        File fileForDelete = filesItemList.get(contextMenuPosition).getPictureFile();
-        if (fileForDelete.delete()) {
-            loadPreview(contextMenuPosition);
-        }
-        if (currentPictureFile == null || !currentPictureFile.exists()) {
-            loadMainBitmap(NO_EXISTING_FILE_NAME);
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                File fileForDelete = filesItemList.get(contextMenuPosition).getPictureFile();
+                if (fileForDelete.delete()) {
+                    loadPreview(contextMenuPosition);
+                }
+                if (currentPictureFile == null || !currentPictureFile.exists()) {
+                    loadMainBitmap(NO_EXISTING_FILE_NAME);
+                }
+                break;
+            case R.id.menu_rename:
+                break;
         }
         return false;
     }
