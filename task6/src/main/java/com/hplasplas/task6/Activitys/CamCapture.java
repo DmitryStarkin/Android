@@ -239,7 +239,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return new File(pictureDirectory.getPath() + "/" + fileName + FILE_NAME_SUFFIX);
     }
     
-    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         
@@ -248,6 +247,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             filesItemList.add(new ListItemModel(currentPictureFile));
             myPictureInFolderAdapter.notifyItemInserted(filesItemList.size() - 1);
             loadPreview(filesItemList.size() - 1);
+            myRecyclerView.scrollToPosition(filesItemList.size() - 1);
         } else {
             if (!filesItemList.isEmpty()) {
                 currentPictureFile = filesItemList.get(filesItemList.size() - 1).getPictureFile();
@@ -272,10 +272,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         
+        File clickedItemFile = filesItemList.get(contextMenuPosition).getPictureFile();
         switch (item.getItemId()) {
             case R.id.menu_delete:
-                File fileForDelete = filesItemList.get(contextMenuPosition).getPictureFile();
-                if (fileForDelete.delete()) {
+                if (clickedItemFile.delete()) {
                     loadPreview(contextMenuPosition);
                 }
                 if (currentPictureFile == null || !currentPictureFile.exists()) {
@@ -283,8 +283,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 }
                 break;
             case R.id.menu_rename:
-                AppCompatDialogFragment newFragment = new FileNameInputDialog();
-                newFragment.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
+                if (clickedItemFile.exists()) {
+                    AppCompatDialogFragment newFragment = new FileNameInputDialog();
+                    newFragment.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
+                }
                 break;
         }
         return false;

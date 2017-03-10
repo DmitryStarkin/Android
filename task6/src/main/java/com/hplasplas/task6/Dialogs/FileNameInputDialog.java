@@ -39,6 +39,7 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.rename_dialog_layaut, null);
         myEditText = (EditText) view.findViewById(R.id.editText);
+        
         builder.setView(view)
                 .setTitle(R.string.rename_dialog_title)
         
