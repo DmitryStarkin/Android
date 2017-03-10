@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -22,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.hplasplas.task6.Adapters.PictureInFolderAdapter;
+import com.hplasplas.task6.Dialogs.FileNameInputDialog;
 import com.hplasplas.task6.Loaders.BitmapLoader;
 import com.hplasplas.task6.Models.ListItemModel;
 import com.hplasplas.task6.R;
@@ -39,6 +41,7 @@ import static com.hplasplas.task6.Setting.Constants.DEBUG;
 import static com.hplasplas.task6.Setting.Constants.DEFAULT_FILE_NAME_PREFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_SUFFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
+import static com.hplasplas.task6.Setting.Constants.FILE_RENAME_DIALOG_TAG;
 import static com.hplasplas.task6.Setting.Constants.GET_PICTURE_REQUEST_CODE;
 import static com.hplasplas.task6.Setting.Constants.MAIN_PICTURE_LOADER_ID;
 import static com.hplasplas.task6.Setting.Constants.NEED_PRIVATE_FOLDER;
@@ -53,7 +56,7 @@ import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.TIME_STAMP_PATTERN;
 
-public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap>, PopupMenu.OnMenuItemClickListener {
+public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap>, PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
     
     private final String TAG = getClass().getSimpleName();
     public ArrayList<ListItemModel> filesItemList;
@@ -95,6 +98,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         myRecyclerView.addItemDecoration(itemDecoration);
         ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(myRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
+        
         myPreferences = this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, myPreferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
@@ -279,8 +283,20 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 }
                 break;
             case R.id.menu_rename:
+                AppCompatDialogFragment newFragment = new FileNameInputDialog();
+                newFragment.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
                 break;
         }
         return false;
+    }
+    
+    @Override
+    public void onDialogPositiveClick(AppCompatDialogFragment dialog, String newFileName) {
+        
+    }
+    
+    @Override
+    public void onDialogNegativeClick(AppCompatDialogFragment dialog) {
+        
     }
 }

@@ -38,6 +38,10 @@ public final class Constants {
     
     //request codes
     public static final int GET_PICTURE_REQUEST_CODE = 1;
+    
+    //dialog value
+    public static final String FILE_RENAME_DIALOG_TAG = "renameFileTag";
+    public static final String MUST_IMPLEMENT_INTERFACE_MESSAGE = " must implement NoticeDialogListener";
 }
 
 
