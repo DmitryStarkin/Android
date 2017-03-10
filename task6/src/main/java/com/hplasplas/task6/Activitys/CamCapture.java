@@ -57,7 +57,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private final String TAG = getClass().getSimpleName();
     public ArrayList<ListItemModel> filesItemList;
-    public intQueue previewInLoad;
+    private boolean mainPictureLoaded;
+    private intQueue previewInLoad;
     private int contextMenuPosition = -1;
     private SharedPreferences myPreferences;
     private ImageView myImageView;
@@ -102,10 +103,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void onMyRecyclerViewItemClicked(int position, View v) {
         
-        File clickedFile = filesItemList.get(position).getPictureFile();
-        if (!currentPictureFile.equals(clickedFile)) {
-            currentPictureFile = clickedFile;
-            loadMainBitmap(currentPictureFile.getPath());
+        if (!mainPictureLoaded) {
+            File clickedFile = filesItemList.get(position).getPictureFile();
+            if (currentPictureFile == null || !currentPictureFile.equals(clickedFile)) {
+                currentPictureFile = clickedFile;
+                loadMainBitmap(currentPictureFile.getPath());
+            }
         }
     }
     
@@ -131,7 +134,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private void loadMainBitmap(String fileName) {
-        
+        mainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
@@ -181,6 +184,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         if (loader.getId() == MAIN_PICTURE_LOADER_ID) {
             myImageView.setImageBitmap(data);
             mainProgressBar.setVisibility(View.INVISIBLE);
+            mainPictureLoaded = false;
         } else {
             setPreview(data, previewInLoad.poll());
             loadPreview();
