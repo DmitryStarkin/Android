@@ -71,7 +71,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private ProgressBar mainProgressBar;
     private RecyclerView myRecyclerView;
     private PictureInFolderAdapter myPictureInFolderAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private File currentPictureFile;
     private File pictureDirectory;
     
@@ -92,8 +91,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         myRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
         myRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        myRecyclerView.setLayoutManager(mLayoutManager);
+        myRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         myPictureInFolderAdapter = new PictureInFolderAdapter(filesItemList);
         myRecyclerView.setAdapter(myPictureInFolderAdapter);
         RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
