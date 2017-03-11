@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 import com.hplasplas.task6.R;
@@ -39,6 +40,7 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
         return dialog;
     }
     
+    @SuppressWarnings("ConstantConditions")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -68,6 +70,16 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
         } catch (ClassCastException e) {
             throw new ClassCastException(getActivity().toString() + MUST_IMPLEMENT_INTERFACE_MESSAGE);
         }
+    }
+    
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void onStart() {
+        
+        myEditText.setSelection(0, myEditText.getText().length() - 4);
+        //myEditText.requestFocus();
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        super.onStart();
     }
     
     private boolean isValidFileName(String fileName) {
