@@ -6,4 +6,6 @@
     <string name="button_ok">Ok</string>
     <string name="button_cancel">Cancel</string>
     <string name="rename_dialog_title">Enter new file name</string>
+    <string name="rename_failed">Rename failed</string>
+    <string name="invalid_file_name">Invalid file name</string>
 </resources>

@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 
 import com.hplasplas.task6.Adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.Dialogs.FileNameInputDialog;
+import com.hplasplas.task6.Dialogs.RenameErrorDialog;
 import com.hplasplas.task6.Loaders.BitmapLoader;
 import com.hplasplas.task6.Models.ListItemModel;
 import com.hplasplas.task6.R;
@@ -39,6 +40,7 @@ import java.util.Locale;
 import static com.hplasplas.task6.Setting.Constants.CROP_TO_ASPECT_RATIO;
 import static com.hplasplas.task6.Setting.Constants.DEBUG;
 import static com.hplasplas.task6.Setting.Constants.DEFAULT_FILE_NAME_PREFIX;
+import static com.hplasplas.task6.Setting.Constants.ERROR_DIALOG_TAG;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_SUFFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.Setting.Constants.FILE_RENAME_DIALOG_TAG;
@@ -230,13 +232,13 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private File generateFileForPicture() {
         
-        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date());
+        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
         return generateFileForPicture(fileName);
     }
     
     private File generateFileForPicture(String fileName) {
         
-        return new File(pictureDirectory.getPath() + "/" + fileName + FILE_NAME_SUFFIX);
+        return new File(pictureDirectory.getPath() + "/" + fileName);
     }
     
     @Override
@@ -284,8 +286,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 break;
             case R.id.menu_rename:
                 if (clickedItemFile.exists()) {
-                    AppCompatDialogFragment newFragment = new FileNameInputDialog();
-                    newFragment.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
+                    FileNameInputDialog fileRenameDialog = FileNameInputDialog.newInstance(contextMenuPosition, clickedItemFile.getName());
+                    fileRenameDialog.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
                 }
                 break;
         }
@@ -293,8 +295,19 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    public void onDialogPositiveClick(AppCompatDialogFragment dialog, String newFileName) {
+    public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, int position, boolean successfully) {
         
+        if (successfully) {
+            File newFile = generateFileForPicture(newFileName);
+            if (newFile.exists() || !filesItemList.get(position).getPictureFile().renameTo(newFile)) {
+                RenameErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
+            } else {
+                filesItemList.get(position).setPictureFile(newFile);
+                myPictureInFolderAdapter.notifyItemChanged(position);
+            }
+        } else {
+            RenameErrorDialog.newInstance(getString(R.string.invalid_file_name)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
+        }
     }
     
     @Override
