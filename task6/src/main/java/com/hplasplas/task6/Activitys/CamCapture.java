@@ -2,6 +2,7 @@ package com.hplasplas.task6.Activitys;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -56,6 +58,7 @@ import static com.hplasplas.task6.Setting.Constants.PREVIEW_PICTURE_LOADER_START
 import static com.hplasplas.task6.Setting.Constants.PREVIEW_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.Setting.Constants.REQUESTED_PICTURE_WIDTH;
+import static com.hplasplas.task6.Setting.Constants.ROWS_IN_TABLE;
 import static com.hplasplas.task6.Setting.Constants.TIME_STAMP_PATTERN;
 
 public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap>, PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
@@ -91,11 +94,17 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         myRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
         myRecyclerView.setHasFixedSize(true);
-        myRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            myRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        } else {
+            myRecyclerView.setLayoutManager(new GridLayoutManager(this, ROWS_IN_TABLE, LinearLayoutManager.HORIZONTAL, false));
+            myRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        }
+        
+        myRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
         myPictureInFolderAdapter = new PictureInFolderAdapter(filesItemList);
         myRecyclerView.setAdapter(myPictureInFolderAdapter);
-        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
-        myRecyclerView.addItemDecoration(itemDecoration);
+        
         ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(myRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
         
