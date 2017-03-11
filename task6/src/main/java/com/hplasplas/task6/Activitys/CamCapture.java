@@ -139,6 +139,16 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
+    private int getFilePositionInList(File fileToSearch, ArrayList<ListItemModel> filesItemList) {
+        
+        for (int i = 0, y = filesItemList.size(); i < y; i++) {
+            if (filesItemList.get(i).getPictureFile().equals(fileToSearch)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     private void loadMainBitmap(String fileName) {
         
         mainPictureLoaded = true;
@@ -286,7 +296,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 break;
             case R.id.menu_rename:
                 if (clickedItemFile.exists()) {
-                    FileNameInputDialog fileRenameDialog = FileNameInputDialog.newInstance(contextMenuPosition, clickedItemFile.getName());
+                    FileNameInputDialog fileRenameDialog = FileNameInputDialog.newInstance(clickedItemFile);
                     fileRenameDialog.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
                 }
                 break;
@@ -295,11 +305,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, int position, boolean successfully) {
+    public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, File renamedFile, boolean successfully) {
         
         if (successfully) {
+            int position = getFilePositionInList(renamedFile, filesItemList);
             File newFile = generateFileForPicture(newFileName);
-            if (newFile.exists() || !filesItemList.get(position).getPictureFile().renameTo(newFile)) {
+            if (position < 0 || newFile.exists() || !renamedFile.renameTo(newFile)) {
                 RenameErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
             } else {
                 filesItemList.get(position).setPictureFile(newFile);

@@ -43,9 +43,7 @@ public final class Constants {
     public static final String FILE_RENAME_DIALOG_TAG = "renameFileTag";
     public static final String ERROR_DIALOG_TAG = "ErrorTag";
     public static final String MUST_IMPLEMENT_INTERFACE_MESSAGE = " must implement NoticeDialogListener";
-    public static final String LIST_INDEX_TAG = "index";
     public static final String LIST_FILE_NAME_TAG = "fileName";
-    public static final String DEFAULT_FILE_NAME = "pictureName.jpg";
     public static final String ERROR_DIALOG_TITLE_TAG = "errorDialogTitle";
 }
 

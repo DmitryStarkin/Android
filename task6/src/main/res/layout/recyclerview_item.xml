@@ -9,18 +9,21 @@
 
     <ImageView
         android:id="@+id/picturePreview"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:srcCompat="@mipmap/back"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="0dp"/>
 
     <TextView
         android:id="@+id/pictureFileDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="7dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
         android:text="TextView"
         android:textColor="@android:color/holo_blue_bright"
         android:textSize="12sp"
@@ -44,6 +47,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/pictureFileDescription"
         app:layout_constraintLeft_toLeftOf="@+id/picturePreview"
         app:layout_constraintRight_toRightOf="@+id/picturePreview"
-        app:layout_constraintTop_toTopOf="@+id/picturePreview"/>
+        app:layout_constraintTop_toTopOf="@+id/picturePreview"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
 
 </android.support.constraint.ConstraintLayout>

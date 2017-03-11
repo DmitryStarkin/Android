@@ -13,12 +13,11 @@ import android.widget.EditText;
 
 import com.hplasplas.task6.R;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.hplasplas.task6.Setting.Constants.DEFAULT_FILE_NAME;
 import static com.hplasplas.task6.Setting.Constants.LIST_FILE_NAME_TAG;
-import static com.hplasplas.task6.Setting.Constants.LIST_INDEX_TAG;
 import static com.hplasplas.task6.Setting.Constants.MUST_IMPLEMENT_INTERFACE_MESSAGE;
 
 /**
@@ -29,14 +28,13 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
     
     FileNameInputDialogListener mListener;
     private EditText myEditText;
-    private int index;
+    private File renamedFile;
     
-    public static FileNameInputDialog newInstance(int index, String filename) {
+    public static FileNameInputDialog newInstance(File fileForRename) {
         
         FileNameInputDialog dialog = new FileNameInputDialog();
         Bundle args = new Bundle();
-        args.putInt(LIST_INDEX_TAG, index);
-        args.putString(LIST_FILE_NAME_TAG, filename);
+        args.putString(LIST_FILE_NAME_TAG, fileForRename.getPath());
         dialog.setArguments(args);
         return dialog;
     }
@@ -49,9 +47,11 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
         
         LayoutInflater inflater = getActivity().getLayoutInflater();
         @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.rename_dialog_layaut, null);
-        index = getArguments().getInt(LIST_INDEX_TAG);
-        myEditText = (EditText) view.findViewById(R.id.editText);
-        myEditText.setText(getArguments().getString(LIST_FILE_NAME_TAG, DEFAULT_FILE_NAME));
+        if (getArguments().getString(LIST_FILE_NAME_TAG) != null) {
+            renamedFile = new File(getArguments().getString(LIST_FILE_NAME_TAG));
+            myEditText = (EditText) view.findViewById(R.id.editText);
+            myEditText.setText(renamedFile.getName());
+        }
         builder.setView(view)
                 .setTitle(R.string.rename_dialog_title)
                 .setPositiveButton(R.string.button_ok, (dialog, id) -> returnRenameResult())
@@ -80,16 +80,16 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
     private void returnRenameResult() {
         
         String newName = myEditText.getText().toString();
-        if (isValidFileName(newName)) {
-            mListener.onOkButtonClick(this, newName, index, true);
+        if (isValidFileName(newName) & renamedFile != null) {
+            mListener.onOkButtonClick(this, newName, renamedFile, true);
         } else {
-            mListener.onOkButtonClick(this, newName, index, false);
+            mListener.onOkButtonClick(this, newName, renamedFile, false);
         }
     }
     
     public interface FileNameInputDialogListener {
         
-        public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, int index, boolean successfully);
+        public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, File renamedFile, boolean successfully);
         
         public void onDialogNegativeClick(AppCompatDialogFragment dialog);
     }
