@@ -35,6 +35,7 @@ public final class Constants {
     
     //recycle view values
     public static final String FILE_NOT_EXIST = "NO File";
+    public static final int ROWS_IN_TABLE = 2;
     
     //request codes
     public static final int GET_PICTURE_REQUEST_CODE = 1;

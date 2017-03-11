@@ -3,6 +3,7 @@ package com.hplasplas.task6.Loaders;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
@@ -91,12 +92,30 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         if (cropToAspectRatio) {
             newBitmap = cropToAspectRatio(newBitmap);
         }
+        
+        if (newBitmap.getHeight() < newBitmap.getWidth()) {
+            newBitmap = rotate(newBitmap, 90);
+        }
         return newBitmap;
     }
     
     private Bitmap cropToAspectRatio(Bitmap newBitmap) {
         
         //TODO
+        return newBitmap;
+    }
+    
+    private Bitmap rotate(Bitmap bitmap, float degrees) {
+        
+        Bitmap newBitmap;
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        try {
+            newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+        } catch (OutOfMemoryError e) {
+            newBitmap = bitmap;
+        }
         return newBitmap;
     }
     
