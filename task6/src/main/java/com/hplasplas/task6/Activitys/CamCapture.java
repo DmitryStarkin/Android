@@ -45,6 +45,8 @@ import static com.hplasplas.task6.Setting.Constants.ERROR_DIALOG_TAG;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_SUFFIX;
 import static com.hplasplas.task6.Setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.Setting.Constants.FILE_RENAME_DIALOG_TAG;
+import static com.hplasplas.task6.Setting.Constants.FIRST_LOAD_PICTURE_HEIGHT;
+import static com.hplasplas.task6.Setting.Constants.FIRST_LOAD_PICTURE_WIDTH;
 import static com.hplasplas.task6.Setting.Constants.GET_PICTURE_REQUEST_CODE;
 import static com.hplasplas.task6.Setting.Constants.MAIN_PICTURE_LOADER_ID;
 import static com.hplasplas.task6.Setting.Constants.NEED_PRIVATE_FOLDER;
@@ -87,8 +89,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         setContentView(R.layout.cam_capture_activity);
         
         myImageView = (ImageView) findViewById(R.id.foto_frame);
-        myMainImageViewHeight = myImageView.getHeight();
-        myMainImageViewWidth = myImageView.getWidth();
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
         mainProgressBar.setVisibility(View.VISIBLE);
         myButton = (Button) findViewById(R.id.foto_button);
@@ -112,10 +112,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(myRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
-        
         myPreferences = this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, myPreferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
+        bundle.putInt(REQUESTED_PICTURE_HEIGHT, FIRST_LOAD_PICTURE_HEIGHT);
+        bundle.putInt(REQUESTED_PICTURE_WIDTH, FIRST_LOAD_PICTURE_WIDTH);
         mainPictureLoaded = true;
         getSupportLoaderManager().initLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
     }
@@ -174,6 +175,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void loadMainBitmap(String fileName) {
         
+        if (myMainImageViewHeight == 0 || myMainImageViewWidth == 0) {
+            myMainImageViewHeight = myImageView.getHeight();
+            myMainImageViewWidth = myImageView.getWidth();
+        }
         mainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
         Bundle bundle = new Bundle();
@@ -299,18 +304,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-    
-        if (DEBUG) {
-            Log.d(TAG, "onSaveInstanceState: ");
-        }
-        canComeBack = true;
-        super.onSaveInstanceState(outState);
-    }
-    
-    @Override
     protected void onPause() {
-    
+        
         if (DEBUG) {
             Log.d(TAG, "onPause: ");
         }
@@ -323,8 +318,18 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    protected void onDestroy() {
+    protected void onSaveInstanceState(Bundle outState) {
+        
+        if (DEBUG) {
+            Log.d(TAG, "onSaveInstanceState: ");
+        }
+        canComeBack = true;
+        super.onSaveInstanceState(outState);
+    }
     
+    @Override
+    protected void onDestroy() {
+        
         if (DEBUG) {
             Log.d(TAG, "onDestroy: ");
             if (myMainBitmap != null && !canComeBack) {
@@ -334,16 +339,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
         super.onDestroy();
     }
-    
-    @Override
-    protected void onStop() {
-    
-        if (DEBUG) {
-            Log.d(TAG, "onStop: ");
-        }
-        super.onStop();
-    }
-    
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         

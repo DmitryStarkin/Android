@@ -33,6 +33,10 @@ public final class Constants {
     public static final int PREVIEW_PICTURE_HEIGHT = 92;
     public static final int PREVIEW_PICTURE_WIDTH = 92;
     
+    //main bitmap values
+    public static final int FIRST_LOAD_PICTURE_WIDTH = 540;
+    public static final int FIRST_LOAD_PICTURE_HEIGHT = 720;
+    
     //recycle view values
     public static final String FILE_NOT_EXIST = "NO File";
     public static final int ROWS_IN_TABLE = 2;
