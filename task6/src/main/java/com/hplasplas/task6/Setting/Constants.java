@@ -14,7 +14,7 @@ public final class Constants {
     public static final String PICTURE_FOLDER_NAME = "myPhotoFolder";
     public static final String FILE_NAME_SUFFIX = ".jpg";
     public static final String DEFAULT_FILE_NAME_PREFIX = "";
-    public static final String NO_EXISTING_FILE_NAME = "file";
+    public static final String NO_EXISTING_FILE_NAME = "";
     public static final String TIME_STAMP_PATTERN = "yyyyMMdd_HHmmss";
     
     //preferences constants
