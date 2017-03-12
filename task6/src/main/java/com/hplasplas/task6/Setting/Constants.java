@@ -30,8 +30,8 @@ public final class Constants {
     public static final String CROP_TO_ASPECT_RATIO = "cropToAspectRatio";
     
     //preview values
-    public static final int PREVIEW_PICTURE_HEIGHT = 92;
-    public static final int PREVIEW_PICTURE_WIDTH = 92;
+    public static final int PREVIEW_PICTURE_HEIGHT = 103;
+    public static final int PREVIEW_PICTURE_WIDTH = 77;
     
     //main bitmap values
     public static final int FIRST_LOAD_PICTURE_WIDTH = 540;
