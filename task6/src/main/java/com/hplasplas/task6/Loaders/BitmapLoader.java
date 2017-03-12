@@ -58,15 +58,22 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
         return LoadPicture(fileName);
     }
     
+    /**
+     * calculate inSampleSize
+     * until all sides of picture are less then the requested size
+     * taking a biggest size as the height
+    */
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         
-        final int height = options.outHeight;
-        final int width = options.outWidth;
+        
+        final int width = options.outHeight > options.outWidth ? options.outWidth : options.outHeight;
+        final int height = options.outHeight > options.outWidth ? options.outHeight : options.outWidth;
+        
         int inSampleSize = 1;
         
         if (height > reqHeight || width > reqWidth) {
             inSampleSize = 2;
-            while ((height / inSampleSize) > reqHeight && (width / inSampleSize) > reqWidth) {
+            while ((height / inSampleSize) > reqHeight || (width / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
         }
