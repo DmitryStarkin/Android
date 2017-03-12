@@ -69,10 +69,14 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     public ArrayList<ListItemModel> filesItemList;
     private boolean mainPictureLoaded;
     private boolean canComeBack;
+    private boolean resumed;
     private boolean newPhoto;
+    private boolean needResultProcessing;
     private intQueue myPreviewInLoad;
     private int contextMenuPosition = -1;
     private int filesInFolder;
+    private int lastRequestCode;
+    private int lastResultCode;
     private SharedPreferences myPreferences;
     private ImageView myImageView;
     private TextView myFilesInFolder;
@@ -88,7 +92,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        
+    
+        if (DEBUG) {
+            Log.d(TAG, "onCreate: ");
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
         
@@ -129,9 +136,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         if (DEBUG) {
             Log.d(TAG, "onResume: ");
         }
-        if(myCurrentPictureFile == null || !myCurrentPictureFile.exists()){
-            loadMainBitmap(NO_EXISTING_FILE_NAME);
-        }
         canComeBack = false;
         if(!newPhoto) {
             myPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
@@ -146,6 +150,14 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             }
         } else {
             newPhoto = false;
+        }
+        resumed = true;
+        if(needResultProcessing){
+            processingResult(lastRequestCode, lastResultCode);
+        }
+        if (!myCurrentPictureFile.exists() && !filesItemList.isEmpty()) {
+            myCurrentPictureFile = filesItemList.get(filesItemList.size() - 1).getPictureFile();
+            loadMainBitmap(myCurrentPictureFile.getPath());
         }
         super.onResume();
     }
@@ -204,19 +216,23 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             }
         }
     }
-    
-    private void loadMainBitmap(String fileName) {
+    private void loadMainBitmap(String fileName){
         
         if (myMainImageViewHeight == 0 || myMainImageViewWidth == 0) {
             myMainImageViewHeight = myImageView.getHeight();
             myMainImageViewWidth = myImageView.getWidth();
         }
+        loadMainBitmap(fileName, myMainImageViewHeight, myMainImageViewWidth);
+    }
+    
+    private void loadMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
+        
         mainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
-        bundle.putInt(REQUESTED_PICTURE_HEIGHT, myMainImageViewHeight);
-        bundle.putInt(REQUESTED_PICTURE_WIDTH, myMainImageViewWidth);
+        bundle.putInt(REQUESTED_PICTURE_HEIGHT, requestedHeight);
+        bundle.putInt(REQUESTED_PICTURE_WIDTH, requestedWidth);
         getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, bundle, this);
     }
     
@@ -250,9 +266,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     @Override
     public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
         
-        if (DEBUG) {
-            Log.d(TAG, "onCreateLoader: ");
-        }
         return new BitmapLoader(this, args);
     }
     
@@ -286,6 +299,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     @Override
     public void onClick(View v) {
+        
         newPhoto = true;
         myButton.setEnabled(false);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -318,7 +332,24 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        
+    
+        if (DEBUG) {
+            Log.d(TAG, "onActivityResult: ");
+        }
+        if(resumed){
+            processingResult(requestCode, resultCode);
+        } else {
+            lastRequestCode = requestCode;
+            lastResultCode = resultCode;
+            needResultProcessing = true;
+        }
+    }
+    
+    private void processingResult(int requestCode,  int resultCode){
+    
+        if (DEBUG) {
+            Log.d(TAG, "processingResult: ");
+        }
         if (requestCode == GET_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
             loadMainBitmap(myCurrentPictureFile.getPath());
             filesItemList.add(new ListItemModel(myCurrentPictureFile));
@@ -330,11 +361,14 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         } else {
             if ((filesItemList != null) && !filesItemList.isEmpty()) {
                 myCurrentPictureFile = filesItemList.get(filesItemList.size() - 1).getPictureFile();
+                loadMainBitmap(myCurrentPictureFile.getPath());
             } else {
                 myCurrentPictureFile = null;
+                loadMainBitmap(NO_EXISTING_FILE_NAME);
             }
         }
         myButton.setEnabled(true);
+        needResultProcessing = false;
     }
     
     @Override
@@ -348,6 +382,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                     .putString(PREF_FOR_LAST_FILE_NAME, myCurrentPictureFile.getPath())
                     .apply();
         }
+        resumed = false;
         super.onPause();
     }
     
