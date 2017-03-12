@@ -112,6 +112,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         ItemClickSupport.addTo(myRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(myRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
+        
         myPreferences = this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, myPreferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
@@ -339,6 +340,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
         super.onDestroy();
     }
+    
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         
