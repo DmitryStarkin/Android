@@ -126,6 +126,80 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        
+        if (DEBUG) {
+            Log.d(TAG, "onActivityResult: ");
+        }
+        if (mNewPhoto) {
+            if (requestCode == GET_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
+                loadMainBitmap(myCurrentPictureFile.getPath());
+                myFilesItemList.add(new ListItemModel(myCurrentPictureFile));
+                myPictureInFolderAdapter.notifyItemInserted(myFilesItemList.size() - 1);
+                loadPreview(myFilesItemList.size() - 1);
+                myRecyclerView.scrollToPosition(myFilesItemList.size() - 1);
+                myFilesInFolder++;
+                setFilesInFolderText(myFilesInFolder);
+            }
+        }
+        myButton.setEnabled(true);
+    }
+    
+    @Override
+    protected void onResume() {
+        
+        if (DEBUG) {
+            Log.d(TAG, "onResume: ");
+        }
+        mCanComeBack = false;
+        if (!mNewPhoto) {
+            myPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
+            myFilesInFolder = myPictureDirectory.listFiles().length;
+            setFilesInFolderText(myFilesInFolder);
+            initFilesItemList(myPictureDirectory.listFiles());
+            myPictureInFolderAdapter = new PictureInFolderAdapter(myFilesItemList);
+            if (myRecyclerView.getAdapter() == null) {
+                myRecyclerView.setAdapter(myPictureInFolderAdapter);
+            } else {
+                myRecyclerView.swapAdapter(myPictureInFolderAdapter, true);
+            }
+        } else {
+            mNewPhoto = false;
+        }
+        if (!myCurrentPictureFile.exists() && !myFilesItemList.isEmpty()) {
+            myCurrentPictureFile = myFilesItemList.get(myFilesItemList.size() - 1).getPictureFile();
+            loadMainBitmap(myCurrentPictureFile.getPath());
+        } else if (myFilesItemList.isEmpty()) {
+            loadMainBitmap(NO_EXISTING_FILE_NAME);
+        }
+        super.onResume();
+    }
+    
+    @Override
+    protected void onPause() {
+        
+        if (DEBUG) {
+            Log.d(TAG, "onPause: ");
+        }
+        if (myCurrentPictureFile != null) {
+            myPreferences.edit()
+                    .putString(PREF_FOR_LAST_FILE_NAME, myCurrentPictureFile.getPath())
+                    .apply();
+        }
+        super.onPause();
+    }
+    
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        
+        if (DEBUG) {
+            Log.d(TAG, "onSaveInstanceState: ");
+        }
+        mCanComeBack = true;
+        super.onSaveInstanceState(outState);
+    }
+    
+    @Override
     protected void onDestroy() {
         
         if (DEBUG) {
@@ -138,14 +212,27 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         super.onDestroy();
     }
     
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    private void recyclePreviewBitmaps(ArrayList<ListItemModel> filesItemList) {
         
-        if (DEBUG) {
-            Log.d(TAG, "onSaveInstanceState: ");
+        for (int i = 0, y = filesItemList.size(); i < y; i++) {
+            Bitmap currentBitmap = filesItemList.get(i).getPicturePreview();
+            if (currentBitmap != null) {
+                currentBitmap.recycle();
+            }
         }
-        mCanComeBack = true;
-        super.onSaveInstanceState(outState);
+    }
+    
+    @Override
+    public void onClick(View v) {
+        
+        mNewPhoto = true;
+        myButton.setEnabled(false);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        myCurrentPictureFile = generateFileForPicture();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(myCurrentPictureFile));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
+        }
     }
     
     private void setFilesInFolderText(int filesInFolder) {
@@ -192,16 +279,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             }
         }
         return -1;
-    }
-    
-    private void recyclePreviewBitmaps(ArrayList<ListItemModel> filesItemList) {
-        
-        for (int i = 0, y = filesItemList.size(); i < y; i++) {
-            Bitmap currentBitmap = filesItemList.get(i).getPicturePreview();
-            if (currentBitmap != null) {
-                currentBitmap.recycle();
-            }
-        }
     }
     
     private void loadMainBitmap(String fileName) {
@@ -285,19 +362,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         myPictureInFolderAdapter.notifyItemChanged(position);
     }
     
-    @Override
-    public void onClick(View v) {
-        
-        mNewPhoto = true;
-        myButton.setEnabled(false);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        myCurrentPictureFile = generateFileForPicture();
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(myCurrentPictureFile));
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
-        }
-    }
-    
     private File getDirectory(boolean needPrivate) {
         
         if (needPrivate) {
@@ -316,70 +380,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private File generateFileForPicture(String fileName) {
         
         return new File(myPictureDirectory.getPath() + "/" + fileName);
-    }
-    
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        
-        if (DEBUG) {
-            Log.d(TAG, "onActivityResult: ");
-        }
-        if (mNewPhoto) {
-            if (requestCode == GET_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
-                loadMainBitmap(myCurrentPictureFile.getPath());
-                myFilesItemList.add(new ListItemModel(myCurrentPictureFile));
-                myPictureInFolderAdapter.notifyItemInserted(myFilesItemList.size() - 1);
-                loadPreview(myFilesItemList.size() - 1);
-                myRecyclerView.scrollToPosition(myFilesItemList.size() - 1);
-                myFilesInFolder++;
-                setFilesInFolderText(myFilesInFolder);
-            }
-        }
-        myButton.setEnabled(true);
-    }
-    
-    @Override
-    protected void onPause() {
-        
-        if (DEBUG) {
-            Log.d(TAG, "onPause: ");
-        }
-        if (myCurrentPictureFile != null) {
-            myPreferences.edit()
-                    .putString(PREF_FOR_LAST_FILE_NAME, myCurrentPictureFile.getPath())
-                    .apply();
-        }
-        super.onPause();
-    }
-    
-    @Override
-    protected void onResume() {
-        
-        if (DEBUG) {
-            Log.d(TAG, "onResume: ");
-        }
-        mCanComeBack = false;
-        if (!mNewPhoto) {
-            myPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
-            myFilesInFolder = myPictureDirectory.listFiles().length;
-            setFilesInFolderText(myFilesInFolder);
-            initFilesItemList(myPictureDirectory.listFiles());
-            myPictureInFolderAdapter = new PictureInFolderAdapter(myFilesItemList);
-            if (myRecyclerView.getAdapter() == null) {
-                myRecyclerView.setAdapter(myPictureInFolderAdapter);
-            } else {
-                myRecyclerView.swapAdapter(myPictureInFolderAdapter, true);
-            }
-        } else {
-            mNewPhoto = false;
-        }
-        if (!myCurrentPictureFile.exists() && !myFilesItemList.isEmpty()) {
-            myCurrentPictureFile = myFilesItemList.get(myFilesItemList.size() - 1).getPictureFile();
-            loadMainBitmap(myCurrentPictureFile.getPath());
-        } else if (myFilesItemList.isEmpty()) {
-            loadMainBitmap(NO_EXISTING_FILE_NAME);
-        }
-        super.onResume();
     }
     
     @Override
