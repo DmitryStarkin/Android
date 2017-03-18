@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.hplasplas.task4.Activitys">
+          package="com.hplasplas.task4.activitys">
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
+        android:supportsRtl="false"
         android:theme="@style/AppTheme"
         android:configChanges="orientation|screenSize">
-        <activity android:name="com.hplasplas.task4.Activitys.FirstActivity">
+        <activity android:name="com.hplasplas.task4.activitys.FirstActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -17,11 +17,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.hplasplas.task4.Activitys.TwoActivity">
+            android:name="com.hplasplas.task4.activitys.TwoActivity">
 
         </activity>
         <activity
-            android:name="com.hplasplas.task4.Activitys.ThirdActivity">
+            android:name="com.hplasplas.task4.activitys.ThirdActivity">
         </activity>
     </application>
 
