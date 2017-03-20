@@ -16,7 +16,7 @@
             android:switchTextOff="@string/no"
             android:switchTextOn="@string/yes"/>
 
-        <com.starsoft.preferencesDialogUtil.Dialogs.NumberPickerPreferencesDialog
+        <com.starsoft.prefdialogs.NumberPickerPreferencesDialog
             android:defaultValue="1"
             android:key="@string/notification_interval_pref_name"
             android:summary="@string/max_period"

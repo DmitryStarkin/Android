@@ -1,14 +1,21 @@
 package com.hplasplas.task6.activitys;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
@@ -32,7 +39,7 @@ import com.hplasplas.task6.dialogs.RenameErrorDialog;
 import com.hplasplas.task6.loaders.BitmapLoader;
 import com.hplasplas.task6.models.ListItemModel;
 import com.hplasplas.task6.util.IntQueue;
-import com.starsoft.recyclerViewItemClickSupport.ItemClickSupport;
+import com.starsoft.rvclicksupport.ItemClickSupport;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -40,28 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.hplasplas.task6.setting.Constants.DEBUG;
-import static com.hplasplas.task6.setting.Constants.DEFAULT_FILE_NAME_PREFIX;
-import static com.hplasplas.task6.setting.Constants.ERROR_DIALOG_TAG;
-import static com.hplasplas.task6.setting.Constants.FILE_NAME_SUFFIX;
-import static com.hplasplas.task6.setting.Constants.FILE_NAME_TO_LOAD;
-import static com.hplasplas.task6.setting.Constants.FILE_RENAME_DIALOG_TAG;
-import static com.hplasplas.task6.setting.Constants.FIRST_LOAD_PICTURE_HEIGHT;
-import static com.hplasplas.task6.setting.Constants.FIRST_LOAD_PICTURE_WIDTH;
-import static com.hplasplas.task6.setting.Constants.GET_PICTURE_REQUEST_CODE;
-import static com.hplasplas.task6.setting.Constants.MAIN_PICTURE_LOADER_ID;
-import static com.hplasplas.task6.setting.Constants.NEED_PRIVATE_FOLDER;
-import static com.hplasplas.task6.setting.Constants.NO_EXISTING_FILE_NAME;
-import static com.hplasplas.task6.setting.Constants.PICTURE_FOLDER_NAME;
-import static com.hplasplas.task6.setting.Constants.PREFERENCES_FILE;
-import static com.hplasplas.task6.setting.Constants.PREF_FOR_LAST_FILE_NAME;
-import static com.hplasplas.task6.setting.Constants.PREVIEW_PICTURE_HEIGHT;
-import static com.hplasplas.task6.setting.Constants.PREVIEW_PICTURE_LOADER_START_ID;
-import static com.hplasplas.task6.setting.Constants.PREVIEW_PICTURE_WIDTH;
-import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_HEIGHT;
-import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_WIDTH;
-import static com.hplasplas.task6.setting.Constants.ROWS_IN_TABLE;
-import static com.hplasplas.task6.setting.Constants.TIME_STAMP_PATTERN;
+import static com.hplasplas.task6.setting.Constants.*;
 
 public class CamCapture extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Bitmap>,
         PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
@@ -97,7 +83,17 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         findViews();
         myButton.setOnClickListener(this);
         adjustRecyclerView();
+        setVmPolicyIfNeed();
         loadMainBitmap(getMyPreferences());
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 1) {
+            //TODO  check result
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
     
     @Override
@@ -128,9 +124,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
         mCanComeBack = false;
         if (!mNewPhoto) {
-            myFilesInFolder = getDirectory().listFiles().length;
+            myFilesInFolder = getFilesCount(getDirectory());
             setFilesInFolderText(myFilesInFolder);
-            createFilesItemList(getDirectory().listFiles());
+            createFilesItemList(getDirectory());
             myPictureInFolderAdapter = setAdapter(myRecyclerView);
         } else {
             mNewPhoto = false;
@@ -174,6 +170,73 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             recyclePreviewBitmaps(myFilesItemList);
         }
         super.onDestroy();
+    }
+    
+    @Override
+    public void onClick(View v) {
+        
+        mNewPhoto = true;
+        myButton.setEnabled(false);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        myCurrentPictureFile = generateFileForPicture();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(myCurrentPictureFile));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
+        }
+    }
+    
+    private File generateFileForPicture() {
+        
+        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
+        return generateFileForPicture(fileName);
+    }
+    
+    private File generateFileForPicture(String fileName) {
+        
+        return new File(getDirectory().getPath() + "/" + fileName);
+    }
+    
+    private File getDirectory(boolean needPrivate) {
+        
+        File dir;
+        if (needPrivate) {
+            dir = getExternalFilesDir(PICTURE_FOLDER_NAME);
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_DENIED) {
+                //TODO request permissions in onResume and check it
+                dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            } else {
+                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
+            }
+        }
+        if (dir != null && !dir.exists() && !dir.mkdir()) {
+            throw new IllegalStateException("Dir create error");
+        }
+        return dir;
+    }
+    
+    private File getDirectory() {
+        
+        if (myPictureDirectory == null) {
+            myPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
+        }
+        return myPictureDirectory;
+    }
+    
+    private void requestWriteExtStorage() {
+        
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+    }
+    
+    public void requestPermissionWithRationale() {
+        
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            final String message = "Storage permission is needed to show files count";
+            //TODO show request
+        } else {
+            requestWriteExtStorage();
+        }
     }
     
     private void recyclePreviewBitmaps(ArrayList<ListItemModel> filesItemList) {
@@ -227,16 +290,20 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
     }
     
-    @Override
-    public void onClick(View v) {
+    private void setVmPolicyIfNeed() {
         
-        mNewPhoto = true;
-        myButton.setEnabled(false);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        myCurrentPictureFile = generateFileForPicture();
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(myCurrentPictureFile));
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+        }
+    }
+    
+    private int getFilesCount(File dir) {
+        
+        if (dir == null || dir.listFiles() == null) {
+            return 0;
+        } else {
+            return dir.listFiles().length;
         }
     }
     
@@ -267,12 +334,15 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return false;
     }
     
-    private void createFilesItemList(File[] filesList) {
+    private void createFilesItemList(File dir) {
         
         myFilesItemList = new ArrayList<>();
-        for (int i = 0; i < filesList.length; i++) {
-            myFilesItemList.add(new ListItemModel(filesList[i]));
-            loadPreview(i);
+        if (dir != null && dir.listFiles() != null) {
+            File[] filesList = dir.listFiles();
+            for (int i = 0, fileCount = filesList.length; i < fileCount; i++) {
+                myFilesItemList.add(new ListItemModel(filesList[i]));
+                loadPreview(i);
+            }
         }
     }
     
@@ -386,34 +456,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         myFilesItemList.get(position).setPicturePreview(data);
         myPictureInFolderAdapter.notifyItemChanged(position);
-    }
-    
-    private File getDirectory(boolean needPrivate) {
-        
-        if (needPrivate) {
-            return getExternalFilesDir(PICTURE_FOLDER_NAME);
-        } else {
-            return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
-        }
-    }
-    
-    private File getDirectory() {
-        
-        if (myPictureDirectory == null) {
-            myPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
-        }
-        return myPictureDirectory;
-    }
-    
-    private File generateFileForPicture() {
-        
-        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
-        return generateFileForPicture(fileName);
-    }
-    
-    private File generateFileForPicture(String fileName) {
-        
-        return new File(getDirectory().getPath() + "/" + fileName);
     }
     
     @Override

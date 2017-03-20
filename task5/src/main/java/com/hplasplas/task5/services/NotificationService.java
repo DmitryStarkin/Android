@@ -13,8 +13,8 @@ import android.util.Log;
 
 import com.hplasplas.task5.R;
 import com.hplasplas.task5.activitys.SettingsActivity;
-import com.starsoft.intentServiceUtil.Services.LongRunningBroadcastService;
-import com.starsoft.intentServiceUtil.alarmUtil.AlarmManagerUtil;
+import com.starsoft.serviceutil.alarmutil.AlarmManagerUtil;
+import com.starsoft.serviceutil.services.LongRunningBroadcastService;
 
 import static com.hplasplas.task5.setting.Constants.ACTIVITY_PENDING_INTENT_ID;
 import static com.hplasplas.task5.setting.Constants.ALARM_PENDING_INTENT_ID;
