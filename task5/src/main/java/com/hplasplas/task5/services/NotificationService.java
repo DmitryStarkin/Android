@@ -30,7 +30,6 @@ import static com.hplasplas.task5.setting.Constants.NOTIFICATIONS_PREFERENCES_FI
 import static com.hplasplas.task5.setting.Constants.NOTIFICATIONS_TEXT;
 import static com.hplasplas.task5.setting.Constants.NOTIFY_ID;
 import static com.hplasplas.task5.setting.Constants.NOTIFY_TAG;
-import static com.hplasplas.task5.setting.Constants.NOT_INITIALIZED;
 import static com.hplasplas.task5.setting.Constants.PREVIOUS_ALARM_INTERVAL;
 import static com.hplasplas.task5.setting.Constants.SERVICE_PENDING_INTENT_ID;
 import static com.hplasplas.task5.setting.Constants.START_POINT_TIME;
@@ -64,7 +63,6 @@ public class NotificationService extends LongRunningBroadcastService {
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
     
-    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     @Override
     protected boolean handleIntent(Intent handledIntent) {
         
@@ -72,104 +70,136 @@ public class NotificationService extends LongRunningBroadcastService {
             Log.d(TAG, "handleIntent: ");
         }
         
-        long timeCorrection;
-        long sleepTimeInterval;
-        long alarmIntervalToSet;
-        long startPointTime;
-        long previousAlarmInterval;
-        long notificationInterval;
-        int unReadNotificationsCounter;
-        int countMessagesToShow;
-        String message;
-        
-        if(resetNotificationsCounter(handledIntent)){
+        if (resetNotificationsCounter(handledIntent)) {
             
             startActivityIfNeed(handledIntent);
             return true;
         }
         
         if (isNotifyDisabled()) {
-    
+            
             resetApplication(createNextIntent(handledIntent));
             return true;
         }
         
-        message = mDefaultPreferences.getString(NOTIFICATIONS_TEXT, getResources().getString(R.string.default_notifications_text));
-        notificationInterval = mDefaultPreferences.getInt(NOTIFICATIONS_INTERVAL, DEFAULT_NOTIFICATIONS_INTERVAL) * MLL_PER_MIN;
-        
-        if (mNotificationPreferences.getBoolean(NOT_INITIALIZED, true)) {
-            if (DEBUG) {
-                Log.d(TAG, "handleIntent: mNotificationPreferences not Initialized, initialise");
-            }
-            startPointTime = System.currentTimeMillis();
-            unReadNotificationsCounter = 0;
-            previousAlarmInterval = notificationInterval;
-            mNotificationPreferences.edit()
-                    .putBoolean(NOT_INITIALIZED, false)
-                    .commit();
-        } else {
-            startPointTime = mNotificationPreferences.getLong(START_POINT_TIME, System.currentTimeMillis());
-            if (startPointTime == 0) {
-                startPointTime = System.currentTimeMillis();
-            }
-            unReadNotificationsCounter = mNotificationPreferences.getInt(UNREAD_NOTIFICATIONS_COUNTER, 0);
-            previousAlarmInterval = mNotificationPreferences.getLong(PREVIOUS_ALARM_INTERVAL, 0);
-            if (previousAlarmInterval == 0) {
-                previousAlarmInterval = notificationInterval;
-            }
-        }
-        
-        sleepTimeInterval = System.currentTimeMillis() - startPointTime;
-        if (sleepTimeInterval < 0) {
-            sleepTimeInterval = 0;
-        }
-        timeCorrection = sleepTimeInterval % previousAlarmInterval;
-        countMessagesToShow = (int) (sleepTimeInterval / previousAlarmInterval);
-        if (timeCorrection > (previousAlarmInterval - INTERVAL_ACCURACY)) {
-            countMessagesToShow++;
-        }
-        
-        startPointTime = startPointTime + countMessagesToShow * previousAlarmInterval;
-        
-        alarmIntervalToSet = notificationInterval - timeCorrection;
+        long currentNotifyInterval = mDefaultPreferences.getInt(NOTIFICATIONS_INTERVAL, DEFAULT_NOTIFICATIONS_INTERVAL) * MLL_PER_MIN;
+        long startPointTime = getStartPointTime(mNotificationPreferences);
+        long previousNotifyInterval = getPreviousNotifyInterval(mNotificationPreferences, currentNotifyInterval);
+        long sleepTimeInterval = calculateSleepInterval(startPointTime);
+        long timeCorrection = sleepTimeInterval % previousNotifyInterval;
+        long alarmIntervalToSet = currentNotifyInterval - timeCorrection;
+        int countMessagesToShow = calculateCountMessagesToShow(sleepTimeInterval, previousNotifyInterval);
         
         if ((alarmIntervalToSet - INTERVAL_ACCURACY) > 0) {
+            startPointTime = startPointTime + countMessagesToShow * previousNotifyInterval;
             AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), createNextIntent(handledIntent), alarmIntervalToSet, ALARM_PENDING_INTENT_ID);
         } else {
-            startPointTime = AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), createNextIntent(handledIntent), notificationInterval, ALARM_PENDING_INTENT_ID);
-            if (notificationInterval < previousAlarmInterval) {
+            startPointTime = AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), createNextIntent(handledIntent), currentNotifyInterval, ALARM_PENDING_INTENT_ID);
+            if (currentNotifyInterval < previousNotifyInterval) {
                 countMessagesToShow++;
             }
         }
-        previousAlarmInterval = notificationInterval;
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (mNotificationManager.getActiveNotifications().length == 0 && !isPostBoot(handledIntent)) {
-                unReadNotificationsCounter = 0;
-            }
-        }
+        int unReadNotificationsCounter = getUnReadNotifications(mNotificationPreferences, handledIntent);
+        
         if (isPostBoot(handledIntent)) {
             countMessagesToShow += unReadNotificationsCounter;
             unReadNotificationsCounter = 0;
         }
         
-        showNotifications(message, unReadNotificationsCounter, countMessagesToShow);
-        
-        mNotificationPreferences.edit()
-                .putLong(START_POINT_TIME, startPointTime)
-                .putLong(PREVIOUS_ALARM_INTERVAL, previousAlarmInterval)
-                .putInt(UNREAD_NOTIFICATIONS_COUNTER, unReadNotificationsCounter + countMessagesToShow)
-                .commit();
+        showNotify(unReadNotificationsCounter, countMessagesToShow);
+        writeCurrentNotifyPreferences(mNotificationPreferences, startPointTime, currentNotifyInterval, unReadNotificationsCounter + countMessagesToShow);
         
         return true;
     }
     
-    
+    private int getUnReadNotifications(SharedPreferences notificationPreferences, Intent handledIntent) {
+        
+        int unReadNotificationsCounter = notificationPreferences.getInt(UNREAD_NOTIFICATIONS_COUNTER, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (mNotificationManager.getActiveNotifications().length == 0 && !isPostBoot(handledIntent)) {
+                unReadNotificationsCounter = 0;
+            }
+        }
+        return unReadNotificationsCounter;
+    }
     
     @SuppressLint("ApplySharedPref")
-    private boolean resetNotificationsCounter(Intent handledIntent){
-        if (handledIntent.getBooleanExtra(CURRENT_NOTIFICATION_READ, false)) {
+    private void writeCurrentNotifyPreferences(SharedPreferences notificationPreferences, long startPointTime, long currentNotifyInterval, int unReadNotifications) {
+        
+        notificationPreferences.edit()
+                .putLong(START_POINT_TIME, startPointTime)
+                .putLong(PREVIOUS_ALARM_INTERVAL, currentNotifyInterval)
+                .putInt(UNREAD_NOTIFICATIONS_COUNTER, unReadNotifications)
+                .commit();
+    }
     
+    private long setNextNotifyTime(Intent handledIntent) {
+        
+        long currentNotifyInterval = mDefaultPreferences.getInt(NOTIFICATIONS_INTERVAL, DEFAULT_NOTIFICATIONS_INTERVAL) * MLL_PER_MIN;
+        long startPointTime = getStartPointTime(mNotificationPreferences);
+        long previousNotifyInterval = getPreviousNotifyInterval(mNotificationPreferences, currentNotifyInterval);
+        long sleepTimeInterval = calculateSleepInterval(startPointTime);
+        long timeCorrection = sleepTimeInterval % previousNotifyInterval;
+        
+        int countMessagesToShow = calculateCountMessagesToShow(sleepTimeInterval, previousNotifyInterval);
+        
+        long alarmIntervalToSet = currentNotifyInterval - timeCorrection;
+        
+        if ((alarmIntervalToSet - INTERVAL_ACCURACY) > 0) {
+            startPointTime = startPointTime + calculateCountMessagesToShow(sleepTimeInterval, previousNotifyInterval) * previousNotifyInterval;
+            AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), createNextIntent(handledIntent), alarmIntervalToSet, ALARM_PENDING_INTENT_ID);
+        } else {
+            startPointTime = AlarmManagerUtil.setServiceAlarm(this.getApplicationContext(), createNextIntent(handledIntent), currentNotifyInterval, ALARM_PENDING_INTENT_ID);
+            if (currentNotifyInterval < previousNotifyInterval) {
+                countMessagesToShow++;
+            }
+        }
+        
+        return startPointTime;
+    }
+    
+    private long getStartPointTime(SharedPreferences notificationPreferences) {
+        
+        long startPointTime = notificationPreferences.getLong(START_POINT_TIME, 0);
+        if (startPointTime == 0) {
+            startPointTime = System.currentTimeMillis();
+        }
+        return startPointTime;
+    }
+    
+    private long getPreviousNotifyInterval(SharedPreferences notificationPreferences, long currentNotifyInterval) {
+        
+        long previousNotifyInterval = notificationPreferences.getLong(PREVIOUS_ALARM_INTERVAL, 0);
+        if (previousNotifyInterval == 0) {
+            previousNotifyInterval = currentNotifyInterval;
+        }
+        return previousNotifyInterval;
+    }
+    
+    private long calculateSleepInterval(long startPointTime) {
+        
+        long sleepTimeInterval = System.currentTimeMillis() - startPointTime;
+        if (sleepTimeInterval < 0) {
+            sleepTimeInterval = 0;
+        }
+        return sleepTimeInterval;
+    }
+    
+    private int calculateCountMessagesToShow(long sleepTimeInterval, long previousNotifyInterval) {
+        
+        int countMessagesToShow = (int) (sleepTimeInterval / previousNotifyInterval);
+        if ((sleepTimeInterval % previousNotifyInterval) > (previousNotifyInterval - INTERVAL_ACCURACY)) {
+            countMessagesToShow++;
+        }
+        return countMessagesToShow;
+    }
+    
+    @SuppressLint("ApplySharedPref")
+    private boolean resetNotificationsCounter(Intent handledIntent) {
+        
+        if (handledIntent.getBooleanExtra(CURRENT_NOTIFICATION_READ, false)) {
+            
             mNotificationPreferences.edit()
                     .putInt(UNREAD_NOTIFICATIONS_COUNTER, 0)
                     .commit();
@@ -178,7 +208,7 @@ public class NotificationService extends LongRunningBroadcastService {
         return false;
     }
     
-    private void startActivityIfNeed(Intent handledIntent){
+    private void startActivityIfNeed(Intent handledIntent) {
         
         if (handledIntent.getBooleanExtra(NEED_ACTIVITY_START, false)) {
             Intent startSettingIntent = new Intent(this.getApplicationContext(), SettingsActivity.class);
@@ -187,18 +217,18 @@ public class NotificationService extends LongRunningBroadcastService {
         }
     }
     
-    private boolean isNotifyGlobalEnabled(){
+    private boolean isNotifyGlobalEnabled() {
         
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.N || mNotificationManager.areNotificationsEnabled();
     }
     
-    private boolean isNotifyDisabled(){
-    
-       return !isNotifyGlobalEnabled() || !mDefaultPreferences.getBoolean(NOTIFICATIONS_ENABLED, false);
+    private boolean isNotifyDisabled() {
+        
+        return !isNotifyGlobalEnabled() || !mDefaultPreferences.getBoolean(NOTIFICATIONS_ENABLED, false);
     }
     
     @SuppressLint("ApplySharedPref")
-    private void resetApplication(Intent nextIntent){
+    private void resetApplication(Intent nextIntent) {
         
         AlarmManagerUtil.cancelServiceAlarm(this.getApplicationContext(), nextIntent, ALARM_PENDING_INTENT_ID);
         mNotificationPreferences.edit()
@@ -207,8 +237,8 @@ public class NotificationService extends LongRunningBroadcastService {
                 .commit();
     }
     
-    private  Intent createNextIntent(Intent handledIntent){
-    
+    private Intent createNextIntent(Intent handledIntent) {
+        
         if (handledIntent.getAction() != null && handledIntent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             return new Intent(this.getApplicationContext(), NotificationService.class);
         } else {
@@ -216,41 +246,44 @@ public class NotificationService extends LongRunningBroadcastService {
         }
     }
     
-    private boolean isPostBoot(Intent handledIntent){
+    private boolean isPostBoot(Intent handledIntent) {
         
         return handledIntent.getAction() != null && handledIntent.getAction().equals(Intent.ACTION_BOOT_COMPLETED);
     }
     
-    private void showNotifications(String defaultMessage, int startNotificationNumber, int notificationToShow) {
+    private void showNotify(int startNotificationNumber, int notificationToShow) {
         
         if (notificationToShow != 0) {
-            int notificationCounter = startNotificationNumber + notificationToShow;
-            String expandedMessage = getResources().getString(R.string.notifications_extra_text);
             
-            Intent startServiceIntent = new Intent(this.getApplicationContext(), NotificationService.class);
-            startServiceIntent.putExtra(CURRENT_NOTIFICATION_READ, true);
-            Intent startActivityIntent = new Intent(this.getApplicationContext(), NotificationService.class);
-            startActivityIntent.putExtra(CURRENT_NOTIFICATION_READ, true);
-            startActivityIntent.putExtra(NEED_ACTIVITY_START, true);
-            PendingIntent pendingServiceIntent = PendingIntent.getService(this.getApplicationContext(), SERVICE_PENDING_INTENT_ID, startServiceIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-            PendingIntent pendingActivityIntent = PendingIntent.getService(this.getApplicationContext(), ACTIVITY_PENDING_INTENT_ID, startActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            String message = mDefaultPreferences.getString(NOTIFICATIONS_TEXT, getResources().getString(R.string.default_notifications_text));
+            String expandedMessage = getResources().getString(R.string.notifications_extra_text);
             
             Builder mNotifyBuilder = new Builder(this)
                     .setContentTitle(getResources().getString(R.string.notifications_title_text))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentIntent(pendingActivityIntent)
-                    .setDeleteIntent(pendingServiceIntent)
+                    .setContentIntent(createPendingIntent(ACTIVITY_PENDING_INTENT_ID))
+                    .setDeleteIntent(createPendingIntent(SERVICE_PENDING_INTENT_ID))
                     .setAutoCancel(true);
             
-            for (int i = startNotificationNumber; i < notificationCounter; i++) {
+            for (int i = startNotificationNumber, notificationCounter = startNotificationNumber + notificationToShow; i < notificationCounter; i++) {
                 if (i > 10) {
                     mNotifyBuilder.setContentText(expandedMessage).setNumber(i + 1);
                 } else {
-                    mNotifyBuilder.setContentText(defaultMessage).setNumber(i + 1);
+                    mNotifyBuilder.setContentText(message).setNumber(i + 1);
                 }
                 mNotificationManager.notify(NOTIFY_TAG, NOTIFY_ID, mNotifyBuilder.build());
             }
         }
+    }
+    
+    private PendingIntent createPendingIntent(int id) {
+        
+        Intent intent = new Intent(this.getApplicationContext(), NotificationService.class);
+        intent.putExtra(CURRENT_NOTIFICATION_READ, true);
+        if (id == ACTIVITY_PENDING_INTENT_ID) {
+            intent.putExtra(NEED_ACTIVITY_START, true);
+        }
+        return PendingIntent.getService(this.getApplicationContext(), id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 }
 
