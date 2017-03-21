@@ -53,6 +53,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
     
     private final String TAG = getClass().getSimpleName();
+    
     public ArrayList<ListItemModel> mFilesItemList;
     private boolean mMainPictureLoaded;
     private boolean mCanComeBack;
@@ -79,7 +80,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
         findViews();
-        mButton.setOnClickListener(this);
+        adjustViews();
         adjustRecyclerView();
         setVmPolicyIfNeed();
         loadMainBitmap(getMyPreferences());
@@ -255,10 +256,14 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         mImageView = (ImageView) findViewById(R.id.foto_frame);
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
-        mainProgressBar.setVisibility(View.VISIBLE);
         mFilesInFolderText = (TextView) findViewById(R.id.files_in_folder);
         mButton = (Button) findViewById(R.id.foto_button);
         mRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
+    }
+    
+    private void adjustViews(){
+        mButton.setOnClickListener(this);
+        mainProgressBar.setVisibility(View.VISIBLE);
     }
     
     private void adjustRecyclerView() {
