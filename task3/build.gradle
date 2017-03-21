@@ -10,10 +10,6 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
-        //jackOptions {
-            //enabled true
-        //}
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -21,6 +17,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            ext.enableCrashlytics = false
         }
     }
     compileOptions {
