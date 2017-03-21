@@ -53,8 +53,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
     
     private final String TAG = getClass().getSimpleName();
-    public ArrayList<ListItemModel> myFilesItemList;
-    private boolean myMainPictureLoaded;
+    public ArrayList<ListItemModel> mFilesItemList;
+    private boolean mMainPictureLoaded;
     private boolean mCanComeBack;
     private boolean mNewPhoto;
     private IntQueue myPreviewInLoad;
@@ -103,10 +103,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         if (mNewPhoto) {
             if (requestCode == GET_PICTURE_REQUEST_CODE && resultCode == RESULT_OK) {
                 loadMainBitmap(mCurrentPictureFile.getPath());
-                myFilesItemList.add(new ListItemModel(mCurrentPictureFile));
-                mPictureInFolderAdapter.notifyItemInserted(myFilesItemList.size() - 1);
-                loadPreview(myFilesItemList.size() - 1);
-                mRecyclerView.scrollToPosition(myFilesItemList.size() - 1);
+                mFilesItemList.add(new ListItemModel(mCurrentPictureFile));
+                mPictureInFolderAdapter.notifyItemInserted(mFilesItemList.size() - 1);
+                loadPreview(mFilesItemList.size() - 1);
+                mRecyclerView.scrollToPosition(mFilesItemList.size() - 1);
                 setFilesInFolderText(++mFilesInFolder);
             }
         }
@@ -127,6 +127,19 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
         loadMainBitmap();
         super.onResume();
+    }
+    
+    @Override
+    public void onClick(View v) {
+        
+        mNewPhoto = true;
+        mButton.setEnabled(false);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        mCurrentPictureFile = generateFileForPicture();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
+        }
     }
     
     @Override
@@ -161,22 +174,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             if (mMainBitmap != null && !mCanComeBack) {
                 mMainBitmap.recycle();
             }
-            recyclePreviewBitmaps(myFilesItemList);
+            recyclePreviewBitmaps(mFilesItemList);
         }
         super.onDestroy();
-    }
-    
-    @Override
-    public void onClick(View v) {
-        
-        mNewPhoto = true;
-        mButton.setEnabled(false);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        mCurrentPictureFile = generateFileForPicture();
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
-        }
     }
     
     private File generateFileForPicture() {
@@ -278,7 +278,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView) {
         
-        PictureInFolderAdapter adapter = new PictureInFolderAdapter(myFilesItemList);
+        PictureInFolderAdapter adapter = new PictureInFolderAdapter(mFilesItemList);
         if (recyclerView.getAdapter() == null) {
             recyclerView.setAdapter(adapter);
         } else {
@@ -316,8 +316,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void onMyRecyclerViewItemClicked(int position, View v) {
         
-        if (!myMainPictureLoaded) {
-            File clickedFile = myFilesItemList.get(position).getPictureFile();
+        if (!mMainPictureLoaded) {
+            File clickedFile = mFilesItemList.get(position).getPictureFile();
             if (mCurrentPictureFile == null || !mCurrentPictureFile.equals(clickedFile)) {
                 mCurrentPictureFile = clickedFile;
                 loadMainBitmap(mCurrentPictureFile.getPath());
@@ -338,11 +338,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void createFilesItemList(File dir) {
         
-        myFilesItemList = new ArrayList<>();
+        mFilesItemList = new ArrayList<>();
         if (dir != null && dir.listFiles() != null) {
             File[] filesList = dir.listFiles();
             for (int i = 0, fileCount = filesList.length; i < fileCount; i++) {
-                myFilesItemList.add(new ListItemModel(filesList[i]));
+                mFilesItemList.add(new ListItemModel(filesList[i]));
                 loadPreview(i);
             }
         }
@@ -360,31 +360,37 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void loadMainBitmap() {
         
-        if (!mCurrentPictureFile.exists() && !myFilesItemList.isEmpty()) {
-            mCurrentPictureFile = myFilesItemList.get(myFilesItemList.size() - 1).getPictureFile();
+        if (!mCurrentPictureFile.exists() && !mFilesItemList.isEmpty()) {
+            mCurrentPictureFile = mFilesItemList.get(mFilesItemList.size() - 1).getPictureFile();
             loadMainBitmap(mCurrentPictureFile.getPath());
-        } else if (myFilesItemList.isEmpty()) {
+        } else if (mFilesItemList.isEmpty()) {
             loadMainBitmap(NO_EXISTING_FILE_NAME);
         }
     }
     
     private void loadMainBitmap(SharedPreferences preferences) {
         
+        beforeLoadMainBitmap();
         mCurrentPictureFile = new File(preferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
-        myMainPictureLoaded = true;
-        getSupportLoaderManager().initLoader(MAIN_PICTURE_LOADER_ID, createBundleForRequestMainBitmap(mCurrentPictureFile.getPath()), this);
+        getSupportLoaderManager().initLoader(MAIN_PICTURE_LOADER_ID, createBundleBitmap(mCurrentPictureFile.getPath()), this);
     }
     
     private void loadMainBitmap(String fileName) {
         
-        getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, createBundleForRequestMainBitmap(fileName), this);
+        beforeLoadMainBitmap();
+        getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, createBundleBitmap(fileName), this);
     }
     
     private void loadMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
         
-        myMainPictureLoaded = true;
+        beforeLoadMainBitmap();
+        getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, createBundleBitmap(fileName, requestedHeight, requestedWidth), this);
+    }
+    
+    private void beforeLoadMainBitmap() {
+        
+        mMainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
-        getSupportLoaderManager().restartLoader(MAIN_PICTURE_LOADER_ID, createBundleForRequestMainBitmap(fileName, requestedHeight, requestedWidth), this);
     }
     
     private int getMainBitmapRequestedWidth() {
@@ -405,12 +411,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return requestedHeight;
     }
     
-    private Bundle createBundleForRequestMainBitmap(String fileName) {
+    private Bundle createBundleBitmap(String fileName) {
         
-        return createBundleForRequestMainBitmap(fileName, getMainBitmapRequestedHeight(), getMainBitmapRequestedWidth());
+        return createBundleBitmap(fileName, getMainBitmapRequestedHeight(), getMainBitmapRequestedWidth());
     }
     
-    private Bundle createBundleForRequestMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
+    private Bundle createBundleBitmap(String fileName, int requestedHeight, int requestedWidth) {
         
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
@@ -433,17 +439,19 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private void loadPreview() {
         
         if (!myPreviewInLoad.isEmpty()) {
-            loadPreview(myFilesItemList.get(myPreviewInLoad.peek()).getPictureFile().getPath());
+            loadPreview(mFilesItemList.get(myPreviewInLoad.peek()).getPictureFile().getPath());
         }
     }
     
     private void loadPreview(String fileName) {
         
-        Bundle bundle = new Bundle();
-        bundle.putString(FILE_NAME_TO_LOAD, fileName);
-        bundle.putInt(REQUESTED_PICTURE_HEIGHT, PREVIEW_PICTURE_HEIGHT);
-        bundle.putInt(REQUESTED_PICTURE_WIDTH, PREVIEW_PICTURE_WIDTH);
-        getSupportLoaderManager().restartLoader(PREVIEW_PICTURE_LOADER_START_ID, bundle, this);
+        getSupportLoaderManager().restartLoader(PREVIEW_PICTURE_LOADER_START_ID, createBundleBitmap(fileName, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH), this);
+    }
+    
+    private void setPreview(Bitmap data, int position) {
+        
+        mFilesItemList.get(position).setPicturePreview(data);
+        mPictureInFolderAdapter.notifyItemChanged(position);
     }
     
     @Override
@@ -462,7 +470,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             mMainBitmap = data;
             mImageView.setImageBitmap(mMainBitmap);
             mainProgressBar.setVisibility(View.INVISIBLE);
-            myMainPictureLoaded = false;
+            mMainPictureLoaded = false;
         } else {
             setPreview(data, myPreviewInLoad.poll());
             loadPreview();
@@ -474,16 +482,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
     }
     
-    private void setPreview(Bitmap data, int position) {
-        
-        myFilesItemList.get(position).setPicturePreview(data);
-        mPictureInFolderAdapter.notifyItemChanged(position);
-    }
-    
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         
-        File clickedItemFile = myFilesItemList.get(mContextMenuPosition).getPictureFile();
+        File clickedItemFile = mFilesItemList.get(mContextMenuPosition).getPictureFile();
         switch (item.getItemId()) {
             case R.id.menu_delete:
                 if (clickedItemFile.delete()) {
@@ -509,12 +511,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     public void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, File renamedFile, boolean successfully) {
         
         if (successfully) {
-            int position = getFilePositionInList(renamedFile, myFilesItemList);
+            int position = getFilePositionInList(renamedFile, mFilesItemList);
             File newFile = generateFileForPicture(newFileName);
             if (position < 0 || newFile.exists() || !renamedFile.renameTo(newFile)) {
                 RenameErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
             } else {
-                myFilesItemList.get(position).setPictureFile(newFile);
+                mFilesItemList.get(position).setPictureFile(newFile);
                 mPictureInFolderAdapter.notifyItemChanged(position);
             }
         } else {

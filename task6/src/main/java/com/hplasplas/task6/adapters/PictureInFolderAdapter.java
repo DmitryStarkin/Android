@@ -64,13 +64,13 @@ public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolder
         this.mFilesList = filesList;
     }
     
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         
         private TextView mPictureDescription;
         private ImageView mPicturePreview;
         private ProgressBar mPictureLoadBar;
         
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             
             super(itemView);
             mPictureDescription = (TextView) itemView.findViewById(R.id.pictureFileDescription);

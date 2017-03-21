@@ -107,7 +107,7 @@ public class BitmapLoader extends AsyncTaskLoader<Bitmap> {
     
     private Bitmap cropToAspectRatio(Bitmap newBitmap) {
         
-        //TODO
+        //TODO implementation crop To Aspect Ratio
         return newBitmap;
     }
     
