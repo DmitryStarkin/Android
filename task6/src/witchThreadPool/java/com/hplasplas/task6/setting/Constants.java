@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class Constants {
     
-    public static final boolean DEBUG = BuildConfig.IS_DEBUG;
+    public static final boolean DEBUG = BuildConfig.DEBUG;
     
     //file system constants
     public static final boolean NEED_PRIVATE_FOLDER = true;
