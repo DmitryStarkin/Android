@@ -11,13 +11,13 @@ import com.starsoft.bmutil.BitmapTools;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.hplasplas.task6.setting.Constants.DEBUG;
 import static com.hplasplas.task6.setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.setting.Constants.LIST_INDEX;
 import static com.hplasplas.task6.setting.Constants.MUST_IMPLEMENT_INTERFACE_MESSAGE;
 import static com.hplasplas.task6.setting.Constants.NO_PICTURE_FILE_NAME;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_WIDTH;
-import static com.hplasplas.task6.setting.Constants.DEBUG;
 
 /**
  * Created by StarkinDG on 15.03.2017.
