@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static com.hplasplas.task4.Setting.Constants.DEBUG;
+import static com.hplasplas.task4.setting.Constants.DEBUG;
 
 /**
  * Created by StarkinDG on 21.02.2017.

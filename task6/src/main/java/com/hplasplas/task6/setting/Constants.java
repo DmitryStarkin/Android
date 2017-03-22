@@ -1,12 +1,14 @@
 package com.hplasplas.task6.setting;
 
+import com.hplasplas.task6.BuildConfig;
+
 /**
  * Created by StarkinDG on 12.02.2017.
  */
 
 public final class Constants {
     
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = BuildConfig.DEBUG;
     
     //file system constants
     public static final boolean NEED_PRIVATE_FOLDER = true;

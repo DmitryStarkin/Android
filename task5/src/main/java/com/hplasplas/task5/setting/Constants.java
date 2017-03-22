@@ -1,12 +1,14 @@
 package com.hplasplas.task5.setting;
 
+import com.hplasplas.task5.BuildConfig;
+
 /**
  * Created by StarkinDG on 27.02.2017.
  */
 
 public final class Constants {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = BuildConfig.DEBUG;
 
     public static final long INTERVAL_ACCURACY = 6000;
 
