@@ -19,6 +19,7 @@ import com.hplasplas.task5.R;
 import com.hplasplas.task5.services.NotificationService;
 
 import static com.hplasplas.task5.setting.Constants.DEBUG;
+import static com.hplasplas.task5.setting.Constants.DEFAULT_NOTIFICATIONS_INTERVAL;
 import static com.hplasplas.task5.setting.Constants.NOTIFICATIONS_ENABLED;
 import static com.hplasplas.task5.setting.Constants.NOTIFICATIONS_INTERVAL;
 import static com.hplasplas.task5.setting.Constants.NOTIFICATIONS_TEXT;
@@ -89,7 +90,7 @@ public class SettingsActivity extends PreferenceActivity {
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             
             SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
-            findPreference(NOTIFICATIONS_INTERVAL).setSummary(String.valueOf(sharedPreferences.getInt(NOTIFICATIONS_INTERVAL, 30)));
+            findPreference(NOTIFICATIONS_INTERVAL).setSummary(String.valueOf(sharedPreferences.getInt(NOTIFICATIONS_INTERVAL, DEFAULT_NOTIFICATIONS_INTERVAL)));
             findPreference(NOTIFICATIONS_TEXT).setSummary(sharedPreferences.getString(NOTIFICATIONS_TEXT, getResources().getString(R.string.default_notifications_text)));
             if (((SettingsActivity) getActivity()).notifyGlobalDisabled()) {
                 Preference notifyEnabled = findPreference(NOTIFICATIONS_ENABLED);
@@ -114,7 +115,7 @@ public class SettingsActivity extends PreferenceActivity {
             ((SettingsActivity) getActivity()).setPreferencesChanged(true);
             
             if (key.equals(NOTIFICATIONS_INTERVAL)) {
-                findPreference(key).setSummary(String.valueOf(sharedPreferences.getInt(key, 30)));
+                findPreference(key).setSummary(String.valueOf(sharedPreferences.getInt(key, DEFAULT_NOTIFICATIONS_INTERVAL)));
             } else if (key.equals(NOTIFICATIONS_TEXT)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, getResources().getString(R.string.default_notifications_text)));
             }
