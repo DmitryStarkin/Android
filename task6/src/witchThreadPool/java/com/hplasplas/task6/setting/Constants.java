@@ -26,13 +26,11 @@ public final class Constants {
     public static final String PREF_FOR_LAST_FILE_NAME = "lastPictureName";
     
     //loaders values
-    public static final int MAIN_PICTURE_LOADER_ID = 0;
     public static final int MAIN_PICTURE_INDEX = -1;
-    public static final int PREVIEW_PICTURE_LOADER_START_ID = 1;
+    public static  final float BITMAP_ROTATE_ANGLE = 90;
     public static final String FILE_NAME_TO_LOAD = "fileNameToLoad";
     public static final String REQUESTED_PICTURE_HEIGHT = "requestedHeight";
     public static final String REQUESTED_PICTURE_WIDTH = "requestedWidth";
-    public static final String CROP_TO_ASPECT_RATIO = "cropToAspectRatio";
     public static final String LIST_INDEX = "listIndex";
     
     //preview values
@@ -53,10 +51,14 @@ public final class Constants {
     
     //tread Pool values
     public static final int POSSESSORS_MULTIPLIER = 2;
-    public static final long THREAD_IDLE_TIME = 60;
+    public static final long THREAD_IDLE_TIME = 30;
     public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     public static final int THREADS_PRIORITY = 8;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";
+    public static final int MESSAGE_BITMAP_LOAD = 1;
+    public static final int QUEUE_CAPACITY = 32;
+    public static final double MAX_POOL_SIZE_MULTIPLIER = 0.5;
+    
     //dialog value
     public static final String FILE_RENAME_DIALOG_TAG = "renameFileTag";
     public static final String ERROR_DIALOG_TAG = "ErrorTag";

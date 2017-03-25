@@ -1,5 +1,6 @@
 package com.starsoft.bmutil;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -131,6 +132,31 @@ public class BitmapTools {
             newBitmap = BitmapFactory.decodeStream(inputStream, null, bitmapOptions);
         } catch (OutOfMemoryError e) {
             newBitmap = loadPictureFromInputStream(fileName, inputStream, bitmapOptions);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        return newBitmap;
+    }
+    
+    /**
+     * load bitmap from Assets
+     */
+    public Bitmap loadPictureFromAssets(Context context, String fileName, BitmapFactory.Options currentBitmapOptions) {
+        
+        Bitmap newBitmap = null;
+        InputStream inputStream = null;
+        try {
+                inputStream = context.getAssets().open(fileName);
+                newBitmap = loadPictureFromInputStream(fileName, inputStream, currentBitmapOptions);
+        } catch (IOException e) {
+            e.printStackTrace();
+            newBitmap = null;
         } finally {
             if (inputStream != null) {
                 try {

@@ -3,21 +3,23 @@ package com.hplasplas.task6.loaders;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
+import com.hplasplas.task6.util.MainHandler;
 import com.starsoft.bmutil.BitmapTools;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
-import static com.hplasplas.task6.setting.Constants.DEBUG;
+import static com.hplasplas.task6.setting.Constants.BITMAP_ROTATE_ANGLE;
 import static com.hplasplas.task6.setting.Constants.FILE_NAME_TO_LOAD;
 import static com.hplasplas.task6.setting.Constants.LIST_INDEX;
+import static com.hplasplas.task6.setting.Constants.MESSAGE_BITMAP_LOAD;
 import static com.hplasplas.task6.setting.Constants.MUST_IMPLEMENT_INTERFACE_MESSAGE;
 import static com.hplasplas.task6.setting.Constants.NO_PICTURE_FILE_NAME;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_WIDTH;
+
 
 /**
  * Created by StarkinDG on 15.03.2017.
@@ -27,16 +29,17 @@ public class BitmapInThreadLoader implements Runnable {
     
     private final String TAG = getClass().getSimpleName();
     
-    int index;
-    int requestedHeight;
-    int requestedWidth;
-    String fileName;
-    AppCompatActivity myActivity;
+    private int index;
+    private int requestedHeight;
+    private int requestedWidth;
+    private String mFileName;
+    private WeakReference<AppCompatActivity> myActivity;
+    private Bitmap mBitmap;
     
     public BitmapInThreadLoader(AppCompatActivity activity, Bundle args) {
         
-        myActivity = activity;
-        fileName = args.getString(FILE_NAME_TO_LOAD);
+        myActivity = new WeakReference<>(activity);
+        mFileName = args.getString(FILE_NAME_TO_LOAD);
         requestedHeight = args.getInt(REQUESTED_PICTURE_HEIGHT);
         requestedWidth = args.getInt(REQUESTED_PICTURE_WIDTH);
         index = args.getInt(LIST_INDEX);
@@ -45,71 +48,59 @@ public class BitmapInThreadLoader implements Runnable {
     @Override
     public void run() {
         
-        try {
-            BitmapTools bitmapTools = new BitmapTools();
-            Bitmap newBitmap;
-            BitmapFactory.Options currentBitmapOptions;
-            if (requestedHeight != 0 & requestedWidth != 0) {
-                currentBitmapOptions = bitmapTools.readBitmapOptionsFromFile(fileName);
-                currentBitmapOptions.inSampleSize = bitmapTools.calculateInSampleSize(currentBitmapOptions, requestedWidth, requestedHeight);
-            } else {
-                currentBitmapOptions = new BitmapFactory.Options();
+        BitmapTools bitmapTools = new BitmapTools();
+        BitmapFactory.Options currentBitmapOptions;
+        if (requestedHeight != 0 & requestedWidth != 0) {
+            currentBitmapOptions = bitmapTools.readBitmapOptionsFromFile(mFileName);
+            currentBitmapOptions.inSampleSize = bitmapTools.calculateInSampleSize(currentBitmapOptions, requestedWidth, requestedHeight);
+        } else {
+            currentBitmapOptions = new BitmapFactory.Options();
+        }
+        mBitmap = bitmapTools.LoadPictureFromFile(mFileName, currentBitmapOptions);
+        
+        if (mBitmap == null && myActivity.get() != null) {
+            mBitmap = bitmapTools.loadPictureFromAssets(myActivity.get().getApplicationContext(), NO_PICTURE_FILE_NAME, currentBitmapOptions);
+        }
+        if (mBitmap != null ) {
+            if (mBitmap.getHeight() < mBitmap.getWidth()) {
+                mBitmap = bitmapTools.rotate(mBitmap, BITMAP_ROTATE_ANGLE);
             }
-            newBitmap = bitmapTools.LoadPictureFromFile(fileName, currentBitmapOptions);
-            
-            if (newBitmap == null) {
-                newBitmap = loadPictureFromAssets(NO_PICTURE_FILE_NAME, currentBitmapOptions, bitmapTools);
+            if (myActivity.get() != null && !myActivity.get().isFinishing()) {
+                Message message = MainHandler.getHandler().obtainMessage(MESSAGE_BITMAP_LOAD, this);
+                message.sendToTarget();
             }
-            
-            if (newBitmap.getHeight() < newBitmap.getWidth()) {
-                newBitmap = bitmapTools.rotate(newBitmap, 90);
-            }
-            
+        }
+    }
+    
+    //TODO to understand maybe it's not necessary
+    private void clearReference() {
+        
+        mBitmap = null;
+        mFileName = null;
+    }
+    
+    public void onPostBitmapLoad() {
+        
+        if (myActivity.get() != null && !myActivity.get().isFinishing()) {
             try {
-                BitmapLoaderListener listener = (BitmapLoaderListener) myActivity;
-                listener.onBitmapLoadFinished(index, fileName, newBitmap);
+                BitmapLoaderListener listener = (BitmapLoaderListener) myActivity.get();
+                listener.onBitmapLoadFinished(index, mFileName, mBitmap);
             } catch (ClassCastException e) {
-                throw new ClassCastException(myActivity.toString() + MUST_IMPLEMENT_INTERFACE_MESSAGE);
+                throw new ClassCastException(myActivity.get().toString() + MUST_IMPLEMENT_INTERFACE_MESSAGE);
+            } finally {
+                clearReference();
             }
-        } finally {
-            clearTread();
-        }
-    }
-    
-    private Bitmap loadPictureFromAssets(String fileName, BitmapFactory.Options currentBitmapOptions, BitmapTools bitmapTools) {
-        
-        if (DEBUG) {
-            Log.d(TAG, "loadTextFromAssets: ");
-        }
-        Bitmap newBitmap = null;
-        InputStream inputStream = null;
-        try {
-            inputStream = myActivity.getAssets().open(fileName);
-            newBitmap = bitmapTools.loadPictureFromInputStream(fileName, inputStream, currentBitmapOptions);
-        } catch (IOException e) {
-            e.printStackTrace();
-            newBitmap = null;
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+        } else {
+            if (mBitmap != null) {
+                mBitmap.recycle();
             }
+            clearReference();
         }
-        return newBitmap;
-    }
-    
-    private void clearTread() {
-        
-        myActivity = null;
-        fileName = null;
     }
     
     public interface BitmapLoaderListener {
         
-        public void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap);
+        void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap);
     }
 }
 
