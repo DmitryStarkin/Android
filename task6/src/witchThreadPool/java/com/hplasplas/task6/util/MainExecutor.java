@@ -7,9 +7,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.hplasplas.task6.setting.Constants.POSSESSORS_MULTIPLIER;
-import static com.hplasplas.task6.setting.Constants.QUEUE_CAPACITY;
 import static com.hplasplas.task6.setting.Constants.THREAD_IDLE_TIME;
+import static com.hplasplas.task6.setting.Constants.THREAD_MULTIPLIER;
 import static com.hplasplas.task6.setting.Constants.TIME_UNIT;
 
 /**
@@ -27,11 +26,12 @@ public class MainExecutor extends ThreadPoolExecutor {
     }
     
     public static synchronized MainExecutor getExecutor() {
-        
+    
         if (sMainExecutor == null) {
+        
             int availablePossessors = Runtime.getRuntime().availableProcessors();
-            sMainExecutor = new MainExecutor(availablePossessors, POSSESSORS_MULTIPLIER * availablePossessors,
-                    THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<>(QUEUE_CAPACITY),
+            sMainExecutor = new MainExecutor(availablePossessors, THREAD_MULTIPLIER * availablePossessors,
+                    THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<>(),
                     new BitmapLoadersThreadFactory(), new RejectionHandler());
         }
         return sMainExecutor;

@@ -50,14 +50,14 @@ public final class Constants {
     public static final int PERMISSION_REQUEST_CODE = 0;
     
     //tread Pool values
-    public static final int POSSESSORS_MULTIPLIER = 2;
+    public static final int THREAD_MULTIPLIER = 2;
     public static final long THREAD_IDLE_TIME = 30;
     public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     public static final int THREADS_PRIORITY = 8;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";
     public static final int MESSAGE_BITMAP_LOAD = 1;
-    public static final int QUEUE_CAPACITY = 32;
-    public static final double MAX_POOL_SIZE_MULTIPLIER = 0.5;
+    public static final int MIN_QUEUE_CAPACITY = 64;
+    public static final double QUEUE_SIZE_MULTIPLIER = 1.5;
     
     //dialog value
     public static final String FILE_RENAME_DIALOG_TAG = "renameFileTag";
