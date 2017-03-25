@@ -7,8 +7,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.hplasplas.task6.setting.Constants.MIN_QUEUE_CAPACITY;
 import static com.hplasplas.task6.setting.Constants.THREAD_IDLE_TIME;
 import static com.hplasplas.task6.setting.Constants.THREAD_MULTIPLIER;
+import static com.hplasplas.task6.setting.Constants.THREAD_START_TERM;
 import static com.hplasplas.task6.setting.Constants.TIME_UNIT;
 
 /**
@@ -26,13 +28,18 @@ public class MainExecutor extends ThreadPoolExecutor {
     }
     
     public static synchronized MainExecutor getExecutor() {
-    
-        if (sMainExecutor == null) {
         
+        if (sMainExecutor == null) {
             int availablePossessors = Runtime.getRuntime().availableProcessors();
-            sMainExecutor = new MainExecutor(availablePossessors, THREAD_MULTIPLIER * availablePossessors,
-                    THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<>(),
-                    new BitmapLoadersThreadFactory(), new RejectionHandler());
+            if (MIN_QUEUE_CAPACITY == 0) {
+                sMainExecutor = new MainExecutor(availablePossessors + THREAD_START_TERM, THREAD_MULTIPLIER * availablePossessors,
+                        THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<>(),
+                        new BitmapLoadersThreadFactory(), new RejectionHandler());
+            } else {
+                sMainExecutor = new MainExecutor(availablePossessors + THREAD_START_TERM, THREAD_MULTIPLIER * availablePossessors,
+                        THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<>(MIN_QUEUE_CAPACITY),
+                        new BitmapLoadersThreadFactory(), new RejectionHandler());
+            }
         }
         return sMainExecutor;
     }

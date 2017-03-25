@@ -31,11 +31,14 @@ public final class Constants {
     public static final String FILE_NAME_TO_LOAD = "fileNameToLoad";
     public static final String REQUESTED_PICTURE_HEIGHT = "requestedHeight";
     public static final String REQUESTED_PICTURE_WIDTH = "requestedWidth";
+    public static final String REQUESTED_SAMPLE_SIZE = "requestedSampleSize";
     public static final String LIST_INDEX = "listIndex";
     
     //preview values
     public static final int PREVIEW_PICTURE_HEIGHT = 103;
     public static final int PREVIEW_PICTURE_WIDTH = 77;
+    public static final int PREVIEW_SAMPLE_SIZE = 32;
+    public static final boolean RESIZE_WITH_SAMPLE = false;
     
     //main bitmap values
     public static final int FIRST_LOAD_PICTURE_WIDTH = 540;
@@ -51,13 +54,14 @@ public final class Constants {
     
     //tread Pool values
     public static final int THREAD_MULTIPLIER = 2;
-    public static final long THREAD_IDLE_TIME = 30;
+    public static final int THREAD_START_TERM = 0;
+    public static final long THREAD_IDLE_TIME = 10;
     public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
-    public static final int THREADS_PRIORITY = 8;
+    public static final int THREADS_PRIORITY = 7;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";
     public static final int MESSAGE_BITMAP_LOAD = 1;
-    public static final int MIN_QUEUE_CAPACITY = 64;
-    public static final double QUEUE_SIZE_MULTIPLIER = 1.5;
+    public static final int MIN_QUEUE_CAPACITY = 0;
+    public static final double POOL_MAX_SIZE_MULTIPLIER = 1.5;
     
     //dialog value
     public static final String FILE_RENAME_DIALOG_TAG = "renameFileTag";

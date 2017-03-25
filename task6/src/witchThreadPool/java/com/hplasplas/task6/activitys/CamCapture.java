@@ -264,8 +264,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
         
-        ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onMyRecyclerViewItemClicked(position, v));
-        ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onMyRecyclerViewItemLongClicked(position, v));
+        ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onRecyclerViewItemClicked(position, v));
+        ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onRecyclerViewItemLongClicked(position, v));
     }
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView, ArrayList<ListItemModel> itemList) {
@@ -306,7 +306,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         mFilesInFolderText.setText(getString(R.string.files_in_folder, filesInFolder));
     }
     
-    private void onMyRecyclerViewItemClicked(int position, View v) {
+    private void onRecyclerViewItemClicked(int position, View v) {
         
         if (!mMainPictureLoaded) {
             File clickedFile = mFilesItemList.get(position).getPictureFile();
@@ -317,7 +317,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
-    private boolean onMyRecyclerViewItemLongClicked(int position, View v) {
+    private boolean onRecyclerViewItemLongClicked(int position, View v) {
         
         PopupMenu popup = new PopupMenu(this, v);
         popup.inflate(R.menu.item_context_menu);
@@ -410,12 +410,23 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth) {
         
+        return createBundleBitmap(fileName, index, requestedHeight, requestedWidth, 0);
+    }
+    
+    private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth, int sampleSize) {
+        
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
         bundle.putInt(LIST_INDEX, index);
         bundle.putInt(REQUESTED_PICTURE_HEIGHT, requestedHeight);
         bundle.putInt(REQUESTED_PICTURE_WIDTH, requestedWidth);
+        bundle.putInt(REQUESTED_SAMPLE_SIZE, sampleSize);
         return bundle;
+    }
+    
+    private Bundle createBundleBitmap(String fileName, int index, int sampleSize) {
+        
+        return createBundleBitmap(fileName, index, 0, 0, sampleSize);
     }
     
     private void loadPreview(int index) {
@@ -424,8 +435,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private void loadPreview(String fileName, int index) {
-    
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
+        
+        if (RESIZE_WITH_SAMPLE) {
+            MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_SAMPLE_SIZE)));
+        } else {
+            MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
+        }
     }
     
     private void setPreview(Bitmap bitmap, int position, String fileName) {
