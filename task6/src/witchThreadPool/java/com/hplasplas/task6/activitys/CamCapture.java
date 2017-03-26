@@ -362,7 +362,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     public void stopLoadPreview(int index){
         
-        stopLoadPreview(mFilesItemList.get(index).getPictureFile().getPath(), index);
+       if(mFilesItemList.size() > index) {
+           stopLoadPreview(mFilesItemList.get(index).getPictureFile().getPath(), index);
+       }
     }
     
     public void stopLoadPreview(String fileName, int index){
