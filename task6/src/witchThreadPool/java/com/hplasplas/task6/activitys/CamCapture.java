@@ -48,13 +48,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private final String TAG = getClass().getSimpleName();
     
     public ArrayList<ListItemModel> mFilesItemList;
-    private boolean mMainPictureLoaded;
     private boolean mNewPhoto;
     private int mContextMenuPosition = -1;
     private int mFilesInFolder;
     private ImageView mImageView;
     private TextView mFilesInFolderText;
-    private Bitmap mMainBitmap;
     private Button mButton;
     private ProgressBar mainProgressBar;
     private RecyclerView mRecyclerView;
@@ -149,19 +147,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         super.onPause();
     }
     
-    @Override
-    protected void onDestroy() {
-        
-        if (DEBUG) {
-            Log.d(TAG, "onDestroy: ");
-            if (mMainBitmap != null) {
-                mMainBitmap.recycle();
-            }
-            recyclePreviewBitmaps(mFilesItemList);
-        }
-        super.onDestroy();
-    }
-    
     private void firstInitActivity() {
         
         mFilesInFolder = FileSystemManager.getFilesCount();
@@ -182,16 +167,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             //TODO show request
         } else {
             requestWriteExtStorage();
-        }
-    }
-    
-    private void recyclePreviewBitmaps(ArrayList<ListItemModel> filesItemList) {
-        
-        for (int i = 0, y = filesItemList.size(); i < y; i++) {
-            Bitmap currentBitmap = filesItemList.get(i).getPicturePreview();
-            if (currentBitmap != null) {
-                currentBitmap.recycle();
-            }
         }
     }
     
@@ -256,7 +231,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void onRecyclerViewItemClicked(int position, View v) {
         
-        if (!mMainPictureLoaded) {
+        if (!isMainPictureLoading()) {
             File clickedFile = mFilesItemList.get(position).getPictureFile();
             if (mCurrentPictureFile == null || !mCurrentPictureFile.equals(clickedFile)) {
                 mCurrentPictureFile = clickedFile;
@@ -309,28 +284,22 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private void loadMainBitmap(SharedPreferences preferences) {
-        
-        beforeLoadMainBitmap();
+    
+        mainProgressBar.setVisibility(View.VISIBLE);
         mCurrentPictureFile = new File(preferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
         MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(mCurrentPictureFile.getPath(), MAIN_PICTURE_INDEX)));
     }
     
     private void loadMainBitmap(String fileName) {
-        
-        beforeLoadMainBitmap();
+    
+        mainProgressBar.setVisibility(View.VISIBLE);
         MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX)));
     }
     
     private void loadMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
-        
-        beforeLoadMainBitmap();
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth)));
-    }
     
-    private void beforeLoadMainBitmap() {
-        
-        mMainPictureLoaded = true;
         mainProgressBar.setVisibility(View.VISIBLE);
+        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth)));
     }
     
     private int getMainBitmapRequestedWidth() {
@@ -416,24 +385,24 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     public void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap) {
         
         if (index == MAIN_PICTURE_INDEX) {
-            if (mMainBitmap != null) {
-                mMainBitmap.recycle();
-            }
-            mMainBitmap = bitmap;
-            if (mMainBitmap != null) {
-                mImageView.setImageBitmap(mMainBitmap);
+            if (bitmap != null) {
+                mImageView.setImageBitmap(bitmap);
             }
             mainProgressBar.setVisibility(View.INVISIBLE);
-            mMainPictureLoaded = false;
         } else {
             setPreview(bitmap, index, fileName);
         }
     }
     
+    private boolean isMainPictureLoading(){
+        
+       return  mainProgressBar.isShown();
+    }
+    
     @Override
     public boolean isRelevant() {
         
-        return false;
+        return !this.isFinishing();
     }
     
     @Override
