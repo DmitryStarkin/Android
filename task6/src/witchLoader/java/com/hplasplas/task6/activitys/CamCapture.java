@@ -106,7 +106,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 loadMainBitmap(mCurrentPictureFile.getPath());
                 mFilesItemList.add(new ListItemModel(mCurrentPictureFile));
                 mPictureInFolderAdapter.notifyItemInserted(mFilesItemList.size() - 1);
-                loadPreview(mFilesItemList.size() - 1);
+                //loadPreview(mFilesItemList.size() - 1);
                 mRecyclerView.scrollToPosition(mFilesItemList.size() - 1);
                 setFilesInFolderText(++mFilesInFolder);
             }
@@ -283,7 +283,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView) {
         
-        PictureInFolderAdapter adapter = new PictureInFolderAdapter(mFilesItemList);
+        PictureInFolderAdapter adapter = new PictureInFolderAdapter(mFilesItemList, this);
         if (recyclerView.getAdapter() == null) {
             recyclerView.setAdapter(adapter);
         } else {
@@ -348,7 +348,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             File[] filesList = dir.listFiles();
             for (int i = 0, fileCount = filesList.length; i < fileCount; i++) {
                 mFilesItemList.add(new ListItemModel(filesList[i]));
-                loadPreview(i);
+                //loadPreview(i);
             }
         }
     }
@@ -430,7 +430,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return bundle;
     }
     
-    private void loadPreview(int index) {
+    public void loadPreview(int index) {
         
         if (myPreviewInLoad == null) {
             myPreviewInLoad = new IntQueue();
@@ -451,6 +451,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private void loadPreview(String fileName) {
         
         getSupportLoaderManager().restartLoader(PREVIEW_PICTURE_LOADER_START_ID, createBundleBitmap(fileName, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH), this);
+    }
+    
+    public void stopLoadPreview(int index){
+        
+        
     }
     
     private void setPreview(Bitmap data, int position) {
@@ -478,7 +483,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             mMainPictureLoaded = false;
         } else {
             setPreview(data, myPreviewInLoad.poll());
-            loadPreview();
+            //loadPreview();
         }
     }
     

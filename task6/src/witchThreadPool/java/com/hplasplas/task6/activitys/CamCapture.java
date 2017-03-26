@@ -94,7 +94,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                 loadMainBitmap(mCurrentPictureFile.getPath());
                 mFilesItemList.add(new ListItemModel(mCurrentPictureFile));
                 mPictureInFolderAdapter.notifyItemInserted(mFilesItemList.size() - 1);
-                loadPreview(mFilesItemList.size() - 1);
+                //loadPreview(mFilesItemList.size() - 1);
                 mRecyclerView.scrollToPosition(mFilesItemList.size() - 1);
                 setFilesInFolderText(++mFilesInFolder);
             }
@@ -202,7 +202,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView, ArrayList<ListItemModel> itemList) {
         
-        PictureInFolderAdapter adapter = new PictureInFolderAdapter(itemList);
+        PictureInFolderAdapter adapter = new PictureInFolderAdapter(itemList, this);
         if (recyclerView.getAdapter() == null) {
             recyclerView.setAdapter(adapter);
         } else {
@@ -258,7 +258,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
             File[] filesList = dir.listFiles();
             for (int i = 0, fileCount = filesList.length; i < fileCount; i++) {
                 mFilesItemList.add(new ListItemModel(filesList[i]));
-                loadPreview(i);
+                //loadPreview(i);
             }
         }
     }
@@ -346,7 +346,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return createBundleBitmap(fileName, index, 0, 0, sampleSize);
     }
     
-    private void loadPreview(int index) {
+    public void loadPreview(int index) {
         
         loadPreview(mFilesItemList.get(index).getPictureFile().getPath(), index);
     }
@@ -358,6 +358,16 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         } else {
             MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
         }
+    }
+    
+    public void stopLoadPreview(int index){
+        
+        stopLoadPreview(mFilesItemList.get(index).getPictureFile().getPath(), index);
+    }
+    
+    public void stopLoadPreview(String fileName, int index){
+        
+        MainExecutor.getExecutor().remove(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
     }
     
     private void setPreview(Bitmap bitmap, int position, String fileName) {
