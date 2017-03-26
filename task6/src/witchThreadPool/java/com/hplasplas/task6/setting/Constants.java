@@ -53,9 +53,9 @@ public final class Constants {
     public static final int PERMISSION_REQUEST_CODE = 0;
     
     //tread Pool values
-    public static final int THREAD_MULTIPLIER = 2;
     public static final int THREAD_START_TERM = 0;
-    public static final long THREAD_IDLE_TIME = 10;
+    public static final int MIN_THREAD_NUMBER = 2;
+    public static final long THREAD_IDLE_TIME = 30;
     public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     public static final int THREADS_PRIORITY = 7;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";

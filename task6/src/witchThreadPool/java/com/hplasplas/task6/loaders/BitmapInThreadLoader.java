@@ -1,7 +1,6 @@
 package com.hplasplas.task6.loaders;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -51,20 +50,11 @@ public class BitmapInThreadLoader implements Runnable {
     public void run() {
         
         BitmapTools bitmapTools = new BitmapTools();
-        BitmapFactory.Options currentBitmapOptions;
-        if (mRequestedHeight != 0 & mRequestedWidth != 0) {
-            currentBitmapOptions = bitmapTools.readBitmapOptionsFromFile(mFileName);
-            currentBitmapOptions.inSampleSize = bitmapTools.calculateInSampleSize(currentBitmapOptions, mRequestedWidth, mRequestedHeight);
-        } else {
-            currentBitmapOptions = new BitmapFactory.Options();
-            if(mSampleSize != 0){
-                currentBitmapOptions.inSampleSize = mSampleSize;
-            }
-        }
-        mBitmap = bitmapTools.LoadPictureFromFile(mFileName, currentBitmapOptions);
+        
+        mBitmap = bitmapTools.LoadPictureFromFile(mFileName, mRequestedWidth, mRequestedHeight, mSampleSize);
         
         if (mBitmap == null && mActivity.get() != null) {
-            mBitmap = bitmapTools.loadPictureFromAssets(mActivity.get().getApplicationContext(), NO_PICTURE_FILE_NAME, currentBitmapOptions);
+            mBitmap = bitmapTools.loadPictureFromAssets(mActivity.get().getApplicationContext(), NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
         }
         if (mBitmap != null ) {
             if (mBitmap.getHeight() < mBitmap.getWidth()) {

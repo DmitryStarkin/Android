@@ -112,6 +112,11 @@ public class BitmapTools {
         return newBitmap;
     }
     
+    public Bitmap LoadPictureFromFile(String fileName, int reqWidth, int reqHeight, int sampleSize) {
+        
+        return LoadPictureFromFile(fileName, createBitmapOptions(fileName, reqWidth, reqHeight, sampleSize));
+    }
+    
     /**
      * load bitmap from file witch default options
      */
@@ -169,6 +174,25 @@ public class BitmapTools {
         return newBitmap;
     }
     
+    public Bitmap loadPictureFromAssets(Context context, String fileName, int reqWidth, int reqHeight, int sampleSize){
+       
+        return loadPictureFromAssets(context, fileName, createBitmapOptions(fileName, reqWidth, reqHeight, sampleSize));
+    }
+    
+    private BitmapFactory.Options createBitmapOptions(String fileName, int reqWidth, int reqHeight, int sampleSize){
+        
+        BitmapFactory.Options currentBitmapOptions;
+        if (reqHeight != 0 & reqWidth != 0) {
+            currentBitmapOptions = readBitmapOptionsFromFile(fileName);
+            currentBitmapOptions.inSampleSize = calculateInSampleSize(currentBitmapOptions, reqWidth, reqHeight);
+        } else {
+            currentBitmapOptions = new BitmapFactory.Options();
+            if(sampleSize != 0){
+                currentBitmapOptions.inSampleSize = sampleSize;
+            }
+        }
+        return currentBitmapOptions;
+    }
     /**
      * load bitmap from InputStream witch default options
      */
