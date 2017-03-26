@@ -25,25 +25,26 @@ import static com.hplasplas.task6.setting.Constants.TIME_STAMP_PATTERN;
 
 public class FileSystemManager {
     
-    
-    private File generateFileForPicture() {
+    public static File generateFileForPicture() {
         
-        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
+        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN,
+                Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
         return generateFileForPicture(fileName);
     }
     
-    private File generateFileForPicture(String fileName) {
+    public static File generateFileForPicture(String fileName) {
         
         return new File(getDirectory().getPath() + "/" + fileName);
     }
     
-    private File getDirectory(boolean needPrivate) {
+    private static File getDirectory(boolean needPrivate) {
         
         File dir;
         if (needPrivate) {
             dir = ThisApplication.getInstance().getExternalFilesDir(PICTURE_FOLDER_NAME);
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                    ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
                     Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 //TODO request permissions in onResume and check it
                 dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -56,11 +57,23 @@ public class FileSystemManager {
         }
         return dir;
     }
-    private File getDirectory() {
+    
+    public static File getDirectory() {
         
-        //if (mPictureDirectory == null) {
-            //mPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
-        //}
         return getDirectory(NEED_PRIVATE_FOLDER);
-   }
+    }
+    
+    private static int getFilesCount(File dir) {
+        
+        if (dir == null || dir.listFiles() == null) {
+            return 0;
+        } else {
+            return dir.listFiles().length;
+        }
+    }
+    
+    public static int getFilesCount() {
+        
+        return getFilesCount(getDirectory());
+    }
 }

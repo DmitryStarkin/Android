@@ -3,18 +3,15 @@ package com.hplasplas.task6.activitys;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.DividerItemDecoration;
@@ -35,15 +32,13 @@ import com.hplasplas.task6.adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.dialogs.FileNameInputDialog;
 import com.hplasplas.task6.dialogs.RenameErrorDialog;
 import com.hplasplas.task6.loaders.BitmapInThreadLoader;
+import com.hplasplas.task6.managers.FileSystemManager;
 import com.hplasplas.task6.models.ListItemModel;
 import com.hplasplas.task6.util.MainExecutor;
 import com.starsoft.rvclicksupport.ItemClickSupport;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
 import static com.hplasplas.task6.setting.Constants.*;
 
@@ -65,7 +60,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     private RecyclerView mRecyclerView;
     private PictureInFolderAdapter mPictureInFolderAdapter;
     private File mCurrentPictureFile;
-    private File mPictureDirectory;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +125,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         mNewPhoto = true;
         mButton.setEnabled(false);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        mCurrentPictureFile = generateFileForPicture();
+        mCurrentPictureFile = FileSystemManager.generateFileForPicture();
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
@@ -149,7 +143,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                     .putString(PREF_FOR_LAST_FILE_NAME, mCurrentPictureFile.getPath())
                     .apply();
         }
-        MainExecutor.getExecutor().getQueue().clear();
+        if (!mNewPhoto) {
+            MainExecutor.getExecutor().getQueue().clear();
+        }
         super.onPause();
     }
     
@@ -166,51 +162,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         super.onDestroy();
     }
     
-    private File generateFileForPicture() {
-        
-        String fileName = DEFAULT_FILE_NAME_PREFIX + new SimpleDateFormat(TIME_STAMP_PATTERN, Locale.getDefault()).format(new Date()) + FILE_NAME_SUFFIX;
-        return generateFileForPicture(fileName);
-    }
-    
-    private File generateFileForPicture(String fileName) {
-        
-        return new File(getDirectory().getPath() + "/" + fileName);
-    }
-    
-    private File getDirectory(boolean needPrivate) {
-        
-        File dir;
-        if (needPrivate) {
-            dir = getExternalFilesDir(PICTURE_FOLDER_NAME);
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_DENIED) {
-                //TODO request permissions in onResume and check it
-                dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            } else {
-                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
-            }
-        }
-        if (dir != null && !dir.exists() && !dir.mkdir()) {
-            throw new IllegalStateException("Dir create error");
-        }
-        return dir;
-    }
-    
     private void firstInitActivity() {
         
-        mFilesInFolder = getFilesCount(getDirectory());
+        mFilesInFolder = FileSystemManager.getFilesCount();
         setFilesInFolderText(mFilesInFolder);
-        createFilesItemList(getDirectory());
+        createFilesItemList(FileSystemManager.getDirectory());
         mPictureInFolderAdapter = setAdapter(mRecyclerView, mFilesItemList);
-    }
-    
-    private File getDirectory() {
-        
-        if (mPictureDirectory == null) {
-            mPictureDirectory = getDirectory(NEED_PRIVATE_FOLDER);
-        }
-        return mPictureDirectory;
     }
     
     private void requestWriteExtStorage() {
@@ -289,15 +246,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
-        }
-    }
-    
-    private int getFilesCount(File dir) {
-        
-        if (dir == null || dir.listFiles() == null) {
-            return 0;
-        } else {
-            return dir.listFiles().length;
         }
     }
     
@@ -483,6 +431,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
+    public boolean isRelevant() {
+        
+        return false;
+    }
+    
+    @Override
     public boolean onMenuItemClick(MenuItem item) {
         
         File clickedItemFile = mFilesItemList.get(mContextMenuPosition).getPictureFile();
@@ -512,7 +466,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         
         if (successfully) {
             int position = getFilePositionInList(renamedFile, mFilesItemList);
-            File newFile = generateFileForPicture(newFileName);
+            File newFile = FileSystemManager.generateFileForPicture(newFileName);
             if (position < 0 || newFile.exists() || !renamedFile.renameTo(newFile)) {
                 RenameErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
             } else {

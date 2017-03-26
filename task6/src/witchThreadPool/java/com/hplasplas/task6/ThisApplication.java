@@ -7,6 +7,7 @@ import android.app.Application;
  */
 
 public class ThisApplication extends Application {
+    
     private static ThisApplication instance;
     
     public static ThisApplication getInstance() {
