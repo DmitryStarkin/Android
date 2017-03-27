@@ -92,6 +92,14 @@ public class BitmapInThreadLoader implements Runnable {
         }
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        
+        //TODO to think it may not need to compare listeners
+        return (obj instanceof BitmapInThreadLoader) && ((BitmapInThreadLoader)obj).mFileName.equals(this.mFileName) &&
+                (((BitmapInThreadLoader)obj).mListener.get() == this.mListener.get());
+    }
+    
     public interface BitmapLoaderListener {
         
         void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap);
