@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.hplasplas.task6.R;
+import com.hplasplas.task6.activitys.CamCapture;
 import com.hplasplas.task6.models.ListItemModel;
 
 import java.util.ArrayList;
@@ -23,10 +24,12 @@ import static com.hplasplas.task6.setting.Constants.FILE_NOT_EXIST;
 public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolderAdapter.ViewHolder> {
     
     private ArrayList<ListItemModel> mFilesList;
+    private CamCapture activity;
     
-    public PictureInFolderAdapter(ArrayList<ListItemModel> PictureFilesList) {
+    public PictureInFolderAdapter(ArrayList<ListItemModel> PictureFilesList, CamCapture activity) {
         
         this.mFilesList = PictureFilesList;
+        this.activity = activity;
     }
     
     @Override
@@ -43,6 +46,7 @@ public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolder
             Bitmap preview;
             if ((preview = mFilesList.get(position).getPicturePreview()) == null) {
                 holder.mPictureLoadBar.setVisibility(View.VISIBLE);
+                activity.loadPreview(position);
             } else {
                 holder.mPicturePreview.setImageBitmap(preview);
                 holder.mPictureLoadBar.setVisibility(View.INVISIBLE);
@@ -57,6 +61,14 @@ public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolder
     public int getItemCount() {
         
         return mFilesList.size();
+    }
+    
+    @Override
+    public void onViewRecycled(ViewHolder holder) {
+        
+        mFilesList.get(holder.getAdapterPosition()).clearPreview();
+        activity.stopLoadPreview(holder.getAdapterPosition());
+        super.onViewRecycled(holder);
     }
     
     public void setFilesList(ArrayList<ListItemModel> filesList) {

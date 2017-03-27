@@ -5,20 +5,28 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        applicationId "com.hplasplas.task6"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
         jackOptions {
             enabled true
         }
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
+    productFlavors {
+        witchLoader {
+            applicationId "com.hplasplas.task6.useLoader"
+            versionName "1.0"
+        }
+        witchThreadPool {
+            applicationId "com.hplasplas.task6.useThreadPool"
+            versionName "1.0b"
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -34,12 +42,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
     compile 'com.android.support:appcompat-v7:25.3.0'
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:recyclerview-v7:25.3.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile project(':rvclicksupport')
+    witchThreadPoolCompile project(path: ':bmutil')
 }

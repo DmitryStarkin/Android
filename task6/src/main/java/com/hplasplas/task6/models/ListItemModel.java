@@ -37,4 +37,9 @@ public class ListItemModel {
         
         this.mPicturePreview = picturePreview;
     }
+    
+    public void clearPreview() {
+        
+            setPicturePreview(null);
+    }
 }
