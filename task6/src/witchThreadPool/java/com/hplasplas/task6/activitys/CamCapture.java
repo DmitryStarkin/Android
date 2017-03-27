@@ -100,14 +100,6 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         super.onResume();
     }
     
-    private void scrollToMainBitmapPosition() {
-        
-        int position = getFilePositionInList(mCurrentPictureFile, mFilesItemList);
-        if (position >= 0) {
-            mRecyclerView.scrollToPosition(position);
-        }
-    }
-    
     @Override
     public void onClick(View v) {
         
@@ -131,9 +123,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
                     .putString(PREF_FOR_LAST_FILE_NAME, mCurrentPictureFile.getPath())
                     .apply();
         }
-        
         MainExecutor.getExecutor().getQueue().clear();
-        
         super.onPause();
     }
     
@@ -167,6 +157,14 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         mFilesInFolderText = (TextView) findViewById(R.id.files_in_folder);
         mButton = (Button) findViewById(R.id.foto_button);
         mRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
+    }
+    
+    private void scrollToMainBitmapPosition() {
+        
+        int position = getFilePositionInList(mCurrentPictureFile, mFilesItemList);
+        if (position >= 0) {
+            mRecyclerView.scrollToPosition(position);
+        }
     }
     
     private void adjustViews() {
