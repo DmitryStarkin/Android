@@ -17,7 +17,6 @@ import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
@@ -34,6 +33,7 @@ import com.hplasplas.task6.dialogs.RenameErrorDialog;
 import com.hplasplas.task6.loaders.BitmapInThreadLoader;
 import com.hplasplas.task6.managers.FileSystemManager;
 import com.hplasplas.task6.models.ListItemModel;
+import com.hplasplas.task6.util.CustomPopupMenu;
 import com.hplasplas.task6.util.MainExecutor;
 import com.starsoft.rvclicksupport.ItemClickSupport;
 
@@ -43,12 +43,11 @@ import java.util.ArrayList;
 import static com.hplasplas.task6.setting.Constants.*;
 
 public class CamCapture extends AppCompatActivity implements View.OnClickListener, BitmapInThreadLoader.BitmapLoaderListener,
-        PopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
+        CustomPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
     
     private final String TAG = getClass().getSimpleName();
     
     public ArrayList<ListItemModel> mFilesItemList;
-    private int mContextMenuPosition = -1;
     private ImageView mImageView;
     private TextView mFilesInFolderText;
     private Button mButton;
@@ -232,13 +231,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private boolean onRecyclerViewItemLongClicked(int position, View v) {
-        
-        PopupMenu popup = new PopupMenu(this, v);
+    
+        CustomPopupMenu popup = new CustomPopupMenu(this, v, position);
         popup.inflate(R.menu.item_context_menu);
         popup.setOnMenuItemClickListener(this);
-        mContextMenuPosition = position;
         popup.show();
-        
         return false;
     }
     
@@ -275,17 +272,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
-    private void loadMainBitmap(SharedPreferences preferences) {
-        
-        mainProgressBar.setVisibility(View.VISIBLE);
-        mCurrentPictureFile = new File(preferences.getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(mCurrentPictureFile.getPath(), MAIN_PICTURE_INDEX)));
-    }
-    
     private void loadMainBitmap(String fileName) {
         
-        mainProgressBar.setVisibility(View.VISIBLE);
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX)));
+        loadMainBitmap(fileName, getMainBitmapRequestedHeight(), getMainBitmapRequestedWidth());
     }
     
     private void loadMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
@@ -314,7 +303,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private Bundle createBundleBitmap(String fileName, int index) {
         
-        return createBundleBitmap(fileName, index, getMainBitmapRequestedHeight(), getMainBitmapRequestedWidth());
+        return createBundleBitmap(fileName, index, 0, 0);
     }
     
     private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth) {
@@ -410,13 +399,13 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    public boolean onMenuItemClick(MenuItem item) {
+    public boolean onMenuItemClick(MenuItem item, int position) {
         
-        File clickedItemFile = mFilesItemList.get(mContextMenuPosition).getPictureFile();
+        File clickedItemFile = mFilesItemList.get(position).getPictureFile();
         switch (item.getItemId()) {
             case R.id.menu_delete:
                 if (clickedItemFile.delete()) {
-                    loadPreview(mContextMenuPosition);
+                    loadPreview(position);
                     setFilesInFolderText(FileSystemManager.getFilesCount());
                 }
                 if (mCurrentPictureFile == null || !mCurrentPictureFile.exists()) {
