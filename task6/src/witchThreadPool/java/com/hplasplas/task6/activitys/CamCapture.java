@@ -102,14 +102,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     @Override
     public void onClick(View v) {
-        
-        mButton.setEnabled(false);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        mCurrentPictureFile = FileSystemManager.generateFileForPicture();
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
-        }
+        makePhoto();
     }
     
     @Override
@@ -235,6 +228,17 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         popup.setOnMenuItemClickListener(this);
         popup.show();
         return false;
+    }
+    
+    private void makePhoto(){
+        
+        mButton.setEnabled(false);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        mCurrentPictureFile = FileSystemManager.generateFileForPicture();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, GET_PICTURE_REQUEST_CODE);
+        }
     }
     
     private void createFilesItemList(File dir) {
