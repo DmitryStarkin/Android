@@ -37,7 +37,7 @@ public class BitmapInThreadLoader implements Runnable {
     private Bitmap mBitmap;
     
     public BitmapInThreadLoader(BitmapLoaderListener listener, Bundle args) {
-    
+        
         mListener = new WeakReference<>(listener);
         mFileName = args.getString(FILE_NAME_TO_LOAD);
         mRequestedHeight = args.getInt(REQUESTED_PICTURE_HEIGHT);
@@ -49,20 +49,20 @@ public class BitmapInThreadLoader implements Runnable {
     @Override
     public void run() {
         
-        BitmapTools bitmapTools = new BitmapTools();
-        
-        mBitmap = bitmapTools.LoadPictureFromFile(mFileName, mRequestedWidth, mRequestedHeight, mSampleSize);
-        
-        if (mBitmap == null && mListener.get() != null &&  mListener.get().isRelevant()) {
-            mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getInstance().getApplicationContext(), NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
-        }
-        if (mBitmap != null ) {
-            if (mBitmap.getHeight() < mBitmap.getWidth()) {
-                mBitmap = bitmapTools.rotate(mBitmap, BITMAP_ROTATE_ANGLE);
+        if (mListener.get() != null && mListener.get().isRelevant()) {
+            BitmapTools bitmapTools = new BitmapTools();
+            mBitmap = bitmapTools.LoadPictureFromFile(mFileName, mRequestedWidth, mRequestedHeight, mSampleSize);
+            if (mBitmap == null) {
+                mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getInstance().getApplicationContext(), NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
             }
-            if (mListener.get() != null && mListener.get().isRelevant()) {
-                Message message = MainHandler.getHandler().obtainMessage(MESSAGE_BITMAP_LOAD, this);
-                message.sendToTarget();
+            if (mBitmap != null) {
+                if (mBitmap.getHeight() < mBitmap.getWidth()) {
+                    mBitmap = bitmapTools.rotate(mBitmap, BITMAP_ROTATE_ANGLE);
+                }
+                if (mListener.get() != null && mListener.get().isRelevant()) {
+                    Message message = MainHandler.getHandler().obtainMessage(MESSAGE_BITMAP_LOAD, this);
+                    message.sendToTarget();
+                }
             }
         }
     }
@@ -96,8 +96,8 @@ public class BitmapInThreadLoader implements Runnable {
     public boolean equals(Object obj) {
         
         //TODO to think it may not need to compare listeners
-        return (obj instanceof BitmapInThreadLoader) && ((BitmapInThreadLoader)obj).mFileName.equals(this.mFileName) &&
-                (((BitmapInThreadLoader)obj).mListener.get() == this.mListener.get());
+        return (obj instanceof BitmapInThreadLoader) && ((BitmapInThreadLoader) obj).mFileName.equals(this.mFileName) &&
+                (((BitmapInThreadLoader) obj).mListener.get() == this.mListener.get());
     }
     
     public interface BitmapLoaderListener {
