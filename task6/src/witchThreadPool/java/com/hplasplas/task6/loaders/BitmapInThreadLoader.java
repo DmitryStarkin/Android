@@ -1,5 +1,6 @@
 package com.hplasplas.task6.loaders;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Message;
@@ -16,6 +17,7 @@ import static com.hplasplas.task6.setting.Constants.LIST_INDEX;
 import static com.hplasplas.task6.setting.Constants.MESSAGE_BITMAP_LOAD;
 import static com.hplasplas.task6.setting.Constants.MUST_IMPLEMENT_INTERFACE_MESSAGE;
 import static com.hplasplas.task6.setting.Constants.NO_PICTURE_FILE_NAME;
+import static com.hplasplas.task6.setting.Constants.REQUESTED_ORIENTATION;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_HEIGHT;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_PICTURE_WIDTH;
 import static com.hplasplas.task6.setting.Constants.REQUESTED_SAMPLE_SIZE;
@@ -32,6 +34,7 @@ public class BitmapInThreadLoader implements Runnable {
     private int mRequestedHeight;
     private int mRequestedWidth;
     private int mSampleSize;
+    private int requestedOrientation;
     private String mFileName;
     private WeakReference<BitmapLoaderListener> mListener;
     private Bitmap mBitmap;
@@ -43,6 +46,7 @@ public class BitmapInThreadLoader implements Runnable {
         mRequestedHeight = args.getInt(REQUESTED_PICTURE_HEIGHT);
         mRequestedWidth = args.getInt(REQUESTED_PICTURE_WIDTH);
         mSampleSize = args.getInt(REQUESTED_SAMPLE_SIZE);
+        requestedOrientation = args.getInt(REQUESTED_ORIENTATION);
         mIndex = args.getInt(LIST_INDEX);
     }
     
@@ -53,10 +57,12 @@ public class BitmapInThreadLoader implements Runnable {
             BitmapTools bitmapTools = new BitmapTools();
             mBitmap = bitmapTools.LoadPictureFromFile(mFileName, mRequestedWidth, mRequestedHeight, mSampleSize);
             if (mBitmap == null) {
-                mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getInstance().getApplicationContext(), NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
+                mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getInstance().getApplicationContext(),
+                        NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
             }
             if (mBitmap != null) {
-                if (mBitmap.getHeight() < mBitmap.getWidth()) {
+                if ((requestedOrientation == Configuration.ORIENTATION_PORTRAIT && mBitmap.getHeight() < mBitmap.getWidth()) ||
+                        (requestedOrientation == Configuration.ORIENTATION_LANDSCAPE && mBitmap.getHeight() > mBitmap.getWidth())) {
                     mBitmap = bitmapTools.rotate(mBitmap, BITMAP_ROTATE_ANGLE);
                 }
                 if (mListener.get() != null && mListener.get().isRelevant()) {
@@ -103,7 +109,7 @@ public class BitmapInThreadLoader implements Runnable {
     public interface BitmapLoaderListener {
         
         void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap);
-        boolean isRelevant();
+        boolean  isRelevant();
     }
 }
 

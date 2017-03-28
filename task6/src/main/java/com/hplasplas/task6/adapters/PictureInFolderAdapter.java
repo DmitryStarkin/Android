@@ -15,7 +15,9 @@ import com.hplasplas.task6.models.ListItemModel;
 
 import java.util.ArrayList;
 
+import static com.hplasplas.task6.setting.Constants.PREVIEW_ANIMATION_START_DELAY;
 import static com.hplasplas.task6.setting.Constants.FILE_NOT_EXIST;
+import static com.hplasplas.task6.setting.Constants.PREVIEW_ANIMATION_DURATION;
 
 /**
  * Created by StarkinDG on 06.03.2017.
@@ -48,13 +50,20 @@ public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolder
                 holder.mPictureLoadBar.setVisibility(View.VISIBLE);
                 activity.loadPreview(position);
             } else {
-                holder.mPicturePreview.setImageBitmap(preview);
+                setImageScale(holder.mPicturePreview, 0);
                 holder.mPictureLoadBar.setVisibility(View.INVISIBLE);
+                holder.mPicturePreview.setImageBitmap(preview);
+                holder.mPicturePreview.animate().scaleX(1).scaleY(1).setStartDelay(PREVIEW_ANIMATION_START_DELAY).setDuration(PREVIEW_ANIMATION_DURATION).start();
             }
             holder.mPictureDescription.setText(mFilesList.get(position).getPictureFile().getName());
         } catch (IndexOutOfBoundsException e) {
             holder.mPictureDescription.setText(FILE_NOT_EXIST);
         }
+    }
+    private void setImageScale(ImageView view, float scale) {
+    
+        view.setScaleX(scale);
+        view.setScaleY(scale);
     }
     
     @Override

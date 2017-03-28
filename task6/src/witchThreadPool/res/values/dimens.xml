@@ -1,0 +1,14 @@
+<resources>
+    <dimen name="fab_margin">0dp</dimen>
+    <dimen name="fab_paging">0dp</dimen>
+    <dimen name="picture_paging">2dp</dimen>
+    <dimen name="picture_margin">2dp</dimen>
+    <dimen name="preview_width">100dp</dimen>
+    <dimen name="preview_height">134dp</dimen>
+    <dimen name="files_in_folder_text_height">20dp</dimen>
+    <dimen name="f_i_f_card_corner_radius">18dp</dimen>
+    <dimen name="preview_card_corner_radius">10dp</dimen>
+    <dimen name="f_i_f_card_height">56dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="recycler_height">112dp</dimen>
+</resources>

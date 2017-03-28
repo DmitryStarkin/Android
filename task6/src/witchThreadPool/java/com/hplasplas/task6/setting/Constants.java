@@ -12,6 +12,11 @@ public final class Constants {
     
     public static final boolean DEBUG = BuildConfig.DEBUG;
     
+    //animation setting
+    public static final long PREVIEW_ANIMATION_DURATION = 800;
+    public static final long PREVIEW_ANIMATION_START_DELAY = 300;
+    public static final long FAB_ANIMATION_DURATION = 300;
+    
     //file system constants
     public static final boolean NEED_PRIVATE_FOLDER = true;
     public static final String NO_PICTURE_FILE_NAME = "noPicture.jpg";
@@ -32,6 +37,7 @@ public final class Constants {
     public static final String REQUESTED_PICTURE_HEIGHT = "requestedHeight";
     public static final String REQUESTED_PICTURE_WIDTH = "requestedWidth";
     public static final String REQUESTED_SAMPLE_SIZE = "requestedSampleSize";
+    public static final String REQUESTED_ORIENTATION = "checkOrientation";
     public static final String LIST_INDEX = "listIndex";
     
     //preview values
@@ -41,12 +47,11 @@ public final class Constants {
     public static final boolean RESIZE_WITH_SAMPLE = false;
     
     //main bitmap values
-    public static final int FIRST_LOAD_PICTURE_WIDTH = 540;
-    public static final int FIRST_LOAD_PICTURE_HEIGHT = 720;
+    public static final int FIRST_LOAD_PICTURE_WIDTH = 720;
+    public static final int FIRST_LOAD_PICTURE_HEIGHT = 960;
     
     //recycle view values
     public static final String FILE_NOT_EXIST = "NO File";
-    public static final int ROWS_IN_TABLE = 2;
     
     //request codes
     public static final int GET_PICTURE_REQUEST_CODE = 1;

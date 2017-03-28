@@ -10,7 +10,7 @@ public class ThisApplication extends Application {
     
     private static ThisApplication instance;
     
-    public static ThisApplication getInstance() {
+    public static synchronized ThisApplication getInstance() {
         return instance;
     }
     

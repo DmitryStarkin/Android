@@ -11,18 +11,20 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -42,7 +44,7 @@ import java.util.ArrayList;
 
 import static com.hplasplas.task6.setting.Constants.*;
 
-public class CamCapture extends AppCompatActivity implements View.OnClickListener, BitmapInThreadLoader.BitmapLoaderListener,
+public class CamCapture extends AppCompatActivity implements BitmapInThreadLoader.BitmapLoaderListener,
         CustomPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
     
     private final String TAG = getClass().getSimpleName();
@@ -50,7 +52,9 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     public ArrayList<ListItemModel> mFilesItemList;
     private ImageView mImageView;
     private TextView mFilesInFolderText;
-    private Button mButton;
+    private FloatingActionButton mButton;
+    private CardView mFilesInFolderTextCard;
+    private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
     private ProgressBar mainProgressBar;
     private RecyclerView mRecyclerView;
     private PictureInFolderAdapter mPictureInFolderAdapter;
@@ -85,6 +89,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         if (DEBUG) {
             Log.d(TAG, "onActivityResult: ");
         }
+        showBottomPanel();
+        setInterfaceElementsScale(1);
         mButton.setEnabled(true);
     }
     
@@ -101,8 +107,12 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    public void onClick(View v) {
-        makePhoto();
+    public boolean onTouchEvent(MotionEvent event) {
+        
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            changeBottomPanelVisibility();
+        }
+        return true;
     }
     
     @Override
@@ -148,8 +158,11 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         mImageView = (ImageView) findViewById(R.id.foto_frame);
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
         mFilesInFolderText = (TextView) findViewById(R.id.files_in_folder);
-        mButton = (Button) findViewById(R.id.foto_button);
-        mRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
+        mFilesInFolderTextCard = (CardView) findViewById(R.id.files_in_folder_card);
+        mButton = (FloatingActionButton) findViewById(R.id.fab_photo);
+        LinearLayout bottomPanel = (LinearLayout) findViewById(R.id.photo_list_container);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomPanel);
+        mRecyclerView = (RecyclerView) findViewById(R.id.photo_list);
     }
     
     private void scrollToMainBitmapPosition() {
@@ -160,23 +173,66 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         }
     }
     
+    private void changeBottomPanelVisibility() {
+        
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+            showBottomPanel();
+        } else {
+            hideBottomPanel();
+        }
+    }
+    
+    private void hideBottomPanel() {
+        
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+    }
+    
+    private void showBottomPanel() {
+        
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+    
     private void adjustViews() {
         
-        mButton.setOnClickListener(this);
+        mButton.setOnClickListener(v -> {
+            mButton.setEnabled(false);
+            makePhoto();
+        });
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                
+                if (BottomSheetBehavior.STATE_HIDDEN == newState) {
+                    mButton.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
+                    mFilesInFolderTextCard.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
+                } else if (BottomSheetBehavior.STATE_EXPANDED == newState) {
+                    mButton.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
+                    mFilesInFolderTextCard.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
+                }
+            }
+            
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                
+            }
+        });
+        hideBottomPanel();
+        setInterfaceElementsScale(0);
         mainProgressBar.setVisibility(View.VISIBLE);
+    }
+    
+    private void setInterfaceElementsScale(float scale) {
+        
+        mButton.setScaleX(scale);
+        mButton.setScaleY(scale);
+        mFilesInFolderTextCard.setScaleX(scale);
+        mFilesInFolderTextCard.setScaleY(scale);
     }
     
     private void adjustRecyclerView() {
         
         mRecyclerView.setHasFixedSize(true);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        } else {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(this, ROWS_IN_TABLE, LinearLayoutManager.HORIZONTAL, false));
-            mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        }
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
-        
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onRecyclerViewItemLongClicked(position, v));
     }
@@ -222,7 +278,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     private boolean onRecyclerViewItemLongClicked(int position, View v) {
-    
+        
         CustomPopupMenu popup = new CustomPopupMenu(this, v, position);
         popup.inflate(R.menu.item_context_menu);
         popup.setOnMenuItemClickListener(this);
@@ -230,9 +286,8 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         return false;
     }
     
-    private void makePhoto(){
+    private void makePhoto() {
         
-        mButton.setEnabled(false);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         mCurrentPictureFile = FileSystemManager.generateFileForPicture();
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentPictureFile));
@@ -281,8 +336,10 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private void loadMainBitmap(String fileName, int requestedHeight, int requestedWidth) {
         
+        int orientation = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) ?
+                Configuration.ORIENTATION_PORTRAIT : Configuration.ORIENTATION_LANDSCAPE;
         mainProgressBar.setVisibility(View.VISIBLE);
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth)));
+        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth, 0, orientation)));
     }
     
     private int getMainBitmapRequestedWidth() {
@@ -310,14 +367,15 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth) {
         
-        return createBundleBitmap(fileName, index, requestedHeight, requestedWidth, 0);
+        return createBundleBitmap(fileName, index, requestedHeight, requestedWidth, 0, Configuration.ORIENTATION_PORTRAIT);
     }
     
-    private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth, int sampleSize) {
+    private Bundle createBundleBitmap(String fileName, int index, int requestedHeight, int requestedWidth, int sampleSize, int orientation) {
         
         Bundle bundle = new Bundle();
         bundle.putString(FILE_NAME_TO_LOAD, fileName);
         bundle.putInt(LIST_INDEX, index);
+        bundle.putInt(REQUESTED_ORIENTATION, orientation);
         bundle.putInt(REQUESTED_PICTURE_HEIGHT, requestedHeight);
         bundle.putInt(REQUESTED_PICTURE_WIDTH, requestedWidth);
         bundle.putInt(REQUESTED_SAMPLE_SIZE, sampleSize);
@@ -326,7 +384,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     
     private Bundle createBundleBitmap(String fileName, int index, int sampleSize) {
         
-        return createBundleBitmap(fileName, index, 0, 0, sampleSize);
+        return createBundleBitmap(fileName, index, 0, 0, sampleSize, Configuration.ORIENTATION_PORTRAIT);
     }
     
     public void loadPreview(int index) {
@@ -395,7 +453,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
     }
     
     @Override
-    public boolean isRelevant() {
+    public synchronized boolean isRelevant() {
         
         return !this.isFinishing();
     }
