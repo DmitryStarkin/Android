@@ -54,7 +54,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     private TextView mFilesInFolderText;
     private FloatingActionButton mButton;
     private CardView mFilesInFolderTextCard;
-    private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
+    private BottomSheetBehavior<LinearLayout> mBottomSheetBehavior;
     private ProgressBar mainProgressBar;
     private RecyclerView mRecyclerView;
     private PictureInFolderAdapter mPictureInFolderAdapter;
@@ -161,7 +161,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         mFilesInFolderTextCard = (CardView) findViewById(R.id.files_in_folder_card);
         mButton = (FloatingActionButton) findViewById(R.id.fab_photo);
         LinearLayout bottomPanel = (LinearLayout) findViewById(R.id.photo_list_container);
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomPanel);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomPanel);
         mRecyclerView = (RecyclerView) findViewById(R.id.photo_list);
     }
     
@@ -175,7 +175,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     private void changeBottomPanelVisibility() {
         
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+        if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
             showBottomPanel();
         } else {
             hideBottomPanel();
@@ -184,12 +184,12 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     private void hideBottomPanel() {
         
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
     
     private void showBottomPanel() {
         
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
     
     private void adjustViews() {
@@ -198,7 +198,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
             mButton.setEnabled(false);
             makePhoto();
         });
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 
@@ -286,7 +286,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         return false;
     }
     
-    private void makePhoto() {
+    public void makePhoto() {
         
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         mCurrentPictureFile = FileSystemManager.generateFileForPicture();
