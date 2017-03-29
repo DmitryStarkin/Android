@@ -10,6 +10,10 @@ public final class Constants {
     
     public static final boolean DEBUG = BuildConfig.DEBUG;
     
+    //animation setting
+    public static final long PREVIEW_ANIMATION_DURATION = 800;
+    public static final long PREVIEW_ANIMATION_START_DELAY = 300;
+    
     //file system constants
     public static final boolean NEED_PRIVATE_FOLDER = true;
     public static final String NO_PICTURE_FILE_NAME = "noPicture.jpg";

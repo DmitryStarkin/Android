@@ -18,6 +18,7 @@ public class CustomPopupMenu extends PopupMenu implements PopupMenu.OnMenuItemCl
     
     public CustomPopupMenu(@NonNull Context context, @NonNull View anchor, int position) {
         
+        //TODO replace it when the styles will be correct -> super(context, anchor, Gravity.AXIS_PULL_BEFORE, 0, R.style.PopupMenuStyle);
         super(context, anchor);
         this.position = position;
     }

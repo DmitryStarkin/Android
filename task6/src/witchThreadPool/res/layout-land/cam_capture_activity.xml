@@ -29,7 +29,7 @@
         app:fabSize="normal"
         app:layout_anchor="@+id/photo_list"
         app:layout_anchorGravity="top|center"
-        app:srcCompat="@mipmap/ic_camera_enhance_blue_a700_24dp"/>
+        app:srcCompat="@mipmap/ic_camera_enhance_blue_900_48dp"/>
 
     <android.support.v7.widget.CardView
         android:id="@+id/files_in_folder_card"
@@ -49,7 +49,8 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/files_in_folder_text_height"
             android:layout_gravity="center"
-            android:text="TextView"/>
+            android:text="TextView"
+            tools:ignore="HardcodedText"/>
     </android.support.v7.widget.CardView>
 
 </android.support.design.widget.CoordinatorLayout>

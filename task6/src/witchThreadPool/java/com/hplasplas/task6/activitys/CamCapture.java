@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -233,6 +234,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onRecyclerViewItemLongClicked(position, v));
     }
@@ -465,11 +467,10 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         switch (item.getItemId()) {
             case R.id.menu_delete:
                 if (clickedItemFile.delete()) {
-                    loadPreview(position);
+                    mFilesItemList.remove(position);
+                    mPictureInFolderAdapter.notifyItemRemoved(position);
                     setFilesInFolderText(FileSystemManager.getFilesCount());
-                }
-                if (mCurrentPictureFile == null || !mCurrentPictureFile.exists()) {
-                    loadMainBitmap(NO_EXISTING_FILE_NAME);
+                    loadMainBitmap();
                 }
                 break;
             case R.id.menu_rename:

@@ -21,14 +21,12 @@
         android:layout_gravity="center_horizontal"
         android:layout_margin="@dimen/fab_margin"
         android:padding="@dimen/fab_paging"
-        android:scaleType="centerCrop"
-        android:tint="@color/cardview_dark_background"
         app:backgroundTint="@color/colorButtonText"
         app:elevation="5dp"
         app:fabSize="normal"
         app:layout_anchor="@+id/photo_list"
         app:layout_anchorGravity="top|center"
-        app:srcCompat="@mipmap/ic_camera_enhance_blue_a700_24dp"/>
+        app:srcCompat="@mipmap/ic_camera_enhance_blue_900_48dp"/>
 
     <android.support.v7.widget.CardView
         android:id="@+id/files_in_folder_card"

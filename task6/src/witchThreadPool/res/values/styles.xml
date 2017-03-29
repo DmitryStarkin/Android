@@ -12,6 +12,10 @@
         <item name="android:textColorPrimary">@color/TextColorPrimary</item>
         <item name="android:background">@color/colorPrimaryDark</item>
     </style>
+    <style name="PopupMenuStyle" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu">
+        <item name="android:textColor">@color/colorButtonText</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 </resources>

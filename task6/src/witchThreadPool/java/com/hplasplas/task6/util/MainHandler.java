@@ -6,6 +6,9 @@ import android.os.Message;
 
 import com.hplasplas.task6.loaders.BitmapInThreadLoader;
 
+import static com.hplasplas.task6.setting.Constants.MESSAGE_BITMAP_LOAD;
+import static com.hplasplas.task6.setting.Constants.MESSAGE_PANEL_MUST_HIDE;
+
 /**
  * Created by StarkinDG on 24.03.2017.
  */
@@ -30,7 +33,11 @@ public class MainHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
         
-        ((BitmapInThreadLoader) msg.obj).onPostBitmapLoad();
+        if (msg.what == MESSAGE_BITMAP_LOAD) {
+            ((BitmapInThreadLoader) msg.obj).onPostBitmapLoad();
+        } else if (msg.what == MESSAGE_PANEL_MUST_HIDE) {
+            ((HidePanelTask) msg.obj).hidePanel();
+        }
     }
 }
 

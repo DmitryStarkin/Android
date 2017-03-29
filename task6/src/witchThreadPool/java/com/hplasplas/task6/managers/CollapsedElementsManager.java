@@ -1,6 +1,5 @@
 package com.hplasplas.task6.managers;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
@@ -11,19 +10,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.hplasplas.task6.R;
-import com.hplasplas.task6.ThisApplication;
 import com.hplasplas.task6.activitys.CamCapture;
+import com.hplasplas.task6.util.HidePanelTask;
 
 import java.util.Arrays;
 import java.util.Timer;
 
+import static com.hplasplas.task6.setting.Constants.BOTTOM_PANEL_IDLE;
 import static com.hplasplas.task6.setting.Constants.FAB_ANIMATION_DURATION;
 
 /**
  * Created by StarkinDG on 29.03.2017.
  */
 
-public class CollapsedElementsManager implements View.OnTouchListener {
+public class CollapsedElementsManager implements View.OnTouchListener, HidePanelTask.HideBottomPanelListener {
     
     private Timer mTimer;
     private CamCapture mActivity;
@@ -56,7 +56,7 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         
         if (mButton != null && mBottomSheetBehavior != null) {
             mButton.setOnClickListener(v -> {
-                mButton.setEnabled(false);
+                enableButton(false);
                 mActivity.makePhoto();
             });
             
@@ -83,6 +83,13 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         }
     }
     
+    public void enableButton(boolean state) {
+        
+        if (mButton != null) {
+            mButton.setEnabled(state);
+        }
+    }
+    
     private void changeBottomPanelVisibility() {
         
         if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
@@ -95,13 +102,17 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     private void hideBottomPanel() {
         
         stopTimer();
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        if (mBottomSheetBehavior != null) {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
     
     private void showBottomPanel() {
         
         restartTimer();
+        if (mBottomSheetBehavior != null) {
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
     }
     
     private void setInterfaceElementsScale(float scale) {
@@ -114,12 +125,9 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     
     public void setFilesInFolderText(int filesInFolder) {
         
-        mFilesInFolderText.setText(getContext().getResources().getString(R.string.files_in_folder, filesInFolder));
-    }
-    
-    private Context getContext() {
-        
-        return ThisApplication.getInstance().getApplicationContext();
+        if (mActivity != null && mFilesInFolderText != null) {
+            mFilesInFolderText.setText(mActivity.getResources().getString(R.string.files_in_folder, filesInFolder));
+        }
     }
     
     @Override
@@ -140,9 +148,25 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     
     private void restartTimer() {
         
+        if (mTimer == null) {
+            mTimer = new Timer();
+        }
+        mTimer.cancel();
+        mTimer.purge();
+        mTimer.schedule(new HidePanelTask(this), BOTTOM_PANEL_IDLE);
     }
     
     private void stopTimer() {
         
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer.purge();
+        }
+    }
+    
+    @Override
+    public void hidePanel() {
+        
+        hideBottomPanel();
     }
 }

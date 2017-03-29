@@ -258,7 +258,7 @@ public class CamCapture extends AppCompatActivity implements View.OnClickListene
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
         mFilesInFolderText = (TextView) findViewById(R.id.files_in_folder);
         mButton = (Button) findViewById(R.id.foto_button);
-        mRecyclerView = (RecyclerView) findViewById(R.id.foto_list);
+        mRecyclerView = (RecyclerView) findViewById(R.id.photo_list);
     }
     
     private void adjustViews(){

@@ -12,6 +12,8 @@ public final class Constants {
     
     public static final boolean DEBUG = BuildConfig.DEBUG;
     
+    public static final long BOTTOM_PANEL_IDLE = 10000;
+    
     //animation setting
     public static final long PREVIEW_ANIMATION_DURATION = 800;
     public static final long PREVIEW_ANIMATION_START_DELAY = 300;
@@ -65,6 +67,7 @@ public final class Constants {
     public static final int THREADS_PRIORITY = 7;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";
     public static final int MESSAGE_BITMAP_LOAD = 1;
+    public static final int MESSAGE_PANEL_MUST_HIDE = 2;
     public static final int MIN_QUEUE_CAPACITY = 0;
     public static final double POOL_MAX_SIZE_MULTIPLIER = 1.5;
     
