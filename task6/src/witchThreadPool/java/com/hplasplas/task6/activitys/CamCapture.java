@@ -3,6 +3,7 @@ package com.hplasplas.task6.activitys;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -11,11 +12,14 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
@@ -25,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.hplasplas.task6.R;
+import com.hplasplas.task6.ThisApplication;
 import com.hplasplas.task6.adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.dialogs.FileNameInputDialog;
 import com.hplasplas.task6.dialogs.RenameErrorDialog;
@@ -42,7 +47,7 @@ import java.util.ArrayList;
 import static com.hplasplas.task6.setting.Constants.*;
 
 public class CamCapture extends AppCompatActivity implements BitmapInThreadLoader.BitmapLoaderListener,
-        CustomPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener {
+        CustomPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener, PopupMenu.OnDismissListener {
     
     private final String TAG = getClass().getSimpleName();
     
@@ -63,20 +68,21 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
         mCollapsedElementsManager = new CollapsedElementsManager(this);
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             mCollapsedElementsManager.hideBottomPanel();
         }
         findViews();
         adjustViews();
         adjustRecyclerView();
         setVmPolicyIfNeed();
+        requestWriteExtStorageIfNeed();
     }
     
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         
-        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 1) {
-            //TODO  check result
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            ShowNoPermissionMessage();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -128,19 +134,43 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         mPictureInFolderAdapter = setAdapter(mRecyclerView, mFilesItemList);
     }
     
-    private void requestWriteExtStorage() {
+    private void requestWriteExtStorageIfNeed() {
         
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !NEED_PRIVATE_FOLDER &&
+                ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (!requestPermissionWithRationale()) {
+                requestWriteExtStorage(PERMISSION_REQUEST_CODE);
+            }
+        }
     }
     
-    public void requestPermissionWithRationale() {
+    private void requestWriteExtStorage(int requestCode) {
         
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            final String message = "Storage permission is needed to show files count";
-            //TODO show request
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
+    }
+    
+    public boolean requestPermissionWithRationale() {
+        
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            final String message = getResources().getString(R.string.permission_request_message);
+            Snackbar.make(mImageView, message, Snackbar.LENGTH_LONG)
+                    .setAction("GRANT", v -> requestWriteExtStorage(PERMISSION_REQUEST_CODE))
+                    .setDuration(10000)
+                    .show();
+            return true;
         } else {
-            requestWriteExtStorage();
+            return false;
         }
+    }
+    
+    private void ShowNoPermissionMessage() {
+        
+        final String message = getResources().getString(R.string.no_permission_message);
+        Snackbar.make(mImageView, message, Snackbar.LENGTH_LONG)
+                .setAction(getResources().getString(R.string.button_ok), null)
+                .setDuration(10000)
+                .show();
     }
     
     private void findViews() {
@@ -232,7 +262,9 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         CustomPopupMenu popup = new CustomPopupMenu(this, v, position);
         popup.inflate(R.menu.item_context_menu);
         popup.setOnMenuItemClickListener(this);
+        popup.setOnDismissListener(this);
         popup.show();
+        mCollapsedElementsManager.stopTimer();
         return false;
     }
     
@@ -418,6 +450,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                     mFilesItemList.remove(position);
                     mPictureInFolderAdapter.notifyItemRemoved(position);
                     mCollapsedElementsManager.setFilesInFolderText(FileSystemManager.getFilesCount());
+                    mCollapsedElementsManager.restartTimer();
                     loadMainBitmap();
                 }
                 break;
@@ -446,10 +479,18 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         } else {
             RenameErrorDialog.newInstance(getString(R.string.invalid_file_name)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
         }
+        mCollapsedElementsManager.restartTimer();
     }
     
     @Override
     public void onDialogNegativeClick(AppCompatDialogFragment dialog) {
         
+        mCollapsedElementsManager.restartTimer();
+    }
+    
+    @Override
+    public void onDismiss(PopupMenu menu) {
+        
+        mCollapsedElementsManager.restartTimer();
     }
 }

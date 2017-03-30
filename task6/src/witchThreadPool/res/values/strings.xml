@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NewPhoto maker</string>
+    <string name="permission_request_message">Permission is needed to external storage write photo</string>
+    <string name="no_permission_message">Storage permission isn\'t granted, photos will be recorded in the personal folder</string>
+    <string name="grant_button">Grant</string>
 </resources>

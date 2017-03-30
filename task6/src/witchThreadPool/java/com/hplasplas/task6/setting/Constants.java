@@ -18,7 +18,7 @@ public final class Constants {
     public static final long FAB_ANIMATION_DURATION = 300;
     
     //file system constants
-    public static final boolean NEED_PRIVATE_FOLDER = true;
+    public static final boolean NEED_PRIVATE_FOLDER = false;
     public static final String NO_PICTURE_FILE_NAME = "noPicture.jpg";
     public static final String PICTURE_FOLDER_NAME = "myPhotoFolder";
     public static final String FILE_NAME_SUFFIX = ".jpg";
@@ -56,6 +56,7 @@ public final class Constants {
     //request codes
     public static final int GET_PICTURE_REQUEST_CODE = 1;
     public static final int PERMISSION_REQUEST_CODE = 0;
+    public static final int PERMISSION_RATIONALE_CODE = 2;
     
     //tread Pool values
     public static final int THREAD_START_TERM = 0;

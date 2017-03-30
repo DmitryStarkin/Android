@@ -33,6 +33,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/foto_frame"
         app:layout_constraintLeft_toLeftOf="@+id/foto_frame"
         app:layout_constraintRight_toRightOf="@+id/foto_frame"
-        app:layout_constraintTop_toTopOf="@+id/foto_frame"/>
+        app:layout_constraintTop_toTopOf="@+id/foto_frame"
+        tools:visibility="visible"/>
 
 </android.support.constraint.ConstraintLayout>

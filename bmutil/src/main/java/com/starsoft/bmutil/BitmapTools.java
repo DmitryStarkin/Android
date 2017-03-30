@@ -62,7 +62,7 @@ public class BitmapTools {
      */
     public Bitmap cropToAspectRatio(Bitmap bitmap, AspectRatio aspectRatio) {
         
-        //TODO
+        //TODO here implement crop
         return bitmap;
     }
     

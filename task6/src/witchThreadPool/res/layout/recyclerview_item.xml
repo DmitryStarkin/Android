@@ -17,7 +17,7 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/cardview_default_radius"
+        android:layout_margin="@dimen/preview_layout_margin"
         android:padding="0dp">
 
         <ImageView
@@ -59,6 +59,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
             android:layout_marginBottom="8dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:text="TextView"
             android:textColor="@color/colorButtonText"
             android:textSize="12sp"
@@ -67,9 +69,7 @@
             app:layout_constraintLeft_toLeftOf="@+id/picturePreview"
             app:layout_constraintRight_toRightOf="@+id/picturePreview"
             tools:ignore="HardcodedText"
-            tools:textStyle="normal"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"/>
+            tools:textStyle="normal"/>
 
         <ImageView
             android:id="@+id/imageView"

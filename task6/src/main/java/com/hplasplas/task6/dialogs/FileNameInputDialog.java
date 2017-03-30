@@ -57,7 +57,7 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
         builder.setView(view)
                 .setTitle(R.string.rename_dialog_title)
                 .setPositiveButton(R.string.button_ok, (dialog, id) -> returnRenameResult())
-                .setNegativeButton(R.string.button_cancel, (dialog, id) -> FileNameInputDialog.this.getDialog().cancel());
+                .setNegativeButton(R.string.button_cancel, (dialog, id) -> cancelDialog());
         return builder.create();
     }
     
@@ -97,11 +97,14 @@ public class FileNameInputDialog extends AppCompatDialogFragment {
             mListener.onOkButtonClick(this, newName, mRenamedFile, false);
         }
     }
-    
+    private void cancelDialog() {
+        
+        FileNameInputDialog.this.getDialog().cancel();
+        mListener.onDialogNegativeClick(this);
+    }
     public interface FileNameInputDialogListener {
         
         void onOkButtonClick(AppCompatDialogFragment dialog, String newFileName, File renamedFile, boolean successfully);
-        
         void onDialogNegativeClick(AppCompatDialogFragment dialog);
     }
 }

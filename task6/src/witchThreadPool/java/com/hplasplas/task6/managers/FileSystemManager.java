@@ -46,8 +46,7 @@ public class FileSystemManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
                     ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
                     Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                //TODO request permissions in onResume and check it
-                dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                dir = ThisApplication.getInstance().getExternalFilesDir(PICTURE_FOLDER_NAME);
             } else {
                 dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), PICTURE_FOLDER_NAME);
             }
