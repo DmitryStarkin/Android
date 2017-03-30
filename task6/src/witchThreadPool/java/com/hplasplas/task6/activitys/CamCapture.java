@@ -11,12 +11,9 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,15 +22,14 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.hplasplas.task6.R;
 import com.hplasplas.task6.adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.dialogs.FileNameInputDialog;
 import com.hplasplas.task6.dialogs.RenameErrorDialog;
 import com.hplasplas.task6.loaders.BitmapInThreadLoader;
+import com.hplasplas.task6.managers.CollapsedElementsManager;
 import com.hplasplas.task6.managers.FileSystemManager;
 import com.hplasplas.task6.models.ListItemModel;
 import com.hplasplas.task6.util.CustomPopupMenu;
@@ -51,11 +47,8 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     private final String TAG = getClass().getSimpleName();
     
     public ArrayList<ListItemModel> mFilesItemList;
+    private CollapsedElementsManager mCollapsedElementsManager;
     private ImageView mImageView;
-    private TextView mFilesInFolderText;
-    private FloatingActionButton mButton;
-    private CardView mFilesInFolderTextCard;
-    private BottomSheetBehavior<LinearLayout> mBottomSheetBehavior;
     private ProgressBar mainProgressBar;
     private RecyclerView mRecyclerView;
     private PictureInFolderAdapter mPictureInFolderAdapter;
@@ -69,6 +62,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
+        mCollapsedElementsManager = new CollapsedElementsManager(this);
         findViews();
         adjustViews();
         adjustRecyclerView();
@@ -90,9 +84,9 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         if (DEBUG) {
             Log.d(TAG, "onActivityResult: ");
         }
-        showBottomPanel();
-        setInterfaceElementsScale(1);
-        mButton.setEnabled(true);
+        mCollapsedElementsManager.showBottomPanel();
+        mCollapsedElementsManager.setInterfaceElementsScale(1);
+        mCollapsedElementsManager.enableButton(true);
     }
     
     @Override
@@ -108,15 +102,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     }
     
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            changeBottomPanelVisibility();
-        }
-        return true;
-    }
-    
-    @Override
     protected void onPause() {
         
         if (DEBUG) {
@@ -128,13 +113,14 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                     .apply();
         }
         MainExecutor.getExecutor().getQueue().clear();
+        mCollapsedElementsManager.hideBottomPanel();
         super.onPause();
     }
     
     private void firstInitActivity() {
         
         mCurrentPictureFile = new File(getMyPreferences().getString(PREF_FOR_LAST_FILE_NAME, NO_EXISTING_FILE_NAME));
-        setFilesInFolderText(FileSystemManager.getFilesCount());
+        mCollapsedElementsManager.setFilesInFolderText(FileSystemManager.getFilesCount());
         createFilesItemList(FileSystemManager.getDirectory());
         mPictureInFolderAdapter = setAdapter(mRecyclerView, mFilesItemList);
     }
@@ -158,11 +144,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         
         mImageView = (ImageView) findViewById(R.id.foto_frame);
         mainProgressBar = (ProgressBar) findViewById(R.id.mainProgressBar);
-        mFilesInFolderText = (TextView) findViewById(R.id.files_in_folder);
-        mFilesInFolderTextCard = (CardView) findViewById(R.id.files_in_folder_card);
-        mButton = (FloatingActionButton) findViewById(R.id.fab_photo);
-        LinearLayout bottomPanel = (LinearLayout) findViewById(R.id.photo_list_container);
-        mBottomSheetBehavior = BottomSheetBehavior.from(bottomPanel);
         mRecyclerView = (RecyclerView) findViewById(R.id.photo_list);
     }
     
@@ -174,60 +155,10 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         }
     }
     
-    private void changeBottomPanelVisibility() {
-        
-        if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
-            showBottomPanel();
-        } else {
-            hideBottomPanel();
-        }
-    }
-    
-    private void hideBottomPanel() {
-        
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-    }
-    
-    private void showBottomPanel() {
-        
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-    }
-    
     private void adjustViews() {
         
-        mButton.setOnClickListener(v -> {
-            mButton.setEnabled(false);
-            makePhoto();
-        });
-        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                
-                if (BottomSheetBehavior.STATE_HIDDEN == newState) {
-                    mButton.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
-                    mFilesInFolderTextCard.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
-                } else if (BottomSheetBehavior.STATE_EXPANDED == newState) {
-                    mButton.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
-                    mFilesInFolderTextCard.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
-                }
-            }
-            
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                
-            }
-        });
-        hideBottomPanel();
-        setInterfaceElementsScale(0);
         mainProgressBar.setVisibility(View.VISIBLE);
-    }
-    
-    private void setInterfaceElementsScale(float scale) {
-        
-        mButton.setScaleX(scale);
-        mButton.setScaleY(scale);
-        mFilesInFolderTextCard.setScaleX(scale);
-        mFilesInFolderTextCard.setScaleY(scale);
+        mCollapsedElementsManager.hideBottomPanel();
     }
     
     private void adjustRecyclerView() {
@@ -237,6 +168,26 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener((recyclerView, position, v) -> onRecyclerViewItemClicked(position, v));
         ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener((recyclerView, position, v) -> onRecyclerViewItemLongClicked(position, v));
+        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                
+                if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                    mCollapsedElementsManager.restartTimer();
+                }
+                return false;
+            }
+            
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+                
+            }
+            
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                
+            }
+        });
     }
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView, ArrayList<ListItemModel> itemList) {
@@ -261,11 +212,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
         }
-    }
-    
-    private void setFilesInFolderText(int filesInFolder) {
-        
-        mFilesInFolderText.setText(getString(R.string.files_in_folder, filesInFolder));
     }
     
     private void onRecyclerViewItemClicked(int position, View v) {
@@ -469,7 +415,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                 if (clickedItemFile.delete()) {
                     mFilesItemList.remove(position);
                     mPictureInFolderAdapter.notifyItemRemoved(position);
-                    setFilesInFolderText(FileSystemManager.getFilesCount());
+                    mCollapsedElementsManager.setFilesInFolderText(FileSystemManager.getFilesCount());
                     loadMainBitmap();
                 }
                 break;

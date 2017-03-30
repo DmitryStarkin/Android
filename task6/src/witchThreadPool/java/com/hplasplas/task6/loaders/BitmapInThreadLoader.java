@@ -66,8 +66,11 @@ public class BitmapInThreadLoader implements Runnable {
                     mBitmap = bitmapTools.rotate(mBitmap, BITMAP_ROTATE_ANGLE);
                 }
                 if (mListener.get() != null && mListener.get().isRelevant()) {
-                    Message message = MainHandler.getHandler().obtainMessage(MESSAGE_BITMAP_LOAD, this);
-                    message.sendToTarget();
+                    MainHandler handler = MainHandler.getHandler();
+                    synchronized (handler) {
+                        Message message = MainHandler.getHandler().obtainMessage(MESSAGE_BITMAP_LOAD, this);
+                        message.sendToTarget();
+                    }
                 }
             }
         }

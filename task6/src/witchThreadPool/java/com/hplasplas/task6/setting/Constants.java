@@ -1,7 +1,5 @@
 package com.hplasplas.task6.setting;
 
-import com.hplasplas.task6.BuildConfig;
-
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -10,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class Constants {
     
-    public static final boolean DEBUG = BuildConfig.DEBUG;
+    public static final boolean DEBUG = true;
     
     public static final long BOTTOM_PANEL_IDLE = 10000;
     
