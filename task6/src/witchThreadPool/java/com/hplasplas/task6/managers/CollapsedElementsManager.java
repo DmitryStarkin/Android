@@ -82,8 +82,6 @@ public class CollapsedElementsManager implements View.OnTouchListener {
                     
                 }
             });
-            hideBottomPanel();
-            setInterfaceElementsScale(0);
         }
     }
     
@@ -94,7 +92,7 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         }
     }
     
-    public void changeBottomPanelVisibility() {
+    private void changeBottomPanelVisibility() {
         
         if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
             showBottomPanel();
@@ -111,7 +109,7 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         }
     }
     
-    public void showBottomPanel() {
+    private void showBottomPanel() {
         
         restartTimer();
         if (mBottomSheetBehavior != null) {
@@ -119,12 +117,28 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         }
     }
     
-    public void setInterfaceElementsScale(float scale) {
+    private void setInterfaceElementsScale(float scale) {
         
         mButton.setScaleX(scale);
         mButton.setScaleY(scale);
         mFilesInFolderTextCard.setScaleX(scale);
         mFilesInFolderTextCard.setScaleY(scale);
+    }
+    
+    public void setRightVisibilityInterfaceElements() {
+        
+        if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_HIDDEN) {
+            setInterfaceElementsScale(0);
+        } else {
+            setInterfaceElementsScale(1);
+        }
+    }
+    
+    public void startTimerIfNeed() {
+        
+        if (mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
+            restartTimer();
+        }
     }
     
     public void setFilesInFolderText(int filesInFolder) {

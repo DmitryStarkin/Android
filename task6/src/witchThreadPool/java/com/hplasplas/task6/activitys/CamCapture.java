@@ -63,6 +63,9 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
         mCollapsedElementsManager = new CollapsedElementsManager(this);
+        if(savedInstanceState == null){
+            mCollapsedElementsManager.hideBottomPanel();
+        }
         findViews();
         adjustViews();
         adjustRecyclerView();
@@ -84,8 +87,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         if (DEBUG) {
             Log.d(TAG, "onActivityResult: ");
         }
-        mCollapsedElementsManager.showBottomPanel();
-        mCollapsedElementsManager.setInterfaceElementsScale(1);
         mCollapsedElementsManager.enableButton(true);
     }
     
@@ -98,6 +99,8 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         firstInitActivity();
         loadMainBitmap();
         scrollToMainBitmapPosition();
+        mCollapsedElementsManager.setRightVisibilityInterfaceElements();
+        mCollapsedElementsManager.startTimerIfNeed();
         super.onResume();
     }
     
@@ -113,7 +116,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                     .apply();
         }
         MainExecutor.getExecutor().getQueue().clear();
-        mCollapsedElementsManager.hideBottomPanel();
+        mCollapsedElementsManager.stopTimer();
         super.onPause();
     }
     
@@ -158,7 +161,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     private void adjustViews() {
         
         mainProgressBar.setVisibility(View.VISIBLE);
-        mCollapsedElementsManager.hideBottomPanel();
     }
     
     private void adjustRecyclerView() {
