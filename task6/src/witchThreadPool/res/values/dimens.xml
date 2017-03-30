@@ -6,9 +6,12 @@
     <dimen name="preview_width">100dp</dimen>
     <dimen name="preview_height">134dp</dimen>
     <dimen name="files_in_folder_text_height">20dp</dimen>
-    <dimen name="f_i_f_card_corner_radius">18dp</dimen>
+
     <dimen name="preview_card_corner_radius">10dp</dimen>
+    <dimen name="preview_layout_margin">1dp</dimen>
     <dimen name="f_i_f_card_height">56dp</dimen>
+    <dimen name="f_i_f_card_corner_radius">18dp</dimen>
     <dimen name="fab_size">56dp</dimen>
+
     <dimen name="recycler_height">112dp</dimen>
 </resources>
