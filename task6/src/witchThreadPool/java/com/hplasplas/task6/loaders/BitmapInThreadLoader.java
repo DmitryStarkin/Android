@@ -56,7 +56,8 @@ public class BitmapInThreadLoader implements Runnable {
             BitmapTools bitmapTools = new BitmapTools();
             mBitmap = bitmapTools.LoadPictureFromFile(mFileName, mRequestedWidth, mRequestedHeight, mSampleSize);
             if (mBitmap == null) {
-                mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getInstance().getApplicationContext(),
+                
+                mBitmap = bitmapTools.loadPictureFromAssets(ThisApplication.getMainContext(),
                         NO_PICTURE_FILE_NAME, mRequestedWidth, mRequestedHeight, mSampleSize);
             }
             if (mBitmap != null) {

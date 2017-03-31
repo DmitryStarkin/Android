@@ -44,7 +44,7 @@ public class FileSystemManager {
             dir = ThisApplication.getInstance().getExternalFilesDir(PICTURE_FOLDER_NAME);
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-                    ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
+                    ContextCompat.checkSelfPermission(ThisApplication.getMainContext(),
                     Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 dir = ThisApplication.getInstance().getExternalFilesDir(PICTURE_FOLDER_NAME);
             } else {

@@ -71,6 +71,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         if (savedInstanceState == null) {
             mCollapsedElementsManager.hideBottomPanel();
         }
+        hideStatusPanelIfNeed();
         findViews();
         adjustViews();
         adjustRecyclerView();
@@ -124,6 +125,21 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         MainExecutor.getExecutor().getQueue().clear();
         mCollapsedElementsManager.stopTimer();
         super.onPause();
+    }
+    
+    private void hideStatusPanelIfNeed() {
+        
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+        }
+    }
+    
+    private void setVmPolicyIfNeed() {
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+        }
     }
     
     private void firstInitActivity() {
@@ -236,14 +252,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     private SharedPreferences getMyPreferences() {
         
         return this.getSharedPreferences(PREFERENCES_FILE, MODE_PRIVATE);
-    }
-    
-    private void setVmPolicyIfNeed() {
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-            StrictMode.setVmPolicy(builder.build());
-        }
     }
     
     private void onRecyclerViewItemClicked(int position, View v) {
