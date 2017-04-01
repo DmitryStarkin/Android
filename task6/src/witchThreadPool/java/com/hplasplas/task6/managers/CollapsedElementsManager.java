@@ -16,7 +16,7 @@ import com.hplasplas.task6.R;
 import com.hplasplas.task6.activitys.CamCapture;
 import com.hplasplas.task6.util.MainHandler;
 
-import static com.hplasplas.task6.setting.Constants.BOTTOM_PANEL_IDLE;
+import static com.hplasplas.task6.setting.Constants.BOTTOM_PANEL_IDLE_TIME;
 import static com.hplasplas.task6.setting.Constants.DEBUG;
 import static com.hplasplas.task6.setting.Constants.FAB_ANIMATION_DURATION;
 import static com.hplasplas.task6.setting.Constants.MESSAGE_PANEL_MUST_HIDE;
@@ -177,7 +177,7 @@ public class CollapsedElementsManager implements View.OnTouchListener {
         MainHandler handler = MainHandler.getHandler();
         handler.removeMessages(MESSAGE_PANEL_MUST_HIDE);
         Message message = handler.obtainMessage(MESSAGE_PANEL_MUST_HIDE, this);
-        handler.sendMessageDelayed(message, BOTTOM_PANEL_IDLE);
+        handler.sendMessageDelayed(message, BOTTOM_PANEL_IDLE_TIME);
     }
     
     public void stopTimer() {

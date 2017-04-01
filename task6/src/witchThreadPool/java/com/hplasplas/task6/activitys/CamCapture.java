@@ -21,6 +21,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -236,6 +237,21 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                 
             }
         });
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.DOWN | ItemTouchHelper.UP) {
+            
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                
+                return false;
+            }
+            
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                
+                deleteItem(viewHolder.getAdapterPosition());
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
     
     private PictureInFolderAdapter setAdapter(RecyclerView recyclerView, ArrayList<ListItemModel> itemList) {
@@ -424,6 +440,25 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         return filesItemList.get(position).getPictureFile().equals(previewFile);
     }
     
+    private void deleteItem(int position) {
+        
+        if (mFilesItemList.get(position).getPictureFile().delete()) {
+            mFilesItemList.remove(position);
+            mPictureInFolderAdapter.notifyItemRemoved(position);
+            mCollapsedElementsManager.setFilesInFolderText(FileSystemManager.getFilesCount());
+            loadMainBitmap();
+        }
+    }
+    
+    private void renameItem(int position) {
+        
+        File clickedItemFile = mFilesItemList.get(position).getPictureFile();
+        if (clickedItemFile.exists()) {
+            FileNameInputDialog fileRenameDialog = FileNameInputDialog.newInstance(clickedItemFile);
+            fileRenameDialog.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
+        }
+    }
+    
     @Override
     public void onBitmapLoadFinished(int index, String fileName, Bitmap bitmap) {
         
@@ -454,19 +489,11 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         File clickedItemFile = mFilesItemList.get(position).getPictureFile();
         switch (item.getItemId()) {
             case R.id.menu_delete:
-                if (clickedItemFile.delete()) {
-                    mFilesItemList.remove(position);
-                    mPictureInFolderAdapter.notifyItemRemoved(position);
-                    mCollapsedElementsManager.setFilesInFolderText(FileSystemManager.getFilesCount());
-                    mCollapsedElementsManager.restartTimer();
-                    loadMainBitmap();
-                }
+                deleteItem(position);
+                mCollapsedElementsManager.restartTimer();
                 break;
             case R.id.menu_rename:
-                if (clickedItemFile.exists()) {
-                    FileNameInputDialog fileRenameDialog = FileNameInputDialog.newInstance(clickedItemFile);
-                    fileRenameDialog.show(getSupportFragmentManager(), FILE_RENAME_DIALOG_TAG);
-                }
+                renameItem(position);
                 break;
         }
         return false;
