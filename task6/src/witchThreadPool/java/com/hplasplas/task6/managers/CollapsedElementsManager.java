@@ -71,9 +71,11 @@ public class CollapsedElementsManager implements View.OnTouchListener {
                     if (BottomSheetBehavior.STATE_HIDDEN == newState) {
                         mButton.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
                         mFilesInFolderTextCard.animate().scaleX(0).scaleY(0).setDuration(FAB_ANIMATION_DURATION).start();
+                        enableButton(false);
                     } else if (BottomSheetBehavior.STATE_EXPANDED == newState) {
                         mButton.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
                         mFilesInFolderTextCard.animate().scaleX(1).scaleY(1).setDuration(FAB_ANIMATION_DURATION).start();
+                        enableButton(true);
                     }
                 }
                 
@@ -118,7 +120,11 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     }
     
     private void setInterfaceElementsScale(float scale) {
-        
+        if(scale < 1){
+            enableButton(false);
+        } else {
+            enableButton(true);
+        }
         mButton.setScaleX(scale);
         mButton.setScaleY(scale);
         mFilesInFolderTextCard.setScaleX(scale);
