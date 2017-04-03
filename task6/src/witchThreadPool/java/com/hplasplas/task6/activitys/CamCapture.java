@@ -40,6 +40,7 @@ import com.hplasplas.task6.managers.FileSystemManager;
 import com.hplasplas.task6.models.ListItemModel;
 import com.hplasplas.task6.util.CustomPopupMenu;
 import com.hplasplas.task6.util.MainExecutor;
+import com.hplasplas.task6.util.MainHandler;
 import com.starsoft.rvclicksupport.ItemClickSupport;
 
 import java.io.File;
@@ -123,9 +124,14 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
                     .putString(PREF_FOR_LAST_FILE_NAME, mCurrentPictureFile.getPath())
                     .apply();
         }
-        MainExecutor.getExecutor().getQueue().clear();
+        stopLoadPreview();
         mCollapsedElementsManager.stopTimer();
         super.onPause();
+    }
+    
+    private void stopLoadPreview(){
+        MainExecutor.getExecutor().purge();
+        MainHandler.getHandler().removeMessages(MESSAGE_BITMAP_LOAD);
     }
     
     private void hideStatusPanelIfNeed() {
