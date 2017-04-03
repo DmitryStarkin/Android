@@ -437,7 +437,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     private boolean isThisFilePosition(ArrayList<ListItemModel> filesItemList, int position, File previewFile) {
         
-        return filesItemList.get(position).getPictureFile().equals(previewFile);
+        return filesItemList.size() > position && filesItemList.get(position).getPictureFile().equals(previewFile);
     }
     
     private void deleteItem(int position) {
