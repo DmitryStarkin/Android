@@ -174,7 +174,7 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     
     public void restartTimer() {
         
-        MainHandler handler = MainHandler.getHandler();
+        MainHandler handler = MainHandler.getInstance();
         handler.removeMessages(MESSAGE_PANEL_MUST_HIDE);
         Message message = handler.obtainMessage(MESSAGE_PANEL_MUST_HIDE, this);
         handler.sendMessageDelayed(message, BOTTOM_PANEL_IDLE_TIME);
@@ -182,6 +182,6 @@ public class CollapsedElementsManager implements View.OnTouchListener {
     
     public void stopTimer() {
         
-        MainHandler.getHandler().removeMessages(MESSAGE_PANEL_MUST_HIDE);
+        MainHandler.getInstance().removeMessages(MESSAGE_PANEL_MUST_HIDE);
     }
 }

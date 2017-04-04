@@ -33,12 +33,12 @@ import com.hplasplas.task6.R;
 import com.hplasplas.task6.ThisApplication;
 import com.hplasplas.task6.adapters.PictureInFolderAdapter;
 import com.hplasplas.task6.dialogs.FileNameInputDialog;
-import com.hplasplas.task6.dialogs.RenameErrorDialog;
+import com.hplasplas.task6.dialogs.ErrorDialog;
 import com.hplasplas.task6.loaders.BitmapInThreadLoader;
 import com.hplasplas.task6.managers.CollapsedElementsManager;
 import com.hplasplas.task6.managers.FileSystemManager;
 import com.hplasplas.task6.models.ListItemModel;
-import com.hplasplas.task6.util.CustomPopupMenu;
+import com.hplasplas.task6.util.RecyclerViewPopupMenu;
 import com.hplasplas.task6.util.MainExecutor;
 import com.hplasplas.task6.util.MainHandler;
 import com.starsoft.rvclicksupport.ItemClickSupport;
@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import static com.hplasplas.task6.setting.Constants.*;
 
 public class CamCapture extends AppCompatActivity implements BitmapInThreadLoader.BitmapLoaderListener,
-        CustomPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener, PopupMenu.OnDismissListener {
+        RecyclerViewPopupMenu.OnMenuItemClickListener, FileNameInputDialog.FileNameInputDialogListener, PopupMenu.OnDismissListener {
     
     private final String TAG = getClass().getSimpleName();
     
@@ -64,10 +64,10 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
+        super.onCreate(savedInstanceState);
         if (DEBUG) {
             Log.d(TAG, "onCreate: ");
         }
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.cam_capture_activity);
         mCollapsedElementsManager = new CollapsedElementsManager(this);
         if (savedInstanceState == null) {
@@ -84,10 +84,10 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
             ShowNoPermissionMessage();
         }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
     
     @Override
@@ -102,6 +102,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     @Override
     protected void onResume() {
         
+        super.onResume();
         if (DEBUG) {
             Log.d(TAG, "onResume: ");
         }
@@ -110,12 +111,12 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         scrollToMainBitmapPosition();
         mCollapsedElementsManager.setRightVisibilityInterfaceElements();
         mCollapsedElementsManager.startTimerIfNeed();
-        super.onResume();
     }
     
     @Override
     protected void onPause() {
         
+        super.onPause();
         if (DEBUG) {
             Log.d(TAG, "onPause: ");
         }
@@ -126,12 +127,11 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         }
         stopLoadPreview();
         mCollapsedElementsManager.stopTimer();
-        super.onPause();
     }
     
     private void stopLoadPreview(){
-        MainExecutor.getExecutor().purge();
-        MainHandler.getHandler().removeMessages(MESSAGE_BITMAP_LOAD);
+        MainExecutor.getInstance().purge();
+        MainHandler.getInstance().removeMessages(MESSAGE_BITMAP_LOAD);
     }
     
     private void hideStatusPanelIfNeed() {
@@ -159,7 +159,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     private void requestWriteExtStorageIfNeed() {
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !NEED_PRIVATE_FOLDER &&
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !NEED_PRIVATE_FOLDER &&
                 ContextCompat.checkSelfPermission(ThisApplication.getInstance().getApplicationContext(),
                         Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             if (!requestPermissionWithRationale()) {
@@ -289,7 +289,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     private boolean onRecyclerViewItemLongClicked(int position, View v) {
         
-        CustomPopupMenu popup = new CustomPopupMenu(this, v, position);
+        RecyclerViewPopupMenu popup = new RecyclerViewPopupMenu(this, v, position);
         popup.inflate(R.menu.item_context_menu);
         popup.setOnMenuItemClickListener(this);
         popup.setOnDismissListener(this);
@@ -351,7 +351,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
         int orientation = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) ?
                 Configuration.ORIENTATION_PORTRAIT : Configuration.ORIENTATION_LANDSCAPE;
         mainProgressBar.setVisibility(View.VISIBLE);
-        MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth, 0, orientation)));
+        MainExecutor.getInstance().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, MAIN_PICTURE_INDEX, requestedHeight, requestedWidth, 0, orientation)));
     }
     
     private int getMainBitmapRequestedWidth() {
@@ -407,9 +407,9 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     private void loadPreview(String fileName, int index) {
         
         if (RESIZE_WITH_SAMPLE) {
-            MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_SAMPLE_SIZE)));
+            MainExecutor.getInstance().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_SAMPLE_SIZE)));
         } else {
-            MainExecutor.getExecutor().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
+            MainExecutor.getInstance().execute(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
         }
     }
     
@@ -422,7 +422,7 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     
     public void stopLoadPreview(String fileName, int index) {
         
-        MainExecutor.getExecutor().remove(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
+        MainExecutor.getInstance().remove(new BitmapInThreadLoader(this, createBundleBitmap(fileName, index, PREVIEW_PICTURE_HEIGHT, PREVIEW_PICTURE_WIDTH)));
     }
     
     private void setPreview(Bitmap bitmap, int position, String fileName) {
@@ -492,7 +492,6 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
     @Override
     public boolean onMenuItemClick(MenuItem item, int position) {
         
-        File clickedItemFile = mFilesItemList.get(position).getPictureFile();
         switch (item.getItemId()) {
             case R.id.menu_delete:
                 deleteItem(position);
@@ -512,13 +511,13 @@ public class CamCapture extends AppCompatActivity implements BitmapInThreadLoade
             int position = getFilePositionInList(renamedFile, mFilesItemList);
             File newFile = FileSystemManager.generateFileForPicture(newFileName);
             if (position < 0 || newFile.exists() || !renamedFile.renameTo(newFile)) {
-                RenameErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
+                ErrorDialog.newInstance(getString(R.string.rename_failed)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
             } else {
                 mFilesItemList.get(position).setPictureFile(newFile);
                 mPictureInFolderAdapter.notifyItemChanged(position);
             }
         } else {
-            RenameErrorDialog.newInstance(getString(R.string.invalid_file_name)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
+            ErrorDialog.newInstance(getString(R.string.invalid_file_name)).show(getSupportFragmentManager(), ERROR_DIALOG_TAG);
         }
         mCollapsedElementsManager.restartTimer();
     }

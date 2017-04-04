@@ -66,7 +66,7 @@ public final class Constants {
     public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
     public static final int THREADS_PRIORITY = 7;
     public static final String THREAD_NAME_PREFIX = "BitmapLoader";
-    public static final int MIN_QUEUE_CAPACITY = 0;
+    public static final int QUEUE_CAPACITY = Integer.MAX_VALUE;
     public static final double POOL_MAX_SIZE_MULTIPLIER = 1.5;
     
     //handler values
