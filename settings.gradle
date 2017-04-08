@@ -1,1 +1,1 @@
-include ':intentServiseUtil', ':rvclicksupport', ':prefDialogs', ':task2', ':task3', ':task4', ':task5', ':task6', ':bmutil'
+include ':intentServiseUtil', ':rvclicksupport', ':prefDialogs', ':task2', ':task3', ':task4', ':task5', ':task6', ':bmutil', ':task7'
