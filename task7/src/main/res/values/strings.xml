@@ -1,5 +1,8 @@
 <resources>
-    <string name="app_name">MyWeather</string>
+    <string name="app_name">Weather</string>
+    <string name="about_message">Weather v 1.0b</string>
+    <string name="action_about">About</string>
+    <string name="city_search">City search</string>
     <string name="button_ok">Ok</string>
     <string name="temperature">%.1f\u00B0</string>
     <string name="pressure">Pressure: %.2f hPa</string>
@@ -10,8 +13,10 @@
     <string name="sunset">Sunset:</string>
     <string name="cloudiness">Cloudiness: %1$d %%</string>
     <string name="internet_not_available">Internet not available</string>
-    <string name="weather_refreshed">Update will be available in %s</string>
+    <string name="weather_refreshed">Update will be available after %s</string>
     <string name="weather_get_error">Error while update weather</string>
     <string name="weather_updated">Weather updated</string>
-    <string name="updated">updated</string>
+    <string name="updated">Weather updated</string>
+    <string name="search_hint">Input two or more symbols</string>
+    <string name="no_result">No matches found</string>
 </resources>

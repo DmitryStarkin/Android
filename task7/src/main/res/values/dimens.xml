@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="temperature_text_size">52sp</dimen>
-    <dimen name="weather_description_text_size">24sp</dimen>
-    <dimen name="city_text_size">24sp</dimen>
+    <dimen name="temperature_text_size">62sp</dimen>
+    <dimen name="weather_description_text_size">32sp</dimen>
+    <dimen name="city_text_size">32sp</dimen>
     <dimen name="date_time__text_size">16sp</dimen>
     <dimen name="sun_time__text_size">16sp</dimen>
+    <dimen name="search_list_text_size">24sp</dimen>
     <dimen name="other_parameters_text_size">16sp</dimen>
 </resources>

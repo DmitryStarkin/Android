@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <android.support.v4.widget.SwipeRefreshLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,6 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
 
 
 <android.support.constraint.ConstraintLayout
@@ -24,27 +26,28 @@
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginTop="0dp"
-        android:background="@color/ColorTransparent"
+        android:background="@drawable/default_background"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/default_background"/>
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/updated"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
         android:text="@string/updated"
+        android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/other_parameters_text_size"
         app:layout_constraintBottom_toTopOf="@+id/date_time"
         app:layout_constraintLeft_toLeftOf="@+id/date_time"
         app:layout_constraintRight_toRightOf="@+id/date_time"
-        />
+        app:layout_constraintHorizontal_bias="0.5"/>
 
     <TextView
         android:id="@+id/date_time"
@@ -52,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="52dp"
         android:background="@color/ColorTransparent"
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
@@ -72,8 +75,11 @@
         android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/temperature_text_size"
         app:layout_constraintTop_toBottomOf="@+id/date_time"
-        app:layout_constraintLeft_toRightOf="@+id/weather_icon"
-        android:layout_marginLeft="8dp"/>
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="@+id/background_image"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="@+id/background_image"
+        app:layout_constraintHorizontal_bias="0.73"/>
 
     <ImageView
         android:id="@+id/weather_icon"
@@ -86,7 +92,9 @@
         app:layout_constraintBottom_toBottomOf="@+id/temperature"
         android:layout_marginBottom="0dp"
         app:layout_constraintVertical_bias="0.0"
-        tools:layout_editor_absoluteX="102dp"/>
+        app:layout_constraintRight_toLeftOf="@+id/temperature"
+        android:layout_marginRight="8dp"
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/weather_description"
@@ -240,6 +248,17 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
+    <include
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/background_image"
+        app:layout_constraintRight_toRightOf="@+id/background_image"
+        app:layout_constraintTop_toTopOf="@+id/background_image"/>
 
 </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

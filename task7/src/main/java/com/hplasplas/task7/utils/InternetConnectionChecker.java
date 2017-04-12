@@ -22,9 +22,9 @@ public class InternetConnectionChecker {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
     
-    private static NetworkInfo getNetworkInfo(){
+    private static NetworkInfo getNetworkInfo() {
         
-        if(isConnected()){
+        if (isConnected()) {
             return ((ConnectivityManager) App.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         } else {
             return null;
@@ -34,19 +34,21 @@ public class InternetConnectionChecker {
     //TODO in Thread need
     private static boolean isOnline() {
         
+        //TODO why this throws an IOException
+        
         //try {
            // URL url = new URL(URL_FOR_CHECKING);
-            //HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+           // HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             //urlc.setConnectTimeout(CONNECTION_TIMEOUT);
            // urlc.connect();
            // return urlc.getResponseCode() == HttpURLConnection.HTTP_OK;
         //} catch (SocketTimeoutException e) {
             //e.printStackTrace();
-            //return false;
+           // return false;
        // } catch (IOException e) {
            // e.printStackTrace();
-            //return false;
-        //}
+           // return false;
+       // }
         return true;
     }
     

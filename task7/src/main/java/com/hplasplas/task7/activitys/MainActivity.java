@@ -1,16 +1,27 @@
 package com.hplasplas.task7.activitys;
 
+import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hplasplas.task7.App;
 import com.hplasplas.task7.R;
+import com.hplasplas.task7.dialogs.MessageDialog;
 import com.hplasplas.task7.managers.PreferencesManager;
 import com.hplasplas.task7.models.weather.current.CurrentWeather;
+import com.hplasplas.task7.utils.DataBaseTolls;
 import com.hplasplas.task7.utils.InternetConnectionChecker;
 import com.squareup.picasso.MemoryPolicy;
 
@@ -22,23 +33,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.hplasplas.task7.setting.Constants.API_KEY;
-import static com.hplasplas.task7.setting.Constants.DEFAULT_CITY_ID;
-import static com.hplasplas.task7.setting.Constants.ICON_DOWNLOAD_URL;
-import static com.hplasplas.task7.setting.Constants.ICON_FILE_SUFFIX;
-import static com.hplasplas.task7.setting.Constants.LAST_REQUEST_TIME;
-import static com.hplasplas.task7.setting.Constants.MIL_PER_SEC;
-import static com.hplasplas.task7.setting.Constants.MIN_REQUEST_INTERVAL;
-import static com.hplasplas.task7.setting.Constants.PREF_FOR_CURRENT_CITY_ID;
-import static com.hplasplas.task7.setting.Constants.PREF_FOR_CURRENT_WEATHER_JSON_DATA;
-import static com.hplasplas.task7.setting.Constants.REFRESHING_TIME_STAMP_PATTERN;
-import static com.hplasplas.task7.setting.Constants.SUN_TIME_STAMP_PATTERN;
-import static com.hplasplas.task7.setting.Constants.UNITS_PARAMETER_VALUE;
-import static com.hplasplas.task7.setting.Constants.WEATHER_TIME_STAMP_PATTERN;
+import static com.hplasplas.task7.setting.Constants.*;
 
 public class MainActivity extends AppCompatActivity {
     
-    private SwipeRefreshLayout swipeRefreshLayout;
+    private final String TAG = getClass().getSimpleName();
+    
+    private SearchView mSearchView;
+    private MenuItem mSearchMenuItem;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private ImageView mCurrentWeatherIcon;
     private ImageView mBackground;
     private TextView mCityName;
@@ -51,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mCloudiness;
     private TextView mSunrise;
     private TextView mSunset;
-    Call<String> currentWeatherCall;
-    private int currentCityId;
+    private Call<String> mCurrentWeatherCall;
+    private DataBaseTolls mDataBaseTolls;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,22 +68,125 @@ public class MainActivity extends AppCompatActivity {
     }
     
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        mSearchMenuItem = menu.findItem(R.id.action_search);
+        mSearchView = (SearchView) mSearchMenuItem.getActionView();
+        mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
+        MenuItemCompat.setOnActionExpandListener(mSearchMenuItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                
+                createSuggestionAdapter();
+                return true;
+            }
+            
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                
+                if (DEBUG) {
+                    Log.d(TAG, "onMenuItemActionCollapse: ");
+                }
+                mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
+                closeCursor(mSearchView);
+                closeDb();
+                return true;
+            }
+        });
+        
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                
+                refreshCityList(CITY_QUERY_FULL_SEARCH_PREFIX + query + CITY_QUERY_FULL_SEARCH_SUFFIX, true);
+                return true;
+            }
+            
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                
+                if (DEBUG) {
+                    Log.d(TAG, "onQueryTextChange: ");
+                }
+                if (newText.length() > 1) {
+                    
+                    refreshCityList(CITY_QUERYBEGIN_SEARCH_PREFIX + newText + CITY_QUERY_BEGIN_SEARCH_SUFFIX, false);
+                }
+                return true;
+            }
+        });
+        
+        mSearchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+            
+            @Override
+            public boolean onSuggestionSelect(int position) {
+                
+                return false;
+            }
+            
+            @Override
+            public boolean onSuggestionClick(int position) {
+                
+                writeIdAndRefreshWeather(position);
+                mSearchMenuItem.collapseActionView();
+                return true;
+            }
+        });
+        return true;
+    }
+    
+    @Override
     protected void onResume() {
         
         super.onResume();
         refreshWeather();
     }
     
+    private void writeIdAndRefreshWeather(int position) {
+        
+        Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
+        if (cursor != null) {
+            cursor.moveToPosition(position);
+            PreferencesManager.getPreferences().edit()
+                    .putInt(PREF_FOR_CURRENT_CITY_ID, cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)))
+                    .apply();
+            refreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
+        }
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        
+        int id = item.getItemId();
+        if (id == R.id.action_about) {
+            MessageDialog.newInstance(getString(R.string.about_message)).show(getSupportFragmentManager(), MESSAGE_DIALOG_TAG);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
     @Override
     protected void onPause() {
         
         super.onPause();
-        cancelCall(currentWeatherCall);
+        cancelCall(mCurrentWeatherCall);
+        closeCursor(mSearchView);
+        closeDb();
+    }
+    
+    private void closeDb() {
+        
+        if (mDataBaseTolls != null) {
+            mDataBaseTolls.closeDataBase();
+        }
     }
     
     private void findViews() {
         
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(toolbar);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
         mCurrentWeatherIcon = (ImageView) findViewById(R.id.weather_icon);
         mBackground = (ImageView) findViewById(R.id.background_image);
         mCityName = (TextView) findViewById(R.id.city_name);
@@ -97,13 +203,72 @@ public class MainActivity extends AppCompatActivity {
     
     private void adjustViews() {
         
-        swipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
+        mSwipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
+        mSwipeRefreshLayout.setProgressViewEndTarget(true, mSwipeRefreshLayout.getProgressCircleDiameter() + REFRESH_INDICATOR_OFFSET);
+    }
+    
+    private void createSuggestionAdapter() {
+        
+        if (mSearchView.getSuggestionsAdapter() == null) {
+            int[] to = {R.id.city_item};
+            SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.city_search_item,
+                    null, COLUMNS_CITY_NAME, to, 0);
+            mSearchView.setSuggestionsAdapter(adapter);
+        }
+    }
+    
+    private void refreshCityList(String query, boolean clearText) {
+        
+        try {
+            if (initDbSearchIfNeed()) {
+                Cursor cursor = mDataBaseTolls.getDataUsingSQLCommand(query);
+                Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
+                if (oldCursor != null && !oldCursor.isClosed()) {
+                    oldCursor.close();
+                }
+                if (clearText && (cursor == null || !cursor.moveToFirst())) {
+                    mSearchView.setQuery(null, false);
+                    mSearchView.setQueryHint(getResources().getString(R.string.no_result));
+                }
+                
+                if (DEBUG) {
+                    Log.d(TAG, "refreshCityList: ");
+                }
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private boolean initDbSearchIfNeed() {
+        
+        if (DEBUG) {
+            Log.d(TAG, "initDbSearchIfNeed: ");
+        }
+        
+        if (mDataBaseTolls == null) {
+            mDataBaseTolls = new DataBaseTolls(DB_FILE_NAME, DB_VERSION);
+        }
+        return mDataBaseTolls.openDataBase();
+    }
+    
+    private void closeCursor(SearchView searchView) {
+        
+        if (searchView != null) {
+            CursorAdapter adapter = searchView.getSuggestionsAdapter();
+            if (adapter != null) {
+                Cursor cursor = adapter.swapCursor(null);
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+        }
     }
     
     private void setWeatherValues(CurrentWeather currentWeather) {
         
+        setBackground(mBackground, currentWeather.getWeather().get(0).getMain(), currentWeather.getWeather().get(0).getId());
         setWeatherIcon(mCurrentWeatherIcon, currentWeather.getWeather().get(0).getIcon());
-        setBackground(mBackground, currentWeather.getWeather().get(0).getMain() ,currentWeather.getWeather().get(0).getId());
         mCityName.setText(currentWeather.getCityName());
         mDateTime.setText(getTimeString(currentWeather.getCalculationDataTime(), WEATHER_TIME_STAMP_PATTERN, MIL_PER_SEC));
         mSunrise.setText(getTimeString(currentWeather.getSys().getSunrise(), SUN_TIME_STAMP_PATTERN, MIL_PER_SEC));
@@ -113,7 +278,8 @@ public class MainActivity extends AppCompatActivity {
         mPressure.setText(getResources().getString(R.string.pressure, currentWeather.getMain().getPressure()));
         mHumidity.setText(getResources().getString(R.string.humidity, currentWeather.getMain().getHumidity()));
         mCloudiness.setText(getResources().getString(R.string.cloudiness, currentWeather.getClouds().getAll()));
-        mWindDescription.setText(getResources().getString(R.string.wind, currentWeather.getWind().getSpeed(), determineWindDirection(currentWeather.getWind().getDeg())));
+        mWindDescription.setText(getResources().getString(R.string.wind, currentWeather.getWind().getSpeed(),
+                determineWindDirection(currentWeather.getWind().getDeg())));
     }
     
     private void setWeatherIcon(ImageView imageView, String iconId) {
@@ -122,27 +288,34 @@ public class MainActivity extends AppCompatActivity {
         App.getPicasso()
                 .load(imageUrl)
                 .memoryPolicy(MemoryPolicy.NO_STORE)
-                .placeholder(R.drawable.ic_system_update_alt_black_24dp)
                 .error(R.drawable.ic_highlight_off_red_500_24dp)
                 .into(imageView);
     }
     
     private void setBackground(ImageView imageView, String weatherGroup, int weatherId) {
         
-        int weatherDrawableId = getResources().getIdentifier((Integer.toString(weatherId)), "drawable", getApplicationContext().getPackageName());
-        int weatherGroupDrawableId = getResources().getIdentifier(weatherGroup, "drawable", getApplicationContext().getPackageName());
+        int weatherDrawableId = getResources().getIdentifier(WEATHER_DRAWABLE_PREFIX + (Integer.toString(weatherId)),
+                "drawable", getApplicationContext().getPackageName());
+        int weatherGroupDrawableId = getResources().getIdentifier(weatherGroup.toLowerCase(Locale.US),
+                "drawable", getApplicationContext().getPackageName());
+        if (weatherDrawableId == 0) {
+            weatherDrawableId = weatherGroupDrawableId;
+        }
+        if (weatherDrawableId == 0) {
+            weatherDrawableId = R.drawable.default_background;
+        }
+        
         App.getPicasso()
                 .load(weatherDrawableId)
-                .memoryPolicy(MemoryPolicy.NO_STORE)
-                .placeholder(R.drawable.default_background)
-                .error(weatherGroupDrawableId)
+                .error(R.drawable.default_background)
                 .into(imageView);
     }
     
     private String determineWindDirection(double deg) {
         
-        //TODO determine wind direction
-        return "Nord";
+        int direction = getResources().getIdentifier(WIND_DIRECTION_PREFIX + Integer.toString((int) Math.round(deg / WIND_DIRECTION_DIVIDER)),
+                "string", getApplicationContext().getPackageName());
+        return getResources().getString(direction);
     }
     
     private String getTimeString(long time, String timePattern) {
@@ -152,28 +325,40 @@ public class MainActivity extends AppCompatActivity {
     
     private String getTimeString(long time, String timePattern, long correction) {
         
-        return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time*correction));
+        return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time * correction));
     }
+    
     private void refreshWeather() {
         
-        showRefreshProgress(swipeRefreshLayout);
+        showRefreshProgress(mSwipeRefreshLayout);
         if (refreshIntervalIsRight() && isInternetAvailable()) {
             refreshWeatherData();
         } else {
-            hideRefreshProgress(swipeRefreshLayout);
+            hideRefreshProgress(mSwipeRefreshLayout);
+        }
+    }
+    
+    private void refreshWeather(int cityId) {
+        
+        showRefreshProgress(mSwipeRefreshLayout);
+        if (isInternetAvailable()) {
+            refreshWeatherData(cityId);
+        } else {
+            makeToast(getResources().getString(R.string.internet_not_available));
+            hideRefreshProgress(mSwipeRefreshLayout);
         }
     }
     
     private void refreshWeatherWitchMessage() {
         
-        swipeRefreshLayout.setEnabled(false);
+        mSwipeRefreshLayout.setEnabled(false);
         if (!refreshIntervalIsRight()) {
-            hideRefreshProgress(swipeRefreshLayout);
+            hideRefreshProgress(mSwipeRefreshLayout);
             String interval = getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences().getLong(LAST_REQUEST_TIME, 0)),
                     REFRESHING_TIME_STAMP_PATTERN);
             makeToast(getResources().getString(R.string.weather_refreshed, interval));
         } else if (!isInternetAvailable()) {
-            hideRefreshProgress(swipeRefreshLayout);
+            hideRefreshProgress(mSwipeRefreshLayout);
             makeToast(getResources().getString(R.string.internet_not_available));
         } else {
             refreshWeatherData();
@@ -199,8 +384,9 @@ public class MainActivity extends AppCompatActivity {
     
     private void refreshWeatherData(int cityId) {
         
-        currentWeatherCall = App.getOpenWeatherMapApi().getCurrentWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY);
-        currentWeatherCall.enqueue(new Callback<String>() {
+        mCurrentWeatherCall = App.getOpenWeatherMapApi().getCurrentWeather(cityId,
+                UNITS_PARAMETER_VALUE, API_KEY);
+        mCurrentWeatherCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 
@@ -234,13 +420,13 @@ public class MainActivity extends AppCompatActivity {
     
     private void weatherGetError() {
         
-        hideRefreshProgress(swipeRefreshLayout);
+        hideRefreshProgress(mSwipeRefreshLayout);
         makeToast(getResources().getString(R.string.weather_get_error));
     }
     
     private void weatherGetSuccessfully() {
         
-        hideRefreshProgress(swipeRefreshLayout);
+        hideRefreshProgress(mSwipeRefreshLayout);
         makeToast(getResources().getString(R.string.weather_updated));
     }
     

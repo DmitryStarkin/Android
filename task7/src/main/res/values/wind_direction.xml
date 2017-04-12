@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="d_0">N</string>
+    <string name="d_1">NNE</string>
+    <string name="d_2">NE</string>
+    <string name="d_3">ENE</string>
+    <string name="d_4">E</string>
+    <string name="d_5">ESE</string>
+    <string name="d_6">SE</string>
+    <string name="d_7">SSE</string>
+    <string name="d_8">S</string>
+    <string name="d_9">SSW</string>
+    <string name="d_10">SW</string>
+    <string name="d_11">WSW</string>
+    <string name="d_12">W</string>
+    <string name="d_13">WNW</string>
+    <string name="d_14">NW</string>
+    <string name="d_15">NNW</string>
+    <string name="d_16">N</string>
+</resources>
