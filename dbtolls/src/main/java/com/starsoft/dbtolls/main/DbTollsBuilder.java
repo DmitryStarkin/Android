@@ -13,6 +13,10 @@ public class DbTollsBuilder {
     private String mDbName;
     private int mDbVersion;
     private DataBaseFactory mDataBaseFactory;
+    private long mDataBaseIdleTime;
+    private long mThreadLiveTime;
+    private int mThreadNumber;
+    private int mThreadPriority;
     private WeakReference<DataBaseTolls.onCursorReadyListener> mCursorReadyListener;
     private WeakReference<DataBaseTolls.onDataWriteListener> mDataWriteListener;
     
@@ -45,6 +49,30 @@ public class DbTollsBuilder {
         return this;
     }
     
+    public DbTollsBuilder setNumberThreadsForProcessing(int number) {
+        
+        mThreadNumber = number;
+        return this;
+    }
+    
+    public DbTollsBuilder setNumberThreadsPriority(int priority) {
+        
+        mThreadPriority = priority;
+        return this;
+    }
+    
+    public DbTollsBuilder setThreadsIdleTime(long time) {
+        
+        mThreadLiveTime = time;
+        return this;
+    }
+    
+    public DbTollsBuilder setDBOpenedIdleTime(long time) {
+        
+        mDataBaseIdleTime = time;
+        return this;
+    }
+    
     public DbTollsBuilder setOnCursorReadyListener(DataBaseTolls.onCursorReadyListener listener) {
         
         mCursorReadyListener = new WeakReference<>(listener);
@@ -61,7 +89,7 @@ public class DbTollsBuilder {
         
         if (DataBaseTolls.instance == null) {
             DataBaseTolls.instance = new DataBaseTolls(context.getApplicationContext(), mDbName, mDbVersion, mDataBaseFactory,
-                    mCursorReadyListener, mDataWriteListener);
+                    mDataBaseIdleTime, mThreadLiveTime, mThreadNumber, mThreadPriority, mCursorReadyListener, mDataWriteListener);
             return DataBaseTolls.instance;
         } else {
             DataBaseTolls.instance.setOnCursorReadyListener(mCursorReadyListener.get());

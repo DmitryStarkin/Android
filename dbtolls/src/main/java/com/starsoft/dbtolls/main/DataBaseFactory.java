@@ -12,5 +12,5 @@ public interface DataBaseFactory {
     
     boolean beforeOpenDataBase(SQLiteDatabase db, DataBaseTolls dataBaseTolls);
     
-    void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls dataBaseTolls);
+    void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls dataBaseTolls, DataBaseTolls.DbReplacer replacer);
 }

@@ -7,9 +7,7 @@ package com.starsoft.dbtolls.main;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Message;
 import android.util.Log;
 import android.util.SparseIntArray;
@@ -35,11 +33,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static com.starsoft.dbtolls.BuildConfig.DEBUG;
 import static com.starsoft.dbtolls.setting.Constants.DEFAULT_DATA_BASE_IDLE_TIME;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_CLOSE_DB;
-import static com.starsoft.dbtolls.setting.Constants.MIN_IDLE_TIME;
-import static com.starsoft.dbtolls.setting.Constants.MIN_THREAD_NUMBER;
+import static com.starsoft.dbtolls.setting.Constants.MIN_DB_IDLE_TIME;
 import static com.starsoft.dbtolls.setting.Constants.NUMBER_OF_ATTEMPTS_OPEN_DB;
 import static com.starsoft.dbtolls.setting.Constants.SPARSE_ARRAY_INIT_CAPACITY;
-import static com.starsoft.dbtolls.setting.Constants.THREAD_IDLE_TIME;
+import static com.starsoft.dbtolls.setting.Constants.THREAD_DEFAULT_IDLE_TIME;
 import static com.starsoft.dbtolls.setting.Constants.THREAD_START_TERM;
 import static com.starsoft.dbtolls.setting.Constants.TIME_UNIT;
 
@@ -48,18 +45,21 @@ public class DataBaseTolls {
     static DataBaseTolls instance;
     private int attemptsDbOpen;
     private InputStream mDbInputStream;
-    private SparseIntArray mTasksCounter = new SparseIntArray(SPARSE_ARRAY_INIT_CAPACITY);
+    private SparseIntArray mTasksCounter;
     private boolean mDisableCallback;
     private boolean mNeedClose;
-    private long DataBaseIdleTime = DEFAULT_DATA_BASE_IDLE_TIME;
+    private long mDataBaseIdleTime;
     private long mThreadLiveTime;
+    private int mThreadNumber;
+    private int mThreadPriority;
     private DBHelper mDBHelper;
     private DBHandler mDBHandler;
     private DbCommandExecutor mExecutor;
     private WeakReference<onCursorReadyListener> mCursorReadyListener;
     private WeakReference<onDataWriteListener> mDataWriteListener;
     
-    DataBaseTolls(Context context, String dbName, int dbVersion, DataBaseFactory factory, WeakReference<onCursorReadyListener> onCursorReadyListener,
+    DataBaseTolls(Context context, String dbName, int dbVersion, DataBaseFactory factory, long dbIdleTime,
+                  long threadIdleTime, int threadNumber, int threadPriority, WeakReference<onCursorReadyListener> onCursorReadyListener,
                   WeakReference<onDataWriteListener> onDataWriteListener) {
         
         if (factory == null) {
@@ -67,16 +67,17 @@ public class DataBaseTolls {
         } else {
             mDBHelper = new DBHelper(context, dbName, null, dbVersion, factory);
         }
+        mTasksCounter = new SparseIntArray(SPARSE_ARRAY_INIT_CAPACITY);
+        if(dbIdleTime <= 0) {
+            mDataBaseIdleTime = DEFAULT_DATA_BASE_IDLE_TIME;
+        } else{
+            mDataBaseIdleTime = dbIdleTime;
+        }
+        mThreadLiveTime = threadIdleTime;
+        mThreadNumber = threadNumber;
+        mThreadPriority = threadPriority;
         mCursorReadyListener = onCursorReadyListener;
         mDataWriteListener = onDataWriteListener;
-    }
-    
-    public synchronized static DataBaseTolls getInstance() {
-        
-        if (instance == null) {
-            throw new IllegalStateException("DataBaseTolls instance not create");
-        }
-        return instance;
     }
     
     public void setOnCursorReadyListener(onCursorReadyListener listener) {
@@ -87,6 +88,32 @@ public class DataBaseTolls {
     public void setonDataWriteListener(onDataWriteListener listener) {
         
         mDataWriteListener = new WeakReference<>(listener);
+    }
+    
+    public synchronized static DataBaseTolls getInstance() {
+        
+        if (instance == null) {
+            throw new IllegalStateException("DataBaseTolls instance not create");
+        }
+        return instance;
+    }
+    
+    private DbCommandExecutor getExecutor() {
+        
+        if (mExecutor == null) {
+            
+            if(mThreadNumber <= 0 ){
+                mThreadNumber = Runtime.getRuntime().availableProcessors() + THREAD_START_TERM;
+            }
+            if(mThreadLiveTime <= 0){
+                mThreadLiveTime = THREAD_DEFAULT_IDLE_TIME;
+            }
+            
+            mExecutor = new DbCommandExecutor(mThreadNumber, mThreadNumber,
+                    mThreadLiveTime, TIME_UNIT, new LinkedBlockingQueue<Runnable>(), new DbThreadFactory(mThreadPriority));
+            mExecutor.allowCoreThreadTimeOut(true);
+        }
+        return mExecutor;
     }
     
     public synchronized DBHandler getDBHandler() {
@@ -164,18 +191,18 @@ public class DataBaseTolls {
         }
     }
     
-    public void destroy() {
+    public String getDbName() {
         
-        mDisableCallback = true;
-        mNeedClose = true;
-        clearAllTasks();
-        DataBaseIdleTime = MIN_IDLE_TIME;
-        startDbCloseTimerIfPossible();
+        if (mDBHelper != null) {
+            return mDBHelper.getDatabaseName();
+        } else {
+            return null;
+        }
     }
     
-    public void clearAllTasks() {
+    public int getDbVersion() {
         
-        getExecutor().purge();
+        return getDataBase().getVersion();
     }
     
     public void onCursorLoaded(int tag, Cursor cursor) {
@@ -200,6 +227,28 @@ public class DataBaseTolls {
         }
     }
     
+    public void closeDb() {
+        
+        if (mExecutor.getCount() == 0) {
+            closeDataBase();
+            if (mNeedClose) {
+                instance = null;
+            }
+        } else {
+            mDataBaseIdleTime = MIN_DB_IDLE_TIME;
+        }
+    }
+    
+    private void closeDataBase() {
+        
+        if (mDBHelper != null) mDBHelper.close();
+    }
+    
+    public void clearAllTasks() {
+        
+        getExecutor().purge();
+    }
+    
     private void startDbCloseTimerIfPossible() {
         
         if (mExecutor.getCount() == 0) {
@@ -211,7 +260,7 @@ public class DataBaseTolls {
         
         getDBHandler().removeMessages(MESSAGE_CLOSE_DB);
         Message message = getDBHandler().obtainMessage(MESSAGE_CLOSE_DB, this);
-        getDBHandler().sendMessageDelayed(message, DataBaseIdleTime);
+        getDBHandler().sendMessageDelayed(message, mDataBaseIdleTime);
     }
     
     private void stopDbCloseTimer() {
@@ -219,35 +268,32 @@ public class DataBaseTolls {
         getDBHandler().removeMessages(MESSAGE_CLOSE_DB);
     }
     
-    public void closeDb() {
+    private void incrementTaskCount(SparseIntArray array, int pos) {
         
-        if (mExecutor.getCount() == 0) {
-            closeDataBase();
-            if (mNeedClose) {
-                instance = null;
-            }
-        } else {
-            DataBaseIdleTime = MIN_IDLE_TIME;
-        }
+        int value = array.get(pos);
+        array.put(pos, ++value);
     }
     
-    private DbCommandExecutor getExecutor() {
+    private void decrementTaskCount(SparseIntArray array, int pos) {
         
-        if (mExecutor == null) {
-            int threadNumber = Runtime.getRuntime().availableProcessors() + THREAD_START_TERM;
-            threadNumber = threadNumber < MIN_THREAD_NUMBER ? MIN_THREAD_NUMBER : threadNumber;
-            
-            mExecutor = new DbCommandExecutor(threadNumber, threadNumber,
-                    THREAD_IDLE_TIME, TIME_UNIT, new LinkedBlockingQueue<Runnable>(),
-                    new DbThreadFactory());
-            mExecutor.allowCoreThreadTimeOut(true);
-        }
-        return mExecutor;
+        int value = array.get(pos);
+        array.put(pos, --value);
     }
     
-    private void closeDataBase() {
+    public void destroy() {
         
-        if (mDBHelper != null) mDBHelper.close();
+        mDisableCallback = true;
+        mNeedClose = true;
+        clearAllTasks();
+        mDataBaseIdleTime = MIN_DB_IDLE_TIME;
+        startDbCloseTimerIfPossible();
+    }
+    
+    private void cancelTasks(int tag) {
+        
+        while (cancelTask(tag)) {
+            decrementTaskCount(mTasksCounter, tag);
+        }
     }
     
     private boolean cancelTask(int tag) {
@@ -259,27 +305,6 @@ public class DataBaseTolls {
                 return null;
             }
         }, null));
-    }
-    
-    private void cancelTasks(int tag) {
-        
-        while (cancelTask(tag)) {
-            decrementTaskCount(mTasksCounter, tag);
-        }
-    }
-    
-    public String getDbName() {
-        
-        if (mDBHelper != null) {
-            return mDBHelper.getDatabaseName();
-        } else {
-            return null;
-        }
-    }
-    
-    public int getDbVersion() {
-        
-        return getDataBase().getVersion();
     }
     
     public Cursor getAllDataFromTable(SQLiteDatabase dataBase, String tableName) {
@@ -321,18 +346,6 @@ public class DataBaseTolls {
                 }
             }, sqlQuery));
         }
-    }
-    
-    private void incrementTaskCount(SparseIntArray array, int pos) {
-        
-        int value = array.get(pos);
-        array.put(pos, ++value);
-    }
-    
-    private void decrementTaskCount(SparseIntArray array, int pos) {
-        
-        int value = array.get(pos);
-        array.put(pos, --value);
     }
     
     public boolean executeSQLCommand(SQLiteDatabase dataBase, String sqlQuery) {
@@ -473,37 +486,6 @@ public class DataBaseTolls {
     public interface onDataWriteListener {
         
         void onDataWrite(boolean result);
-    }
-    
-    private class DBHelper extends SQLiteOpenHelper {
-        
-        private DataBaseFactory mDataBaseFactory;
-        
-        public DBHelper(Context context, String name, CursorFactory factory, int version, DataBaseFactory dBFactory) {
-            
-            super(context, name, factory, version);
-            mDataBaseFactory = dBFactory;
-        }
-        
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            
-            mDataBaseFactory.createDataBase(db, DataBaseTolls.this, new DbReplacer());
-        }
-        
-        @Override
-        public void onOpen(SQLiteDatabase db) {
-            
-            if (!mDataBaseFactory.beforeOpenDataBase(db, DataBaseTolls.this)) {
-                //TODO default open command
-            }
-        }
-        
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            
-            mDataBaseFactory.UpgradeDataBase(db, oldVersion, newVersion, DataBaseTolls.this);
-        }
     }
     
     public class DbReplacer {

@@ -17,6 +17,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 import static com.hplasplas.task7.setting.Constants.BASE_URL;
 import static com.hplasplas.task7.setting.Constants.DB_FILE_NAME;
 import static com.hplasplas.task7.setting.Constants.DB_VERSION;
+import static com.hplasplas.task7.setting.Constants.NUMBER_THREAD_FOR_QUERY;
 
 /**
  * Created by StarkinDG on 06.04.2017.
@@ -72,6 +73,7 @@ public class App extends Application {
         DbTollsBuilder dbTollsBuilder = new DbTollsBuilder();
         dbTollsBuilder.setName(DB_FILE_NAME)
                 .setVersion(DB_VERSION)
+                .setNumberThreadsForProcessing(NUMBER_THREAD_FOR_QUERY)
                 .setDataBaseFactory(new CityDbFactory())
                 .buildWith(this);
     }

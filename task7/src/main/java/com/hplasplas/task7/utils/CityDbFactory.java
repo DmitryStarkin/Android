@@ -37,7 +37,7 @@ public class CityDbFactory implements DataBaseFactory {
     }
     
     @Override
-    public void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls dataBaseTolls) {
+    public void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls dataBaseTolls, DataBaseTolls.DbReplacer replacer) {
         
     }
 }

@@ -145,15 +145,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         refreshWeather();
     }
     
-    private void refreshWeatherWithCursor(int CursorPosition) {
-        
-        Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
-        if (cursor != null) {
-            cursor.moveToPosition(CursorPosition);
-            refreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
-        }
-    }
-    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         
@@ -172,6 +163,26 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         DataBaseTolls.getInstance().clearAllTasks();
         cancelCall(mCurrentWeatherCall);
         closeCursor(mSearchView);
+    }
+    
+    private void closeCursor(SearchView searchView) {
+        
+        if (searchView != null) {
+            CursorAdapter adapter = searchView.getSuggestionsAdapter();
+            if (adapter != null) {
+                Cursor cursor = adapter.swapCursor(null);
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+        }
+    }
+    
+    private void cancelCall(Call call) {
+        
+        if (call != null) {
+            call.cancel();
+        }
     }
     
     private void findViews() {
@@ -237,19 +248,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 mSearchView.setQueryHint(getResources().getString(R.string.no_result));
             }
             //hideRefreshProgress(mSwipeRefreshLayout);
-        }
-    }
-    
-    private void closeCursor(SearchView searchView) {
-        
-        if (searchView != null) {
-            CursorAdapter adapter = searchView.getSuggestionsAdapter();
-            if (adapter != null) {
-                Cursor cursor = adapter.swapCursor(null);
-                if (cursor != null && !cursor.isClosed()) {
-                    cursor.close();
-                }
-            }
         }
     }
     
@@ -326,6 +324,15 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         }
     }
     
+    private void refreshWeatherWithCursor(int CursorPosition) {
+        
+        Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
+        if (cursor != null) {
+            cursor.moveToPosition(CursorPosition);
+            refreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
+        }
+    }
+    
     private void refreshWeather(int cityId) {
         
         showRefreshProgress(mSwipeRefreshLayout);
@@ -351,6 +358,17 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         } else {
             refreshWeatherData();
         }
+    }
+    
+    private boolean refreshIntervalIsRight() {
+        
+        long curTime = System.currentTimeMillis();
+        return curTime > PreferencesManager.getPreferences().getLong(LAST_REQUEST_TIME, 0) + MIN_REQUEST_INTERVAL;
+    }
+    
+    private boolean isInternetAvailable() {
+        
+        return InternetConnectionChecker.isInternetAvailable();
     }
     
     private void showRefreshProgress(SwipeRefreshLayout swipeRefreshLayout) {
@@ -392,13 +410,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 weatherGetError();
             }
         });
-    }
-    
-    private void cancelCall(Call call) {
-        
-        if (call != null) {
-            call.cancel();
-        }
     }
     
     private void makeToast(String message) {
@@ -444,14 +455,5 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         setWeatherValues(currentWeather);
     }
     
-    private boolean refreshIntervalIsRight() {
-        
-        long curTime = System.currentTimeMillis();
-        return curTime > PreferencesManager.getPreferences().getLong(LAST_REQUEST_TIME, 0) + MIN_REQUEST_INTERVAL;
-    }
     
-    private boolean isInternetAvailable() {
-        
-        return InternetConnectionChecker.isInternetAvailable();
-    }
 }
