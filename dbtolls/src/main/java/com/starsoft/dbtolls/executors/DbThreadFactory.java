@@ -17,6 +17,7 @@ public class DbThreadFactory implements ThreadFactory {
     
     @Override
     public Thread newThread(@NonNull Runnable runnable) {
+        
         Thread thread = new Thread(runnable);
         thread.setName(THREAD_NAME_PREFIX + count++);
         thread.setDaemon(true);

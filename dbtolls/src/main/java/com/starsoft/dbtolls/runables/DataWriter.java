@@ -17,7 +17,7 @@ public class DataWriter<T> implements Runnable {
     private boolean result;
     private T args;
     
-    public DataWriter(DBWriter writer, T args){
+    public DataWriter(DBWriter writer, T args) {
         
     }
     
@@ -29,23 +29,22 @@ public class DataWriter<T> implements Runnable {
         message.sendToTarget();
     }
     
-    public void onPostWrite(){
+    public void onPostWrite() {
         
-        try{
+        try {
             DataBaseTolls.getInstance().onDataWrite(result);
-        }finally {
+        } finally {
             clearReference();
         }
     }
     
-    private void clearReference(){
+    private void clearReference() {
+        
         mDBWriter = null;
     }
     
-    public interface DBWriter<T>{
+    public interface DBWriter<T> {
         
         boolean writeData(SQLiteDatabase dataBase, T args);
-        
     }
-    
 }

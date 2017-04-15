@@ -38,7 +38,7 @@ public class CurrentWeather {
     private Sys sys;
     @SerializedName("id")
     @Expose
-    private long cityId;
+    private int cityId;
     @SerializedName("name")
     @Expose
     private String cityName;
@@ -118,11 +118,11 @@ public class CurrentWeather {
         this.sys = sys;
     }
 
-    public long getCityId() {
+    public int getCityId() {
         return cityId;
     }
 
-    public void setCityId(long id) {
+    public void setCityId(int id) {
         this.cityId = id;
     }
 

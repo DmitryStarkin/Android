@@ -8,10 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 public interface DataBaseFactory {
     
+    void createDataBase(SQLiteDatabase db, DataBaseTolls dataBaseTolls, DataBaseTolls.DbReplacer replacer);
     
-    void createDataBase(SQLiteDatabase db, DataBaseTolls myDataBaseTolls);
-    boolean beforeOpenDataBase(SQLiteDatabase db, DataBaseTolls myDataBaseTolls);
-    void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls myDataBaseTolls);
+    boolean beforeOpenDataBase(SQLiteDatabase db, DataBaseTolls dataBaseTolls);
     
-    
+    void UpgradeDataBase(SQLiteDatabase db, int oldVersion, int newVersion, DataBaseTolls dataBaseTolls);
 }

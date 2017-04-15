@@ -18,19 +18,19 @@ public class DbTollsBuilder {
     
     public DbTollsBuilder setName(String name) {
         
-            if (name == null) {
-                throw new IllegalStateException("Name is null");
-            }
-            mDbName = name;
+        if (name == null) {
+            throw new IllegalStateException("Name is null");
+        }
+        mDbName = name;
         return this;
     }
     
     public DbTollsBuilder setVersion(int version) {
         
-            if (version < 1) {
-                throw new IllegalStateException("Version must be large of 0");
-            }
-            mDbVersion = version;
+        if (version < 1) {
+            throw new IllegalStateException("Version must be large of 0");
+        }
+        mDbVersion = version;
         return this;
     }
     

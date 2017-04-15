@@ -16,11 +16,12 @@ public class CursorLoader implements Runnable {
     
     private CursorGetter mCursorGetter;
     private Cursor mCursor;
-    String[] mArgs;
+    private String[] mArgs;
+    private int mTag;
     
-    public CursorLoader(CursorGetter getter, String... args){
+    public CursorLoader(int tag, CursorGetter getter, String... args) {
         
-        
+        mTag = tag;
         mCursorGetter = getter;
         mArgs = args;
     }
@@ -28,27 +29,37 @@ public class CursorLoader implements Runnable {
     @Override
     public void run() {
         
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mCursor = mCursorGetter.getCursor(DataBaseTolls.getInstance().getDataBase(), mArgs);
         
         Message message = DataBaseTolls.getInstance().getDBHandler().obtainMessage(MESSAGE_GET_CURSOR, this);
         message.sendToTarget();
-                
     }
     
-    public void onPostCursorLoad(){
+    public void onPostCursorLoad() {
         
-        try{
-            DataBaseTolls.getInstance().onCursorLoaded(mCursor);
-        }finally {
+        try {
+            DataBaseTolls.getInstance().onCursorLoaded(mTag, mCursor);
+        } finally {
             clearReference();
         }
     }
     
-    private void clearReference(){
+    private void clearReference() {
         
         mCursorGetter = null;
         mCursor = null;
         mArgs = null;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        
+        return (obj instanceof CursorLoader) && (((CursorLoader) obj).mTag == this.mTag);
     }
     
     public interface CursorGetter {

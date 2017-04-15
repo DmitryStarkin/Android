@@ -21,9 +21,9 @@ import com.hplasplas.task7.R;
 import com.hplasplas.task7.dialogs.MessageDialog;
 import com.hplasplas.task7.managers.PreferencesManager;
 import com.hplasplas.task7.models.weather.current.CurrentWeather;
-import com.hplasplas.task7.utils.DataBaseTolls;
 import com.hplasplas.task7.utils.InternetConnectionChecker;
 import com.squareup.picasso.MemoryPolicy;
+import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,7 +35,7 @@ import retrofit2.Response;
 
 import static com.hplasplas.task7.setting.Constants.*;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DataBaseTolls.onCursorReadyListener {
     
     private final String TAG = getClass().getSimpleName();
     
@@ -55,12 +55,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView mSunrise;
     private TextView mSunset;
     private Call<String> mCurrentWeatherCall;
-    private DataBaseTolls mDataBaseTolls;
+    private boolean mClearText;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
+        DataBaseTolls.getInstance().setOnCursorReadyListener(this);
         setContentView(R.layout.activity_main);
         findViews();
         adjustViews();
@@ -88,9 +89,10 @@ public class MainActivity extends AppCompatActivity {
                 if (DEBUG) {
                     Log.d(TAG, "onMenuItemActionCollapse: ");
                 }
+                DataBaseTolls.getInstance().clearAllTasks();
                 mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
                 closeCursor(mSearchView);
-                closeDb();
+                hideRefreshProgress(mSwipeRefreshLayout);
                 return true;
             }
         });
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onSuggestionClick(int position) {
                 
-                writeIdAndRefreshWeather(position);
+                refreshWeatherWithCursor(position);
                 mSearchMenuItem.collapseActionView();
                 return true;
             }
@@ -143,14 +145,11 @@ public class MainActivity extends AppCompatActivity {
         refreshWeather();
     }
     
-    private void writeIdAndRefreshWeather(int position) {
+    private void refreshWeatherWithCursor(int CursorPosition) {
         
         Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
         if (cursor != null) {
-            cursor.moveToPosition(position);
-            PreferencesManager.getPreferences().edit()
-                    .putInt(PREF_FOR_CURRENT_CITY_ID, cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)))
-                    .apply();
+            cursor.moveToPosition(CursorPosition);
             refreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
         }
     }
@@ -170,16 +169,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         
         super.onPause();
+        DataBaseTolls.getInstance().clearAllTasks();
         cancelCall(mCurrentWeatherCall);
         closeCursor(mSearchView);
-        closeDb();
-    }
-    
-    private void closeDb() {
-        
-        if (mDataBaseTolls != null) {
-            mDataBaseTolls.closeDataBase();
-        }
     }
     
     private void findViews() {
@@ -219,37 +211,33 @@ public class MainActivity extends AppCompatActivity {
     
     private void refreshCityList(String query, boolean clearText) {
         
-        try {
-            if (initDbSearchIfNeed()) {
-                Cursor cursor = mDataBaseTolls.getDataUsingSQLCommand(query);
-                Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
-                if (oldCursor != null && !oldCursor.isClosed()) {
-                    oldCursor.close();
-                }
-                if (clearText && (cursor == null || !cursor.moveToFirst())) {
-                    mSearchView.setQuery(null, false);
-                    mSearchView.setQueryHint(getResources().getString(R.string.no_result));
-                }
-                
-                if (DEBUG) {
-                    Log.d(TAG, "refreshCityList: ");
-                }
-            }
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
+        if (DEBUG) {
+            Log.d(TAG, "refreshCityList: ");
         }
+        mClearText = clearText;
+        DataBaseTolls.getInstance().getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
+        //showRefreshProgress(mSwipeRefreshLayout);
     }
     
-    private boolean initDbSearchIfNeed() {
+    @Override
+    public void onCursorReady(Cursor cursor) {
         
         if (DEBUG) {
-            Log.d(TAG, "initDbSearchIfNeed: ");
+            Log.d(TAG, "onCursorReady: ");
         }
-        
-        if (mDataBaseTolls == null) {
-            mDataBaseTolls = new DataBaseTolls(DB_FILE_NAME, DB_VERSION);
+        if (mSearchMenuItem == null || !mSearchMenuItem.isActionViewExpanded()) {
+            cursor.close();
+        } else {
+            Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
+            if (oldCursor != null && !oldCursor.isClosed()) {
+                oldCursor.close();
+            }
+            if (mClearText && (cursor == null || !cursor.moveToFirst())) {
+                mSearchView.setQuery(null, false);
+                mSearchView.setQueryHint(getResources().getString(R.string.no_result));
+            }
+            //hideRefreshProgress(mSwipeRefreshLayout);
         }
-        return mDataBaseTolls.openDataBase();
     }
     
     private void closeCursor(SearchView searchView) {
@@ -449,7 +437,11 @@ public class MainActivity extends AppCompatActivity {
     
     private void prepareCurrentWeatherData(String jsonCurrentWeather) {
         
-        setWeatherValues(App.getGson().fromJson(jsonCurrentWeather, CurrentWeather.class));
+        CurrentWeather currentWeather = App.getGson().fromJson(jsonCurrentWeather, CurrentWeather.class);
+        PreferencesManager.getPreferences().edit()
+                .putInt(PREF_FOR_CURRENT_CITY_ID, currentWeather.getCityId())
+                .apply();
+        setWeatherValues(currentWeather);
     }
     
     private boolean refreshIntervalIsRight() {
