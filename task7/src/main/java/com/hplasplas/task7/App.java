@@ -1,23 +1,17 @@
 package com.hplasplas.task7;
 
 import android.app.Application;
-import android.content.Context;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.hplasplas.task7.interfaces.OpenWeatherMapApi;
-import com.hplasplas.task7.utils.CityDbFactory;
-import com.jakewharton.picasso.OkHttp3Downloader;
-import com.squareup.picasso.Picasso;
-import com.starsoft.dbtolls.main.DbTollsBuilder;
-
-import retrofit2.Retrofit;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
-
-import static com.hplasplas.task7.setting.Constants.BASE_URL;
-import static com.hplasplas.task7.setting.Constants.DB_FILE_NAME;
-import static com.hplasplas.task7.setting.Constants.DB_VERSION;
-import static com.hplasplas.task7.setting.Constants.NUMBER_THREAD_FOR_QUERY;
+import com.hplasplas.task7.components.AppComponent;
+import com.hplasplas.task7.components.DaggerAppComponent;
+import com.hplasplas.task7.modules.AppModule;
+import com.hplasplas.task7.modules.DataBaseFactoryModule;
+import com.hplasplas.task7.modules.DbTollsModule;
+import com.hplasplas.task7.modules.DownloaderModule;
+import com.hplasplas.task7.modules.GSONModule;
+import com.hplasplas.task7.modules.OpenWeatherMapApiModule;
+import com.hplasplas.task7.modules.PicassoModule;
+import com.hplasplas.task7.modules.RetrofitModule;
 
 /**
  * Created by StarkinDG on 06.04.2017.
@@ -25,56 +19,30 @@ import static com.hplasplas.task7.setting.Constants.NUMBER_THREAD_FOR_QUERY;
 
 public class App extends Application {
     
-    private static App instance;
-    private static OpenWeatherMapApi sOpenWeatherMapApi;
-    private static Gson sGson;
-    private static Picasso sPicasso;
+    private static AppComponent sAppComponent;
     
-    private static synchronized App getInstance() {
+    public static AppComponent getAppComponent() {
         
-        return instance;
-    }
-    
-    public static synchronized Context getAppContext() {
-        
-        return getInstance().getApplicationContext();
-    }
-    
-    public static OpenWeatherMapApi getOpenWeatherMapApi() {
-        
-        return sOpenWeatherMapApi;
-    }
-    
-    public static Gson getGson() {
-        
-        return sGson;
-    }
-    
-    public static Picasso getPicasso() {
-        
-        return sPicasso;
+        return sAppComponent;
     }
     
     @Override
     public void onCreate() {
-        
         super.onCreate();
-        instance = this;
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .build();
-        sOpenWeatherMapApi = retrofit.create(OpenWeatherMapApi.class);
-        GsonBuilder builder = new GsonBuilder();
-        sGson = builder.create();
-        sPicasso = new Picasso.Builder(this)
-                .downloader(new OkHttp3Downloader(this, Integer.MAX_VALUE))
-                .build();
-        DbTollsBuilder dbTollsBuilder = new DbTollsBuilder();
-        dbTollsBuilder.setName(DB_FILE_NAME)
-                .setVersion(DB_VERSION)
-                .setNumberThreadsForProcessing(NUMBER_THREAD_FOR_QUERY)
-                .setDataBaseFactory(new CityDbFactory())
-                .buildWith(this);
+        sAppComponent = buildComponent();
+    }
+    
+    public AppComponent buildComponent(){
+        
+       return DaggerAppComponent.builder()
+               .appModule(new AppModule(this))
+               .dataBaseFactoryModule(new DataBaseFactoryModule())
+               .dbTollsModule(new DbTollsModule())
+               .downloaderModule(new DownloaderModule())
+               .gSONModule(new GSONModule())
+               .openWeatherMapApiModule(new OpenWeatherMapApiModule())
+               .picassoModule(new PicassoModule())
+               .retrofitModule(new RetrofitModule())
+               .build();
     }
 }

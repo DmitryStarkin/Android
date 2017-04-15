@@ -16,18 +16,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.hplasplas.task7.App;
 import com.hplasplas.task7.R;
 import com.hplasplas.task7.dialogs.MessageDialog;
+import com.hplasplas.task7.interfaces.OpenWeatherMapApi;
 import com.hplasplas.task7.managers.PreferencesManager;
 import com.hplasplas.task7.models.weather.current.CurrentWeather;
 import com.hplasplas.task7.utils.InternetConnectionChecker;
 import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import javax.inject.Inject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +43,15 @@ import static com.hplasplas.task7.setting.Constants.*;
 public class MainActivity extends AppCompatActivity implements DataBaseTolls.onCursorReadyListener {
     
     private final String TAG = getClass().getSimpleName();
+    
+    @Inject
+    public Picasso mPicasso;
+    @Inject
+    public OpenWeatherMapApi mOpenWeatherMapApi;
+    @Inject
+    public Gson mGson;
+    @Inject
+    public DataBaseTolls mDataBaseTolls;
     
     private SearchView mSearchView;
     private MenuItem mSearchMenuItem;
@@ -61,7 +75,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     protected void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
-        DataBaseTolls.getInstance().setOnCursorReadyListener(this);
+        App.getAppComponent().inject(this);
+        mDataBaseTolls.setOnCursorReadyListener(this);
         setContentView(R.layout.activity_main);
         findViews();
         adjustViews();
@@ -160,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     protected void onPause() {
         
         super.onPause();
-        DataBaseTolls.getInstance().clearAllTasks();
+        mDataBaseTolls.clearAllTasks();
         cancelCall(mCurrentWeatherCall);
         closeCursor(mSearchView);
     }
@@ -226,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
             Log.d(TAG, "refreshCityList: ");
         }
         mClearText = clearText;
-        DataBaseTolls.getInstance().getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
+        mDataBaseTolls.getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
         //showRefreshProgress(mSwipeRefreshLayout);
     }
     
@@ -271,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private void setWeatherIcon(ImageView imageView, String iconId) {
         
         String imageUrl = ICON_DOWNLOAD_URL + iconId + ICON_FILE_SUFFIX;
-        App.getPicasso()
+        mPicasso
                 .load(imageUrl)
                 .memoryPolicy(MemoryPolicy.NO_STORE)
                 .error(R.drawable.ic_highlight_off_red_500_24dp)
@@ -290,8 +305,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         if (weatherDrawableId == 0) {
             weatherDrawableId = R.drawable.default_background;
         }
-        
-        App.getPicasso()
+    
+        mPicasso
                 .load(weatherDrawableId)
                 .error(R.drawable.default_background)
                 .into(imageView);
@@ -349,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         mSwipeRefreshLayout.setEnabled(false);
         if (!refreshIntervalIsRight()) {
             hideRefreshProgress(mSwipeRefreshLayout);
-            String interval = getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences().getLong(LAST_REQUEST_TIME, 0)),
+            String interval = getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0)),
                     REFRESHING_TIME_STAMP_PATTERN);
             makeToast(getResources().getString(R.string.weather_refreshed, interval));
         } else if (!isInternetAvailable()) {
@@ -363,12 +378,12 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private boolean refreshIntervalIsRight() {
         
         long curTime = System.currentTimeMillis();
-        return curTime > PreferencesManager.getPreferences().getLong(LAST_REQUEST_TIME, 0) + MIN_REQUEST_INTERVAL;
+        return curTime > PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0) + MIN_REQUEST_INTERVAL;
     }
     
     private boolean isInternetAvailable() {
         
-        return InternetConnectionChecker.isInternetAvailable();
+        return InternetConnectionChecker.isInternetAvailable(this);
     }
     
     private void showRefreshProgress(SwipeRefreshLayout swipeRefreshLayout) {
@@ -385,12 +400,12 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void refreshWeatherData() {
         
-        refreshWeatherData(PreferencesManager.getPreferences().getInt(PREF_FOR_CURRENT_CITY_ID, DEFAULT_CITY_ID));
+        refreshWeatherData(PreferencesManager.getPreferences(this).getInt(PREF_FOR_CURRENT_CITY_ID, DEFAULT_CITY_ID));
     }
     
     private void refreshWeatherData(int cityId) {
         
-        mCurrentWeatherCall = App.getOpenWeatherMapApi().getCurrentWeather(cityId,
+        mCurrentWeatherCall = mOpenWeatherMapApi.getCurrentWeather(cityId,
                 UNITS_PARAMETER_VALUE, API_KEY);
         mCurrentWeatherCall.enqueue(new Callback<String>() {
             @Override
@@ -431,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void writeAndPrepareCurrentWeatherData(String jsonCurrentWeather) {
         
-        PreferencesManager.getPreferences().edit()
+        PreferencesManager.getPreferences(this).edit()
                 .putString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, jsonCurrentWeather)
                 .putLong(LAST_REQUEST_TIME, System.currentTimeMillis())
                 .apply();
@@ -440,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void getAndPrepareLastWeatherData() {
         
-        String jsonCurrentWeather = PreferencesManager.getPreferences().getString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, null);
+        String jsonCurrentWeather = PreferencesManager.getPreferences(this).getString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, null);
         if (jsonCurrentWeather != null) {
             prepareCurrentWeatherData(jsonCurrentWeather);
         }
@@ -448,8 +463,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void prepareCurrentWeatherData(String jsonCurrentWeather) {
         
-        CurrentWeather currentWeather = App.getGson().fromJson(jsonCurrentWeather, CurrentWeather.class);
-        PreferencesManager.getPreferences().edit()
+        CurrentWeather currentWeather = mGson.fromJson(jsonCurrentWeather, CurrentWeather.class);
+        PreferencesManager.getPreferences(this).edit()
                 .putInt(PREF_FOR_CURRENT_CITY_ID, currentWeather.getCityId())
                 .apply();
         setWeatherValues(currentWeather);

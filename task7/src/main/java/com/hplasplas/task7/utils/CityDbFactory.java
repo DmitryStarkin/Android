@@ -1,9 +1,9 @@
 package com.hplasplas.task7.utils;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
-import com.hplasplas.task7.App;
 import com.starsoft.dbtolls.main.DataBaseFactory;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
@@ -18,11 +18,17 @@ import static com.hplasplas.task7.setting.Constants.DB_FILE_NAME;
 
 public class CityDbFactory implements DataBaseFactory {
     
+    private Context appContext;
+    
+    public CityDbFactory(Context context){
+        appContext = context;
+    }
+    
     @Override
     public void createDataBase(SQLiteDatabase db, DataBaseTolls dataBaseTolls, DataBaseTolls.DbReplacer replacer) {
         
         try {
-            InputStream inputStream = App.getAppContext().getAssets().open(DB_FILE_NAME);
+            InputStream inputStream = appContext.getAssets().open(DB_FILE_NAME);
             replacer.replaceFrom(inputStream);
         } catch (IOException e) {
             e.printStackTrace();

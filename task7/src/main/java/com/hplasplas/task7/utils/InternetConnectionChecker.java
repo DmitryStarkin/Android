@@ -4,8 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.hplasplas.task7.App;
-
 /**
  * Created by StarkinDG on 07.04.2017.
  */
@@ -15,17 +13,17 @@ public class InternetConnectionChecker {
     private static final String URL_FOR_CHECKING = "http://www.google.com/";
     private static final int CONNECTION_TIMEOUT = 1000;
     
-    private static boolean isConnected() {
+    private static boolean isConnected(Context context) {
         
-        ConnectivityManager cm = (ConnectivityManager) App.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
     
-    private static NetworkInfo getNetworkInfo() {
+    private static NetworkInfo getNetworkInfo(Context context) {
         
-        if (isConnected()) {
-            return ((ConnectivityManager) App.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        if (isConnected(context)) {
+            return ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         } else {
             return null;
         }
@@ -52,9 +50,9 @@ public class InternetConnectionChecker {
         return true;
     }
     
-    public static boolean isInternetAvailable() {
+    public static boolean isInternetAvailable(Context context) {
         
-        return isConnected() && isOnline();
+        return isConnected(context) && isOnline();
     }
     
     public static boolean isWiFi() {
