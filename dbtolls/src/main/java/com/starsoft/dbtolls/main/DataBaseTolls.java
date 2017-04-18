@@ -126,9 +126,9 @@ public class DataBaseTolls {
     
     public synchronized SQLiteDatabase getDataBase() {
         
+        SQLiteDatabase db = getDb();
+        boolean dbFileCorrupted = false;
         if (mDbInputStream != null) {
-            boolean dbFileCorrupted = false;
-            SQLiteDatabase db = getDb();
             int currentVersion = db.getVersion();
             String dbFile = db.getPath();
             db.close();
@@ -157,23 +157,25 @@ public class DataBaseTolls {
                     e.printStackTrace();
                 }
                 mDbInputStream = null;
-                if (dbFileCorrupted) {
+                if (dbFileCorrupted && (attemptsDbOpen <= NUMBER_OF_ATTEMPTS_OPEN_DB)) {
                     File corruptedDbFile = new File(dbFile);
                     if (corruptedDbFile.delete()) {
                         attemptsDbOpen++;
+                        getDataBase();
                     }
-                } else {
+                } else if(!dbFileCorrupted){
                     db = SQLiteDatabase.openDatabase(dbFile, null, SQLiteDatabase.OPEN_READWRITE);
                     db.setVersion(currentVersion);
                     db.close();
                 }
             }
         }
-        if (attemptsDbOpen <= NUMBER_OF_ATTEMPTS_OPEN_DB) {
-            return getDb();
-        } else {
+        if (dbFileCorrupted) {
             throw new SQLiteException("Fail to open db, all attempts used");
+        } else if(db.isOpen()){
+            return db;
         }
+        return getDb();
     }
     
     private SQLiteDatabase getDb() {

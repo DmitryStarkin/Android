@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         }
         mClearText = clearText;
         mDataBaseTolls.getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
-        //showRefreshProgress(mSwipeRefreshLayout);
+        showRefreshProgress(mSwipeRefreshLayout);
     }
     
     @Override
@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 mSearchView.setQuery(null, false);
                 mSearchView.setQueryHint(getResources().getString(R.string.no_result));
             }
-            //hideRefreshProgress(mSwipeRefreshLayout);
+            hideRefreshProgress(mSwipeRefreshLayout);
         }
     }
     
