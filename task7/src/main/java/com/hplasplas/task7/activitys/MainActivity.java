@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private void createSuggestionAdapter() {
         
         if (mSearchView.getSuggestionsAdapter() == null) {
-            int[] to = {R.id.city_item};
+            int[] to = {R.id.city_item, R.id.country};
             SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.city_search_item,
                     null, COLUMNS_CITY_NAME, to, 0);
             mSearchView.setSuggestionsAdapter(adapter);
