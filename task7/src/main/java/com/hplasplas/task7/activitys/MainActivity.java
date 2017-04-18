@@ -12,7 +12,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private TextView mCloudiness;
     private TextView mSunrise;
     private TextView mSunset;
+    private ProgressBar mCityFindBar;
     private Call<String> mCurrentWeatherCall;
     private boolean mClearText;
     
@@ -107,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 DataBaseTolls.getInstance().clearAllTasks();
                 mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
                 closeCursor(mSearchView);
-                hideRefreshProgress(mSwipeRefreshLayout);
+                mCityFindBar.setVisibility(View.INVISIBLE);
                 return true;
             }
         });
@@ -204,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
+        mCityFindBar = (ProgressBar) findViewById(R.id.city_find_bar);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
         mCurrentWeatherIcon = (ImageView) findViewById(R.id.weather_icon);
         mBackground = (ImageView) findViewById(R.id.background_image);
@@ -221,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void adjustViews() {
         
+        mCityFindBar.setVisibility(View.INVISIBLE);
         mSwipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
         mSwipeRefreshLayout.setProgressViewEndTarget(true, mSwipeRefreshLayout.getProgressCircleDiameter() + REFRESH_INDICATOR_OFFSET);
     }
@@ -242,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         }
         mClearText = clearText;
         mDataBaseTolls.getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
-        showRefreshProgress(mSwipeRefreshLayout);
+        mCityFindBar.setVisibility(View.VISIBLE);
     }
     
     @Override
@@ -262,8 +267,9 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 mSearchView.setQuery(null, false);
                 mSearchView.setQueryHint(getResources().getString(R.string.no_result));
             }
-            hideRefreshProgress(mSwipeRefreshLayout);
+            mCityFindBar.setVisibility(View.INVISIBLE);
         }
+        
     }
     
     private void setWeatherValues(CurrentWeather currentWeather) {

@@ -87,13 +87,11 @@
         app:layout_constraintTop_toTopOf="@+id/temperature"
         app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
         app:layout_constraintBottom_toBottomOf="@+id/temperature"
-        app:layout_constraintVertical_bias="0.5"
         app:layout_constraintRight_toLeftOf="@+id/temperature"
         android:layout_marginRight="8dp"
         tools:ignore="ContentDescription"
         android:layout_marginEnd="8dp"
-        tools:layout_editor_absoluteY="222dp"
-        tools:layout_editor_absoluteX="34dp"/>
+        />
 
     <TextView
         android:id="@+id/weather_description"
@@ -265,6 +263,24 @@
         app:layout_constraintLeft_toLeftOf="@+id/background_image"
         app:layout_constraintRight_toRightOf="@+id/background_image"
         app:layout_constraintTop_toTopOf="@+id/background_image"/>
+
+    <com.starsoft.customwidgets.MaterialProgressBar
+        android:id="@+id/city_find_bar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/city_find_progress_height"
+        android:indeterminate="true"
+        android:padding="0dp"
+        android:visibility="visible"
+        app:backgroundColour="@color/ProgressPrimary"
+        app:duration="@integer/progress_height_anim_dur"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginTop="0dp"
+        app:progressColour="@color/ProgressSec"/>
+
 
 </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

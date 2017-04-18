@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    compile "com.google.dagger:dagger:2.10"
+    compile 'com.google.dagger:dagger:2.10'
     annotationProcessor "com.google.dagger:dagger-compiler:2.10"
     provided 'javax.annotation:jsr250-api:1.0'
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -43,5 +43,5 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-scalars:2.2.0'
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile project(':dbtolls')
-
+    compile project(':customwidgets')
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="city_find_progress_height">5dp</dimen>
+    <integer name="progress_height_anim_dur">1000</integer>
+</resources>
