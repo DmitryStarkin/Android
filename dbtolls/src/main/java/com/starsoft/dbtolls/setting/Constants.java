@@ -12,6 +12,7 @@ public final class Constants {
     public static final int MESSAGE_GET_CURSOR = 0;
     public static final int MESSAGE_WRITE_DATA = 1;
     public static final int MESSAGE_CLOSE_DB = 2;
+    public static final int MESSAGE_ERROR = 3;
     
     //tread Pool values
     public static final int THREAD_START_TERM = 0;
@@ -24,4 +25,7 @@ public final class Constants {
     public static final int SPARSE_ARRAY_INIT_CAPACITY = 5;
     public static final long DEFAULT_DATA_BASE_IDLE_TIME = 30000;
     public static final int NUMBER_OF_ATTEMPTS_OPEN_DB = 3;
+    
+    //other
+    public static final int DB_COPY_BUFFER_LENGTH = 1024;
 }

@@ -2,22 +2,21 @@ package com.starsoft.dbtolls.runables;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Message;
 
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
+import static com.starsoft.dbtolls.setting.Constants.MESSAGE_ERROR;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_GET_CURSOR;
 
 /**
  * Created by StarkinDG on 12.04.2017.
  */
 
-public class CursorLoader implements Runnable {
+public class CursorLoader extends DbWorker {
     
     private CursorGetter mCursorGetter;
     private Cursor mCursor;
     private String[] mArgs;
-    private int mTag;
     
     public CursorLoader(int tag, CursorGetter getter, String... args) {
         
@@ -31,13 +30,16 @@ public class CursorLoader implements Runnable {
         
         try {
             Thread.sleep(800);
-        } catch (InterruptedException e) {
+            mCursor = mCursorGetter.getCursor(DataBaseTolls.getInstance().getDataBase(), mArgs);
+            sendHandlerMessage(MESSAGE_GET_CURSOR);
+        } catch (Exception e){
             e.printStackTrace();
+            mThrowable = e;
+            if(mCursor != null){
+                mCursor.close();
+            }
+            sendHandlerMessage(MESSAGE_ERROR);
         }
-        mCursor = mCursorGetter.getCursor(DataBaseTolls.getInstance().getDataBase(), mArgs);
-        
-        Message message = DataBaseTolls.getInstance().getDBHandler().obtainMessage(MESSAGE_GET_CURSOR, this);
-        message.sendToTarget();
     }
     
     public void onPostCursorLoad() {
@@ -49,7 +51,8 @@ public class CursorLoader implements Runnable {
         }
     }
     
-    private void clearReference() {
+    @Override
+    void clearReference() {
         
         mCursorGetter = null;
         mCursor = null;
@@ -64,6 +67,6 @@ public class CursorLoader implements Runnable {
     
     public interface CursorGetter {
         
-        Cursor getCursor(SQLiteDatabase dataBase, String... args);
+        Cursor getCursor(SQLiteDatabase dataBase, String... args) throws Exception;
     }
 }

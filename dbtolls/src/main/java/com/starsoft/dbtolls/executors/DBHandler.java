@@ -7,8 +7,10 @@ import android.os.Message;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 import com.starsoft.dbtolls.runables.CursorLoader;
 import com.starsoft.dbtolls.runables.DataWriter;
+import com.starsoft.dbtolls.runables.DbWorker;
 
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_CLOSE_DB;
+import static com.starsoft.dbtolls.setting.Constants.MESSAGE_ERROR;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_GET_CURSOR;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_WRITE_DATA;
 
@@ -32,6 +34,8 @@ public class DBHandler extends Handler {
             ((DataWriter) msg.obj).onPostWrite();
         } else if (msg.what == MESSAGE_CLOSE_DB) {
             ((DataBaseTolls) msg.obj).closeDb();
+        } else if (msg.what == MESSAGE_ERROR){
+            ((DbWorker)msg.obj).onError();
         }
     }
 }

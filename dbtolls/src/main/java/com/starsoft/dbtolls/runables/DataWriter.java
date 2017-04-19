@@ -1,50 +1,63 @@
 package com.starsoft.dbtolls.runables;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Message;
 
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
+import static com.starsoft.dbtolls.setting.Constants.MESSAGE_ERROR;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_WRITE_DATA;
 
 /**
  * Created by StarkinDG on 12.04.2017.
  */
 
-public class DataWriter<T> implements Runnable {
+public class DataWriter<T> extends DbWorker {
     
-    private DBWriter<T> mDBWriter;
+    private DBWriter mDBWriter;
     private boolean result;
-    private T args;
+    private T mArgs;
     
-    public DataWriter(DBWriter writer, T args) {
+    
+    public DataWriter(int tag, DBWriter writer, T args) {
         
+        mDBWriter = writer;
+        mTag = tag;
+        mArgs = args;
     }
     
     @Override
     public void run() {
         
-        result = mDBWriter.writeData(DataBaseTolls.getInstance().getDataBase(), args);
-        Message message = DataBaseTolls.getInstance().getDBHandler().obtainMessage(MESSAGE_WRITE_DATA, this);
-        message.sendToTarget();
+        try {
+            mDBWriter.writeData(DataBaseTolls.getInstance().getDataBase(), mArgs);
+            result = true;
+            sendHandlerMessage(MESSAGE_WRITE_DATA);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mThrowable = e;
+            result = false;
+            sendHandlerMessage(MESSAGE_ERROR);
+            sendHandlerMessage(MESSAGE_WRITE_DATA);
+        }
     }
     
     public void onPostWrite() {
         
         try {
-            DataBaseTolls.getInstance().onDataWrite(result);
+            DataBaseTolls.getInstance().onDataWrite(mTag, result);
         } finally {
             clearReference();
         }
     }
     
-    private void clearReference() {
+    @Override
+    void clearReference() {
         
         mDBWriter = null;
     }
     
     public interface DBWriter<T> {
         
-        boolean writeData(SQLiteDatabase dataBase, T args);
+        void writeData(SQLiteDatabase dataBase, T args) throws Exception;
     }
 }

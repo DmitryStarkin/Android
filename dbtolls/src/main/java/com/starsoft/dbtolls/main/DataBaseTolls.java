@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Message;
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.starsoft.dbtolls.executors.DBHandler;
@@ -21,7 +20,6 @@ import com.starsoft.dbtolls.runables.DataWriter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +28,7 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.starsoft.dbtolls.BuildConfig.DEBUG;
+import static com.starsoft.dbtolls.setting.Constants.DB_COPY_BUFFER_LENGTH;
 import static com.starsoft.dbtolls.setting.Constants.DEFAULT_DATA_BASE_IDLE_TIME;
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_CLOSE_DB;
 import static com.starsoft.dbtolls.setting.Constants.MIN_DB_IDLE_TIME;
@@ -55,6 +53,7 @@ public class DataBaseTolls {
     private DBHelper mDBHelper;
     private DBHandler mDBHandler;
     private DbCommandExecutor mExecutor;
+    private WeakReference<onErrorListener> mErrorListener;
     private WeakReference<onCursorReadyListener> mCursorReadyListener;
     private WeakReference<onDataWriteListener> mDataWriteListener;
     
@@ -68,9 +67,9 @@ public class DataBaseTolls {
             mDBHelper = new DBHelper(context, dbName, null, dbVersion, factory);
         }
         mTasksCounter = new SparseIntArray(SPARSE_ARRAY_INIT_CAPACITY);
-        if(dbIdleTime <= 0) {
+        if (dbIdleTime <= 0) {
             mDataBaseIdleTime = DEFAULT_DATA_BASE_IDLE_TIME;
-        } else{
+        } else {
             mDataBaseIdleTime = dbIdleTime;
         }
         mThreadLiveTime = threadIdleTime;
@@ -102,10 +101,10 @@ public class DataBaseTolls {
         
         if (mExecutor == null) {
             
-            if(mThreadNumber <= 0 ){
+            if (mThreadNumber <= 0) {
                 mThreadNumber = Runtime.getRuntime().availableProcessors() + THREAD_START_TERM;
             }
-            if(mThreadLiveTime <= 0){
+            if (mThreadLiveTime <= 0) {
                 mThreadLiveTime = THREAD_DEFAULT_IDLE_TIME;
             }
             
@@ -133,7 +132,7 @@ public class DataBaseTolls {
             String dbFile = db.getPath();
             db.close();
             int bufferLength;
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[DB_COPY_BUFFER_LENGTH];
             FileOutputStream fileOutputStream = null;
             try {
                 fileOutputStream = new FileOutputStream(dbFile);
@@ -163,7 +162,7 @@ public class DataBaseTolls {
                         attemptsDbOpen++;
                         getDataBase();
                     }
-                } else if(!dbFileCorrupted){
+                } else if (!dbFileCorrupted) {
                     db = SQLiteDatabase.openDatabase(dbFile, null, SQLiteDatabase.OPEN_READWRITE);
                     db.setVersion(currentVersion);
                     db.close();
@@ -172,7 +171,7 @@ public class DataBaseTolls {
         }
         if (dbFileCorrupted) {
             throw new SQLiteException("Fail to open db, all attempts used");
-        } else if(db.isOpen()){
+        } else if (db.isOpen()) {
             return db;
         }
         return getDb();
@@ -188,7 +187,7 @@ public class DataBaseTolls {
                 return mDBHelper.getReadableDatabase();
             } catch (SQLiteException e) {
                 e.printStackTrace();
-                throw new SQLiteException("Fail to open db", e);
+                throw new SQLiteException("DBHelper: Fail to open db", e);
             }
         }
     }
@@ -216,16 +215,22 @@ public class DataBaseTolls {
         } else {
             cursor.close();
         }
-        if (DEBUG) {
-            Log.d("MainActivity", "onCursorLoaded: ");
-        }
     }
     
-    public void onDataWrite(boolean result) {
+    public void onDataWrite(int tag, boolean result) {
         
         startDbCloseTimerIfPossible();
         if (mDataWriteListener.get() != null && !mDisableCallback) {
-            mDataWriteListener.get().onDataWrite(result);
+            mDataWriteListener.get().onDataWrite(tag, result);
+        }
+    }
+    
+    public void onError(int tag, Throwable e) {
+        
+        e.printStackTrace();
+        startDbCloseTimerIfPossible();
+        if (mErrorListener.get() != null && !mDisableCallback) {
+            mErrorListener.get().onError(tag, e);
         }
     }
     
@@ -309,28 +314,18 @@ public class DataBaseTolls {
         }, null));
     }
     
-    public Cursor getAllDataFromTable(SQLiteDatabase dataBase, String tableName) {
+    public Cursor getAllDataFromTable(SQLiteDatabase dataBase, String tableName) throws  SQLiteException {
         
-        try {
             return dataBase.query(tableName, null, null, null, null, null, null);
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
     
-    public Cursor getDataUsingSQLCommand(SQLiteDatabase dataBase, String... sqlQuery) {
+    public Cursor getDataUsingSQLCommand(SQLiteDatabase dataBase, String... sqlQuery) throws  SQLiteException{
         
         String[] selectionArgs = null;
         if (sqlQuery.length > 1) {
             selectionArgs = Arrays.copyOfRange(sqlQuery, 1, sqlQuery.length - 1);
         }
-        try {
             return dataBase.rawQuery(sqlQuery[0], selectionArgs);
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
     
     public void getDataUsingSQLCommand(int tag, String... sqlQuery) {
@@ -342,7 +337,7 @@ public class DataBaseTolls {
             incrementTaskCount(mTasksCounter, tag);
             getExecutor().execute(new CursorLoader(tag, new CursorLoader.CursorGetter() {
                 @Override
-                public Cursor getCursor(SQLiteDatabase dataBase, String... args) {
+                public Cursor getCursor(SQLiteDatabase dataBase, String... args) throws SQLiteException {
                     
                     return getDataUsingSQLCommand(dataBase, args);
                 }
@@ -350,99 +345,92 @@ public class DataBaseTolls {
         }
     }
     
-    public boolean executeSQLCommand(SQLiteDatabase dataBase, String sqlQuery) {
+    public void executeSQLCommand(SQLiteDatabase db, String sqlQuery) throws  SQLiteException {
         
         try {
-            dataBase.execSQL(sqlQuery);
-            return true;
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-            return false;
+            db.beginTransaction();
+            db.execSQL(sqlQuery);
+            db.setTransactionSuccessful();
+        } finally  {
+            db.endTransaction();
         }
     }
     
-    public boolean executeSQLCommandsFromArray(SQLiteDatabase db, Object sQlCommandArray) {
+    public void executeSQLCommandsFromArray(SQLiteDatabase db, Object sQlCommandArray) throws  SQLiteException {
         
         try {
             db.beginTransaction();
             for (String sql : ((String[]) sQlCommandArray)) {
-                
                 db.execSQL(sql);
             }
             db.setTransactionSuccessful();
+        } finally  {
             db.endTransaction();
-            return true;
-        } catch (SQLiteException ex) {
-            ex.printStackTrace();
-            db.endTransaction();
-            return false;
         }
     }
     
-    public boolean executeSQLCommandsFromFile(SQLiteDatabase db, Object sQLScriptFile) {
+    public void executeSQLCommandsFromFile(SQLiteDatabase db, Object sQLScriptFile) throws  SQLiteException, IOException{
         
+        InputStream inputStream = null;
         try {
             db.beginTransaction();
-            InputStream inputStream = new FileInputStream((File) sQLScriptFile);
+            inputStream = new FileInputStream((File) sQLScriptFile);
             executeSQLCommandFromInputStream(db, inputStream);
             db.setTransactionSuccessful();
-            return true;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        } catch (SQLiteException ex) {
-            ex.printStackTrace();
-            return false;
         } finally {
             db.endTransaction();
+            if(inputStream != null){
+            inputStream.close();
+            }
         }
     }
     
-    public void executeSQLCommandsFromFile(File sQLScriptFile) {
+    public void executeSQLCommandsFromFile(int tag, File sQLScriptFile) {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<File>(new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<File>(tag, new DataWriter.DBWriter() {
                 @Override
-                public boolean writeData(SQLiteDatabase dataBase, Object args) {
+                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException, IOException{
                     
-                    return executeSQLCommandsFromFile(dataBase, args);
+                    executeSQLCommandsFromFile(dataBase, args);
                 }
             }, sQLScriptFile));
         }
     }
     
-    public void executeSQLCommandFromInputStream(InputStream inputStream) {
+    public void executeSQLCommandFromInputStream(int tag, InputStream inputStream) {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<InputStream>(new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<InputStream>(tag, new DataWriter.DBWriter() {
                 @Override
-                public boolean writeData(SQLiteDatabase dataBase, Object args) {
+                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException, IOException {
                     
-                    return executeSQLCommandFromInputStream(dataBase, args);
+                    executeSQLCommandFromInputStream(dataBase, args) ;
                 }
             }, inputStream));
         }
     }
     
-    public void executeSQLCommandFromArray(String... sQlCommandArray) {
+    public void executeSQLCommandFromArray(int tag, String... sQlCommandArray) {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<String[]>(new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<String[]>(tag, new DataWriter.DBWriter() {
                 @Override
-                public boolean writeData(SQLiteDatabase dataBase, Object args) {
+                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException{
                     
-                    return executeSQLCommandsFromArray(dataBase, args);
+                    executeSQLCommandsFromArray(dataBase, args);
                 }
             }, sQlCommandArray));
         }
     }
     
-    public boolean executeSQLCommandFromInputStream(SQLiteDatabase db, Object inputStream) {
+    public void executeSQLCommandFromInputStream(SQLiteDatabase db, Object inputStream) throws  SQLiteException, IOException {
         
         try {
+            db.beginTransaction();
             if (inputStream != null) {
                 InputStreamReader isr = new InputStreamReader((InputStream) inputStream);
                 BufferedReader reader = new BufferedReader(isr);
@@ -462,21 +450,14 @@ public class DataBaseTolls {
                         builder = new StringBuilder();
                     }
                 }
-                ((InputStream) inputStream).close();
-                return true;
+                db.setTransactionSuccessful();
             }
-            return false;
-        } catch (IOException e) {
-            throw new SQLiteException("Fail to initial db", e);
-        } catch (SQLiteException ex) {
-            try {
+        } finally {
+            db.endTransaction();
+            if(inputStream != null)
+            {
                 ((InputStream) inputStream).close();
-                return false;
-            } catch (IOException e) {
-                // TODO catch
-                e.printStackTrace();
             }
-            throw new SQLiteException("Fail to initial db", ex);
         }
     }
     
@@ -487,7 +468,12 @@ public class DataBaseTolls {
     
     public interface onDataWriteListener {
         
-        void onDataWrite(boolean result);
+        void onDataWrite(int tag, boolean result);
+    }
+    
+    public interface onErrorListener {
+        
+        void onError(int tag, Throwable e);
     }
     
     public class DbReplacer {
