@@ -59,12 +59,6 @@ public class CursorLoader extends DbWorker {
         mArgs = null;
     }
     
-    @Override
-    public boolean equals(Object obj) {
-        
-        return (obj instanceof CursorLoader) && (((CursorLoader) obj).mTag == this.mTag);
-    }
-    
     public interface CursorGetter {
         
         Cursor getCursor(SQLiteDatabase dataBase, String... args) throws Exception;
