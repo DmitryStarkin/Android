@@ -59,7 +59,7 @@ public class DataBaseTolls {
     
     DataBaseTolls(Context context, String dbName, int dbVersion, DataBaseFactory factory, long dbIdleTime,
                   long threadIdleTime, int threadNumber, int threadPriority, WeakReference<onCursorReadyListener> onCursorReadyListener,
-                  WeakReference<onDataWriteListener> onDataWriteListener) {
+                  WeakReference<onDataWriteListener> onDataWriteListener, WeakReference<onErrorListener> onErrorListener) {
         
         if (factory == null) {
             throw new IllegalStateException("need dataBaseFactory");
@@ -77,6 +77,7 @@ public class DataBaseTolls {
         mThreadPriority = threadPriority;
         mCursorReadyListener = onCursorReadyListener;
         mDataWriteListener = onDataWriteListener;
+        mErrorListener = onErrorListener;
     }
     
     public void setOnCursorReadyListener(onCursorReadyListener listener) {
@@ -84,9 +85,14 @@ public class DataBaseTolls {
         mCursorReadyListener = new WeakReference<>(listener);
     }
     
-    public void setonDataWriteListener(onDataWriteListener listener) {
+    public void setOnDataWriteListener(onDataWriteListener listener) {
         
         mDataWriteListener = new WeakReference<>(listener);
+    }
+    
+    public void setOnErrorListener(onErrorListener listener) {
+    
+        mErrorListener = new WeakReference<>(listener);
     }
     
     public synchronized static DataBaseTolls getInstance() {
@@ -356,11 +362,11 @@ public class DataBaseTolls {
         }
     }
     
-    public void executeSQLCommandsFromArray(SQLiteDatabase db, Object sQlCommandArray) throws  SQLiteException {
+    public void executeSQLCommandsFromArray(SQLiteDatabase db, String[] sQlCommandArray) throws  SQLiteException {
         
         try {
             db.beginTransaction();
-            for (String sql : ((String[]) sQlCommandArray)) {
+            for (String sql : (sQlCommandArray)) {
                 db.execSQL(sql);
             }
             db.setTransactionSuccessful();
@@ -369,12 +375,12 @@ public class DataBaseTolls {
         }
     }
     
-    public void executeSQLCommandsFromFile(SQLiteDatabase db, Object sQLScriptFile) throws  SQLiteException, IOException{
+    public void executeSQLCommandsFromFile(SQLiteDatabase db, File sQLScriptFile) throws  SQLiteException, IOException{
         
         InputStream inputStream = null;
         try {
             db.beginTransaction();
-            inputStream = new FileInputStream((File) sQLScriptFile);
+            inputStream = new FileInputStream(sQLScriptFile);
             executeSQLCommandFromInputStream(db, inputStream);
             db.setTransactionSuccessful();
         } finally {
@@ -389,10 +395,10 @@ public class DataBaseTolls {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<File>(tag, new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<File>(tag, new DataWriter.DBWriter<File>() {
                 @Override
-                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException, IOException{
-                    
+                public void writeData(SQLiteDatabase dataBase, File args) throws SQLiteException, IOException {
+    
                     executeSQLCommandsFromFile(dataBase, args);
                 }
             }, sQLScriptFile));
@@ -403,9 +409,9 @@ public class DataBaseTolls {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<InputStream>(tag, new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<InputStream>(tag, new DataWriter.DBWriter<InputStream>() {
                 @Override
-                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException, IOException {
+                public void writeData(SQLiteDatabase dataBase, InputStream args) throws  SQLiteException, IOException {
                     
                     executeSQLCommandFromInputStream(dataBase, args) ;
                 }
@@ -417,9 +423,9 @@ public class DataBaseTolls {
         
         if (!mNeedClose) {
             stopDbCloseTimer();
-            getExecutor().execute(new DataWriter<String[]>(tag, new DataWriter.DBWriter() {
+            getExecutor().execute(new DataWriter<String[]>(tag, new DataWriter.DBWriter<String[]>() {
                 @Override
-                public void writeData(SQLiteDatabase dataBase, Object args) throws  SQLiteException{
+                public void writeData(SQLiteDatabase dataBase, String[] args) throws  SQLiteException{
                     
                     executeSQLCommandsFromArray(dataBase, args);
                 }
@@ -427,12 +433,12 @@ public class DataBaseTolls {
         }
     }
     
-    public void executeSQLCommandFromInputStream(SQLiteDatabase db, Object inputStream) throws  SQLiteException, IOException {
+    public void executeSQLCommandFromInputStream(SQLiteDatabase db, InputStream inputStream) throws  SQLiteException, IOException {
         
         try {
             db.beginTransaction();
             if (inputStream != null) {
-                InputStreamReader isr = new InputStreamReader((InputStream) inputStream);
+                InputStreamReader isr = new InputStreamReader(inputStream);
                 BufferedReader reader = new BufferedReader(isr);
                 String line, sql;
                 StringBuilder builder = new StringBuilder();
@@ -456,7 +462,7 @@ public class DataBaseTolls {
             db.endTransaction();
             if(inputStream != null)
             {
-                ((InputStream) inputStream).close();
+                inputStream.close();
             }
         }
     }

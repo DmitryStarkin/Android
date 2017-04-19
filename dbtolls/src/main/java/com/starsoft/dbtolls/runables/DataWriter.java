@@ -13,12 +13,12 @@ import static com.starsoft.dbtolls.setting.Constants.MESSAGE_WRITE_DATA;
 
 public class DataWriter<T> extends DbWorker {
     
-    private DBWriter mDBWriter;
+    private DBWriter<T> mDBWriter;
     private boolean result;
     private T mArgs;
     
     
-    public DataWriter(int tag, DBWriter writer, T args) {
+    public DataWriter(int tag, DBWriter<T> writer, T args) {
         
         mDBWriter = writer;
         mTag = tag;

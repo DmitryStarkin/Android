@@ -19,6 +19,7 @@ public class DbTollsBuilder {
     private int mThreadPriority;
     private WeakReference<DataBaseTolls.onCursorReadyListener> mCursorReadyListener;
     private WeakReference<DataBaseTolls.onDataWriteListener> mDataWriteListener;
+    private WeakReference<DataBaseTolls.onErrorListener> mErrorListener;
     
     public DbTollsBuilder setName(String name) {
         
@@ -85,15 +86,22 @@ public class DbTollsBuilder {
         return this;
     }
     
+    public DbTollsBuilder setOnErrorListener(DataBaseTolls.onErrorListener listener) {
+    
+        mErrorListener = new WeakReference<>(listener);
+        return this;
+    }
+    
     public DataBaseTolls buildWith(Context context) {
         
         if (DataBaseTolls.instance == null) {
             DataBaseTolls.instance = new DataBaseTolls(context.getApplicationContext(), mDbName, mDbVersion, mDataBaseFactory,
-                    mDataBaseIdleTime, mThreadLiveTime, mThreadNumber, mThreadPriority, mCursorReadyListener, mDataWriteListener);
+                    mDataBaseIdleTime, mThreadLiveTime, mThreadNumber, mThreadPriority, mCursorReadyListener, mDataWriteListener, mErrorListener);
             return DataBaseTolls.instance;
         } else {
             DataBaseTolls.instance.setOnCursorReadyListener(mCursorReadyListener.get());
-            DataBaseTolls.instance.setonDataWriteListener(mDataWriteListener.get());
+            DataBaseTolls.instance.setOnDataWriteListener(mDataWriteListener.get());
+            DataBaseTolls.instance.setOnErrorListener(mErrorListener.get());
             return DataBaseTolls.instance;
         }
     }
