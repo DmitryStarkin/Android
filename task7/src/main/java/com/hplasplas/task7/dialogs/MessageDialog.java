@@ -8,19 +8,21 @@ import android.support.v7.app.AppCompatDialogFragment;
 
 import com.hplasplas.task7.R;
 
-import static com.hplasplas.task7.setting.Constants.MESSAGE_DIALOG_TAG;
-
 /**
  * Created by StarkinDG on 11.03.2017.
  */
 
 public class MessageDialog extends AppCompatDialogFragment {
     
-    public static MessageDialog newInstance(String message) {
+    public static final String DIALOG_MESSAGE_TAG = "DialogMessage";
+    public static final String ICON_DIALOG_TAG = "DialogIcon";
+    
+    public static MessageDialog newInstance(String message, int icon) {
         
         MessageDialog dialog = new MessageDialog();
         Bundle args = new Bundle();
-        args.putString(MESSAGE_DIALOG_TAG, message);
+        args.putInt(ICON_DIALOG_TAG, icon);
+        args.putString(DIALOG_MESSAGE_TAG, message);
         dialog.setArguments(args);
         return dialog;
     }
@@ -31,8 +33,8 @@ public class MessageDialog extends AppCompatDialogFragment {
         
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MessageDialogStyle);
         
-        builder.setTitle(getArguments().getString(MESSAGE_DIALOG_TAG))
-                .setIcon(R.drawable.ic_info_outline_white_24dp)
+        builder.setTitle(getArguments().getString(DIALOG_MESSAGE_TAG))
+                .setIcon(getArguments().getInt(ICON_DIALOG_TAG))
                 .setPositiveButton(R.string.button_ok, (dialog, id) -> MessageDialog.this.getDialog().cancel());
         return builder.create();
     }
