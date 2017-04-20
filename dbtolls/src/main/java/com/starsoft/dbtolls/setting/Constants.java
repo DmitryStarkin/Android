@@ -29,5 +29,5 @@ public final class Constants {
     
     //other
     public static final int DB_COPY_BUFFER_LENGTH = 1024;
-    public static final long TEMP_SLEEP_INTERVAL = 800;
+    public static final long TEMP_SLEEP_INTERVAL = 1000;
 }

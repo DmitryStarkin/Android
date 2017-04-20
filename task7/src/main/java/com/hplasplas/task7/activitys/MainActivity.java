@@ -227,7 +227,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         mCityFindBar.setVisibility(View.INVISIBLE);
         mSwipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
-        mSwipeRefreshLayout.setProgressViewEndTarget(true, mSwipeRefreshLayout.getProgressCircleDiameter() + REFRESH_INDICATOR_OFFSET);
+        mSwipeRefreshLayout.setProgressViewOffset(true, REFRESH_INDICATOR_START_OFFSET,
+                REFRESH_INDICATOR_END_OFFSET);
     }
     
     private void createSuggestionAdapter() {
@@ -367,7 +368,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void refreshWeatherWitchMessage() {
         
-        mSwipeRefreshLayout.setEnabled(false);
         if (!refreshIntervalIsRight()) {
             hideRefreshProgress(mSwipeRefreshLayout);
             String interval = getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0)),
@@ -395,13 +395,11 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private void showRefreshProgress(SwipeRefreshLayout swipeRefreshLayout) {
         
         swipeRefreshLayout.setRefreshing(true);
-        swipeRefreshLayout.setEnabled(false);
     }
     
     private void hideRefreshProgress(SwipeRefreshLayout swipeRefreshLayout) {
         
         swipeRefreshLayout.setRefreshing(false);
-        swipeRefreshLayout.setEnabled(true);
     }
     
     private void refreshWeatherData() {

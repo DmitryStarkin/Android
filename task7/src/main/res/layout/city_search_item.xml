@@ -3,13 +3,15 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:background="@android:color/background_light"
               android:orientation="horizontal"
               android:weightSum="1">
 
     <TextView
         android:id="@+id/city_item"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:background="@android:color/background_light"
         android:text="TextView"
         android:textSize="@dimen/search_list_text_size"
@@ -17,7 +19,7 @@
 
     <TextView
         android:id="@+id/country"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/background_light"
         android:gravity="end"

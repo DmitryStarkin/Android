@@ -64,7 +64,8 @@ public final class Constants {
     
     //other
     public static final String WEATHER_DRAWABLE_PREFIX = "w_";
-    public static final int REFRESH_INDICATOR_OFFSET = 10;
+    public static final int REFRESH_INDICATOR_START_OFFSET = 0;
+    public static final int REFRESH_INDICATOR_END_OFFSET = 10;
     public static final int NUMBER_THREAD_FOR_QUERY = 1;
 }
 
