@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_ERROR;
-import static com.starsoft.dbtolls.setting.Constants.MESSAGE_WRITE_DATA;
+import static com.starsoft.dbtolls.setting.Constants.MESSAGE_DATA_RECORDED;
 
 /**
  * Created by StarkinDG on 12.04.2017.
@@ -31,13 +31,13 @@ public class DataWriter<T> extends DbWorker {
         try {
             mDBWriter.writeData(DataBaseTolls.getInstance().getDataBase(), mArgs);
             result = true;
-            sendHandlerMessage(MESSAGE_WRITE_DATA);
+            sendHandlerMessage(MESSAGE_DATA_RECORDED);
         } catch (Exception e) {
             e.printStackTrace();
             mThrowable = e;
             result = false;
             sendHandlerMessage(MESSAGE_ERROR);
-            sendHandlerMessage(MESSAGE_WRITE_DATA);
+            sendHandlerMessage(MESSAGE_DATA_RECORDED);
         }
     }
     

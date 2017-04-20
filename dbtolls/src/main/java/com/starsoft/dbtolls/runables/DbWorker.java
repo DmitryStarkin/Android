@@ -10,8 +10,9 @@ import com.starsoft.dbtolls.main.DataBaseTolls;
 
 public abstract class DbWorker implements Runnable {
     
-     int mTag;
-     Throwable mThrowable;
+    int mTag;
+    Throwable mThrowable;
+    long mSleepInterval;
     
     public void onError() {
         
@@ -22,7 +23,7 @@ public abstract class DbWorker implements Runnable {
         }
     }
     
-    void sendHandlerMessage(int hMessage){
+    void sendHandlerMessage(int hMessage) {
         
         Message message = DataBaseTolls.getInstance().getDBHandler().obtainMessage(hMessage, this);
         message.sendToTarget();

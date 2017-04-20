@@ -57,7 +57,7 @@
         android:textSize="@dimen/date_time__text_size"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.73"
+        app:layout_constraintHorizontal_bias="0.788"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="4dp"
@@ -75,10 +75,11 @@
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="@+id/weather_icon"
-        android:layout_marginRight="0dp"
+        android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="@+id/weather_icon"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/weather_icon"/>
+        app:layout_constraintTop_toBottomOf="@+id/weather_icon"
+        app:layout_constraintHorizontal_bias="0.492"/>
 
     <ImageView
         android:id="@+id/weather_icon"
@@ -121,14 +122,10 @@
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/other_parameters_text_size"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginLeft="0dp"
         app:layout_constraintLeft_toLeftOf="@+id/weather_description"
-        android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@+id/weather_description"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="@+id/weather_description"/>
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/weather_description"/>
 
     <TextView
         android:id="@+id/humidity"
@@ -138,12 +135,13 @@
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/other_parameters_text_size"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/pressure"
+        android:layout_marginRight="0dp"
+        app:layout_constraintRight_toRightOf="@+id/pressure"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@+id/pressure"
-        android:layout_marginLeft="0dp"
-        app:layout_constraintLeft_toLeftOf="@+id/pressure"/>
+        app:layout_constraintHorizontal_bias="0.0"/>
 
     <TextView
         android:id="@+id/wind_description"
@@ -153,12 +151,13 @@
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/other_parameters_text_size"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@+id/humidity"
         android:layout_marginLeft="0dp"
-        app:layout_constraintLeft_toLeftOf="@+id/humidity"/>
+        app:layout_constraintLeft_toLeftOf="@+id/humidity"
+        android:layout_marginRight="0dp"
+        app:layout_constraintRight_toRightOf="@+id/humidity"
+        app:layout_constraintHorizontal_bias="0.0"/>
 
     <TextView
         android:id="@+id/cloudiness"
@@ -168,12 +167,13 @@
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
         android:textSize="@dimen/other_parameters_text_size"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@+id/wind_description"
         android:layout_marginLeft="0dp"
-        app:layout_constraintLeft_toLeftOf="@+id/wind_description"/>
+        app:layout_constraintLeft_toLeftOf="@+id/wind_description"
+        android:layout_marginRight="0dp"
+        app:layout_constraintRight_toRightOf="@+id/wind_description"
+        app:layout_constraintHorizontal_bias="0.0"/>
 
     <TextView
         android:id="@+id/sunrise_text"
@@ -239,7 +239,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="57dp"
+        android:layout_marginTop="61dp"
         android:background="@color/ColorTransparent"
         android:foregroundGravity="center_horizontal"
         android:text="@string/default_text"
@@ -248,7 +248,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintHorizontal_bias="0.116"
         />
 
     <include

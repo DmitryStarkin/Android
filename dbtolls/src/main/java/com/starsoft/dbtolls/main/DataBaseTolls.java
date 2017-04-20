@@ -233,7 +233,6 @@ public class DataBaseTolls {
     
     public void onError(int tag, Throwable e) {
         
-        e.printStackTrace();
         startDbCloseTimerIfPossible();
         if (mErrorListener.get() != null && !mDisableCallback) {
             mErrorListener.get().onError(tag, e);

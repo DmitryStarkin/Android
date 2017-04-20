@@ -6,7 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import static com.starsoft.dbtolls.setting.Constants.MESSAGE_ERROR;
-import static com.starsoft.dbtolls.setting.Constants.MESSAGE_GET_CURSOR;
+import static com.starsoft.dbtolls.setting.Constants.MESSAGE_CURSOR_RECEIVED;
+import static com.starsoft.dbtolls.setting.Constants.TEMP_SLEEP_INTERVAL;
 
 /**
  * Created by StarkinDG on 12.04.2017.
@@ -23,15 +24,19 @@ public class CursorLoader extends DbWorker {
         mTag = tag;
         mCursorGetter = getter;
         mArgs = args;
+        //TODO in further to using the constructor
+        mSleepInterval = TEMP_SLEEP_INTERVAL;
     }
     
     @Override
     public void run() {
         
         try {
-            Thread.sleep(800);
+            if(mSleepInterval !=0) {
+                Thread.sleep(mSleepInterval);
+            }
             mCursor = mCursorGetter.getCursor(DataBaseTolls.getInstance().getDataBase(), mArgs);
-            sendHandlerMessage(MESSAGE_GET_CURSOR);
+            sendHandlerMessage(MESSAGE_CURSOR_RECEIVED);
         } catch (Exception e){
             e.printStackTrace();
             mThrowable = e;
