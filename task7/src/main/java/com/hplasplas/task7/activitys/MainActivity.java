@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.hplasplas.task7.App;
 import com.hplasplas.task7.R;
 import com.hplasplas.task7.adapters.ForecastAdapter;
-import com.hplasplas.task7.dialogs.MessageDialog;
 import com.hplasplas.task7.interfaces.OpenWeatherMapApi;
 import com.hplasplas.task7.managers.MessageManager;
 import com.hplasplas.task7.managers.PreferencesManager;
@@ -180,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         int id = item.getItemId();
         if (id == R.id.action_about) {
-            MessageDialog.newInstance(getString(R.string.about_message), R.drawable.ic_info_outline_white_24dp).show(getSupportFragmentManager(), MESSAGE_DIALOG_TAG);
+            mMessageManager.makeDialogMessage(this, getString(R.string.about_message), R.drawable.ic_info_outline_white_24dp);
             return true;
         }
         return super.onOptionsItemSelected(item);
