@@ -4,7 +4,7 @@ package com.hplasplas.task7.models.weather.forecast;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class FifedaysForecast {
+public class FifeDaysForecast {
 
     @SerializedName("cod")
     @Expose
@@ -17,7 +17,7 @@ public class FifedaysForecast {
     private Integer cnt;
     @SerializedName("list")
     @Expose
-    private java.util.List<com.hplasplas.task7.models.weather.forecast.List> list = null;
+    private java.util.List<ThreeHourForecast> mThreeHourForecast = null;
     @SerializedName("city")
     @Expose
     private City city;
@@ -46,12 +46,12 @@ public class FifedaysForecast {
         this.cnt = cnt;
     }
 
-    public java.util.List<com.hplasplas.task7.models.weather.forecast.List> getList() {
-        return list;
+    public java.util.List<ThreeHourForecast> getThreeHourForecast() {
+        return mThreeHourForecast;
     }
 
-    public void setList(java.util.List<com.hplasplas.task7.models.weather.forecast.List> list) {
-        this.list = list;
+    public void setThreeHourForecast(java.util.List<ThreeHourForecast> threeHourForecast) {
+        this.mThreeHourForecast = threeHourForecast;
     }
 
     public City getCity() {

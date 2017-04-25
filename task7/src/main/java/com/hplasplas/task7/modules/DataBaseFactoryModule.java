@@ -19,7 +19,7 @@ public class DataBaseFactoryModule {
     
     @Provides
     @Singleton
-    public DataBaseFactory provideDownloader(Context context){
+    public DataBaseFactory provideDataBaseFactory(Context context){
         
         return  new CityDbFactory(context);
     }

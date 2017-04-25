@@ -1,5 +1,5 @@
 
-package com.hplasplas.task7.models.weather.current;
+package com.hplasplas.task7.models.commonclass;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

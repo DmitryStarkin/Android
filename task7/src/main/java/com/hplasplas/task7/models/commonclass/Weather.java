@@ -1,5 +1,5 @@
 
-package com.hplasplas.task7.models.weather.forecast;
+package com.hplasplas.task7.models.commonclass;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -8,7 +8,7 @@ public class Weather {
 
     @SerializedName("id")
     @Expose
-    private Integer id;
+    private int id;
     @SerializedName("main")
     @Expose
     private String main;
@@ -19,11 +19,11 @@ public class Weather {
     @Expose
     private String icon;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

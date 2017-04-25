@@ -20,6 +20,8 @@ public final class Constants {
     public static final String WEATHER_TIME_STAMP_PATTERN = "E, d MMM y, HH:mm";
     public static final String SUN_TIME_STAMP_PATTERN = "HH:mm";
     public static final String REFRESHING_TIME_STAMP_PATTERN = "mm 'min' ss 'sec'";
+    public static final String FORECAST_TIME_STAMP_PATTERN = "HH:mm";
+    public static final String FORECAST_DATE_STAMP_PATTERN = "dd.MM.yy";
     
     //request values
     public static final long MIN_REQUEST_INTERVAL = 600000;
@@ -28,7 +30,7 @@ public final class Constants {
     public static final String PREFERENCES_FILE = "myPref";
     public static final String PREF_FOR_CURRENT_CITY_ID = "currentCity";
     public static final String PREF_FOR_CURRENT_WEATHER_JSON_DATA = "currentWeather";
-    public static final String PREF_FOR_FIFE_DAYS_WEATHER_JSON_DATA = "fifeDaysWeather";
+    public static final String PREF_FOR_FIFE_DAYS_FORECAST_JSON_DATA = "fifeDaysWeather";
     public static final String LAST_REQUEST_TIME = "lastRequestTime";
     
     //default request values
@@ -56,7 +58,7 @@ public final class Constants {
     public static final String COLUMNS_CITY_ID = "id";
     
     //db Query
-    public static final String CITY_QUERYBEGIN_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name LIKE \'";
+    public static final String CITY_QUERY_BEGIN_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name LIKE \'";
     public static final String CITY_QUERY_BEGIN_SEARCH_SUFFIX = "%\' LIMIT 10";
     public static final String CITY_QUERY_FULL_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name = \'";
     public static final String CITY_QUERY_FULL_SEARCH_SUFFIX = "\'";
@@ -67,5 +69,6 @@ public final class Constants {
     public static final int REFRESH_INDICATOR_START_OFFSET = 0;
     public static final int REFRESH_INDICATOR_END_OFFSET = 10;
     public static final int NUMBER_THREAD_FOR_QUERY = 1;
+    public static final int SNACK_BAR_MESSAGE_DURATION = 5000;
 }
 

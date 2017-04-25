@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="42dp"
         android:background="@color/ColorTransparent"
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
@@ -62,10 +62,10 @@
         android:layout_marginEnd="8dp"/>
 
     <TextView
-        android:id="@+id/temperature"
+        android:id="@+id/forecast_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="29dp"
+        android:layout_marginTop="25dp"
         android:background="@color/ColorTransparent"
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
@@ -84,10 +84,10 @@
         android:layout_width="72dp"
         android:layout_height="73dp"
         android:background="@color/ColorTransparent"
-        app:layout_constraintTop_toTopOf="@+id/temperature"
+        app:layout_constraintTop_toTopOf="@+id/forecast_temperature"
         app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/temperature"
-        app:layout_constraintRight_toLeftOf="@+id/temperature"
+        app:layout_constraintBottom_toBottomOf="@+id/forecast_temperature"
+        app:layout_constraintRight_toLeftOf="@+id/forecast_temperature"
         android:layout_marginRight="8dp"
         tools:ignore="ContentDescription"
         android:layout_marginEnd="8dp"
@@ -107,7 +107,9 @@
         android:textSize="@dimen/weather_description_text_size"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/temperature"/>
+        app:layout_constraintTop_toBottomOf="@+id/forecast_temperature"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
 
     <TextView
         android:id="@+id/pressure"
@@ -115,7 +117,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:background="@color/ColorTransparent"
         android:text="@string/default_text"
         android:textColor="@color/ColorWeatherValues"
@@ -242,7 +244,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="82dp"
+        android:layout_marginTop="62dp"
         android:gravity="center_horizontal"
         android:background="@color/ColorTransparent"
         android:foregroundGravity="center_horizontal"
@@ -251,7 +253,9 @@
         android:textSize="@dimen/city_text_size"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
 
     <include
         layout="@layout/toolbar"
@@ -278,6 +282,19 @@
         app:layout_goneMarginTop="0dp"
         app:progressColour="@color/ProgressSec"/>
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/forecast_list"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/forecast_list_height"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:background="@color/ColorTransparent"
+        android:padding="0dp"
+        android:scrollbars="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/background_image"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

@@ -7,6 +7,8 @@ import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,23 +18,24 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.hplasplas.task7.App;
 import com.hplasplas.task7.R;
+import com.hplasplas.task7.adapters.ForecastAdapter;
 import com.hplasplas.task7.dialogs.MessageDialog;
 import com.hplasplas.task7.interfaces.OpenWeatherMapApi;
+import com.hplasplas.task7.managers.MessageManager;
 import com.hplasplas.task7.managers.PreferencesManager;
+import com.hplasplas.task7.managers.WeatherImageManager;
 import com.hplasplas.task7.models.weather.current.CurrentWeather;
+import com.hplasplas.task7.models.weather.forecast.FifeDaysForecast;
+import com.hplasplas.task7.models.weather.forecast.ThreeHourForecast;
+import com.hplasplas.task7.utils.DataTimeUtils;
 import com.hplasplas.task7.utils.InternetConnectionChecker;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.Picasso;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -47,14 +50,18 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private final String TAG = getClass().getSimpleName();
     
     @Inject
-    public Picasso mPicasso;
+    public WeatherImageManager mImageManager;
+    @Inject
+    public DataTimeUtils mDataTimeUtils;
     @Inject
     public OpenWeatherMapApi mOpenWeatherMapApi;
     @Inject
     public Gson mGson;
     @Inject
     public DataBaseTolls mDataBaseTolls;
-    
+    @Inject
+    public MessageManager mMessageManager;
+    private Toolbar mToolbar;
     private SearchView mSearchView;
     private MenuItem mSearchMenuItem;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -71,7 +78,9 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private TextView mSunrise;
     private TextView mSunset;
     private ProgressBar mCityFindBar;
+    private RecyclerView mRecyclerView;
     private Call<String> mCurrentWeatherCall;
+    private Call<String> mForecastWeatherCall;
     private boolean mClearText;
     
     @Override
@@ -83,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         setContentView(R.layout.activity_main);
         findViews();
         adjustViews();
+        adjustRecyclerView();
         getAndPrepareLastWeatherData();
     }
     
@@ -107,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 if (DEBUG) {
                     Log.d(TAG, "onMenuItemActionCollapse: ");
                 }
-                DataBaseTolls.getInstance().clearAllTasks();
+                mDataBaseTolls.clearAllTasks();
                 mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
                 closeCursor(mSearchView);
                 mCityFindBar.setVisibility(View.INVISIBLE);
@@ -131,7 +141,9 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 }
                 if (newText.length() > 1) {
                     
-                    refreshCityList(CITY_QUERYBEGIN_SEARCH_PREFIX + newText + CITY_QUERY_BEGIN_SEARCH_SUFFIX, false);
+                    refreshCityList(CITY_QUERY_BEGIN_SEARCH_PREFIX + newText + CITY_QUERY_BEGIN_SEARCH_SUFFIX, false);
+                } else {
+                    closeCursor(mSearchView);
                 }
                 return true;
             }
@@ -180,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         super.onPause();
         mDataBaseTolls.clearAllTasks();
         cancelCall(mCurrentWeatherCall);
+        cancelCall(mForecastWeatherCall);
         closeCursor(mSearchView);
     }
     
@@ -204,16 +217,15 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     }
     
     private void findViews() {
-        
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        setSupportActionBar(toolbar);
+    
+        mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         mCityFindBar = (ProgressBar) findViewById(R.id.city_find_bar);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
         mCurrentWeatherIcon = (ImageView) findViewById(R.id.weather_icon);
         mBackground = (ImageView) findViewById(R.id.background_image);
         mCityName = (TextView) findViewById(R.id.city_name);
         mDateTime = (TextView) findViewById(R.id.date_time);
-        mTemperature = (TextView) findViewById(R.id.temperature);
+        mTemperature = (TextView) findViewById(R.id.forecast_temperature);
         mPressure = (TextView) findViewById(R.id.pressure);
         mHumidity = (TextView) findViewById(R.id.humidity);
         mWindDescription = (TextView) findViewById(R.id.wind_description);
@@ -221,14 +233,22 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         mSunrise = (TextView) findViewById(R.id.sunrise);
         mSunset = (TextView) findViewById(R.id.sunset);
         mWeatherDescription = (TextView) findViewById(R.id.weather_description);
+        mRecyclerView = (RecyclerView) findViewById(R.id.forecast_list);
     }
     
     private void adjustViews() {
         
+        setSupportActionBar(mToolbar);
         mCityFindBar.setVisibility(View.INVISIBLE);
         mSwipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
         mSwipeRefreshLayout.setProgressViewOffset(true, REFRESH_INDICATOR_START_OFFSET,
                 REFRESH_INDICATOR_END_OFFSET);
+    }
+    
+    private void adjustRecyclerView() {
+        
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
     }
     
     private void createSuggestionAdapter() {
@@ -243,9 +263,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void refreshCityList(String query, boolean clearText) {
         
-        if (DEBUG) {
-            Log.d(TAG, "refreshCityList: ");
-        }
         mClearText = clearText;
         mDataBaseTolls.getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
         mCityFindBar.setVisibility(View.VISIBLE);
@@ -274,13 +291,13 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     }
     
     private void setWeatherValues(CurrentWeather currentWeather) {
-        
-        setBackground(mBackground, currentWeather.getWeather().get(0).getMain(), currentWeather.getWeather().get(0).getId());
-        setWeatherIcon(mCurrentWeatherIcon, currentWeather.getWeather().get(0).getIcon());
+    
+        mImageManager.setBackground(mBackground, currentWeather.getWeather().get(0).getMain(), currentWeather.getWeather().get(0).getId());
+        mImageManager.setWeatherIcon(mCurrentWeatherIcon, currentWeather.getWeather().get(0).getIcon());
         mCityName.setText(currentWeather.getCityName());
-        mDateTime.setText(getTimeString(currentWeather.getCalculationDataTime(), WEATHER_TIME_STAMP_PATTERN, MIL_PER_SEC));
-        mSunrise.setText(getTimeString(currentWeather.getSys().getSunrise(), SUN_TIME_STAMP_PATTERN, MIL_PER_SEC));
-        mSunset.setText(getTimeString(currentWeather.getSys().getSunset(), SUN_TIME_STAMP_PATTERN, MIL_PER_SEC));
+        mDateTime.setText(mDataTimeUtils.getTimeString(currentWeather.getCalculationDataTime(), WEATHER_TIME_STAMP_PATTERN, MIL_PER_SEC));
+        mSunrise.setText(mDataTimeUtils.getTimeString(currentWeather.getSys().getSunrise(), SUN_TIME_STAMP_PATTERN, MIL_PER_SEC));
+        mSunset.setText(mDataTimeUtils.getTimeString(currentWeather.getSys().getSunset(), SUN_TIME_STAMP_PATTERN, MIL_PER_SEC));
         mTemperature.setText(getResources().getString(R.string.temperature, currentWeather.getMain().getTemp()));
         mWeatherDescription.setText(currentWeather.getWeather().get(0).getDescription());
         mPressure.setText(getResources().getString(R.string.pressure, currentWeather.getMain().getPressure()));
@@ -290,50 +307,11 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 determineWindDirection(currentWeather.getWind().getDeg())));
     }
     
-    private void setWeatherIcon(ImageView imageView, String iconId) {
-        
-        String imageUrl = ICON_DOWNLOAD_URL + iconId + ICON_FILE_SUFFIX;
-        mPicasso
-                .load(imageUrl)
-                .memoryPolicy(MemoryPolicy.NO_STORE)
-                .error(R.drawable.ic_highlight_off_red_500_24dp)
-                .into(imageView);
-    }
-    
-    private void setBackground(ImageView imageView, String weatherGroup, int weatherId) {
-        
-        int weatherDrawableId = getResources().getIdentifier(WEATHER_DRAWABLE_PREFIX + (Integer.toString(weatherId)),
-                "drawable", getApplicationContext().getPackageName());
-        int weatherGroupDrawableId = getResources().getIdentifier(weatherGroup.toLowerCase(Locale.US),
-                "drawable", getApplicationContext().getPackageName());
-        if (weatherDrawableId == 0) {
-            weatherDrawableId = weatherGroupDrawableId;
-        }
-        if (weatherDrawableId == 0) {
-            weatherDrawableId = R.drawable.default_background;
-        }
-    
-        mPicasso
-                .load(weatherDrawableId)
-                .error(R.drawable.default_background)
-                .into(imageView);
-    }
-    
     private String determineWindDirection(double deg) {
         
         int direction = getResources().getIdentifier(WIND_DIRECTION_PREFIX + Integer.toString((int) Math.round(deg / WIND_DIRECTION_DIVIDER)),
                 "string", getApplicationContext().getPackageName());
         return getResources().getString(direction);
-    }
-    
-    private String getTimeString(long time, String timePattern) {
-        
-        return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time));
-    }
-    
-    private String getTimeString(long time, String timePattern, long correction) {
-        
-        return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time * correction));
     }
     
     private void refreshWeather() {
@@ -361,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         if (isInternetAvailable()) {
             refreshWeatherData(cityId);
         } else {
-            makeToast(getResources().getString(R.string.internet_not_available));
+            mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.internet_not_available), SNACK_BAR_MESSAGE_DURATION);
             hideRefreshProgress(mSwipeRefreshLayout);
         }
     }
@@ -370,12 +348,12 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         if (!refreshIntervalIsRight()) {
             hideRefreshProgress(mSwipeRefreshLayout);
-            String interval = getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0)),
+            String interval = mDataTimeUtils.getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0)),
                     REFRESHING_TIME_STAMP_PATTERN);
-            makeToast(getResources().getString(R.string.weather_refreshed, interval));
+            mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_refreshed, interval), SNACK_BAR_MESSAGE_DURATION);
         } else if (!isInternetAvailable()) {
             hideRefreshProgress(mSwipeRefreshLayout);
-            makeToast(getResources().getString(R.string.internet_not_available));
+            mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.internet_not_available), SNACK_BAR_MESSAGE_DURATION);
         } else {
             refreshWeatherData();
         }
@@ -409,15 +387,30 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void refreshWeatherData(int cityId) {
         
-        mCurrentWeatherCall = mOpenWeatherMapApi.getCurrentWeather(cityId,
-                UNITS_PARAMETER_VALUE, API_KEY);
+        mCurrentWeatherCall = mOpenWeatherMapApi.getCurrentWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY);
+        mForecastWeatherCall = mOpenWeatherMapApi.getFifeDaysWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY);
         mCurrentWeatherCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 
                 if (response.body() != null) {
-                    weatherGetSuccessfully();
-                    writeAndPrepareCurrentWeatherData(response.body());
+                    String currentWeatherResponse =  response.body();
+                    mForecastWeatherCall.enqueue(new Callback<String>() {
+                        @Override
+                        public void onResponse(Call<String> call, Response<String> response) {
+                            if (response.body() != null) {
+                                weatherGetSuccessfully();
+                               writeAndPrepareWeatherData(currentWeatherResponse, response.body());
+                            } else {
+                                weatherGetError();
+                            }
+                        }
+    
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+                            weatherGetError();
+                        }
+                    });
                 } else {
                     weatherGetError();
                 }
@@ -425,43 +418,42 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
             
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                
                 weatherGetError();
             }
         });
-    }
-    
-    private void makeToast(String message) {
         
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
     
     private void weatherGetError() {
         
         hideRefreshProgress(mSwipeRefreshLayout);
-        makeToast(getResources().getString(R.string.weather_get_error));
+        mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_get_error), SNACK_BAR_MESSAGE_DURATION);
     }
     
     private void weatherGetSuccessfully() {
         
         hideRefreshProgress(mSwipeRefreshLayout);
-        makeToast(getResources().getString(R.string.weather_updated));
+        mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_updated), SNACK_BAR_MESSAGE_DURATION);
     }
     
-    private void writeAndPrepareCurrentWeatherData(String jsonCurrentWeather) {
+    private void writeAndPrepareWeatherData(String jsonCurrentWeather, String jsonForecast) {
         
         PreferencesManager.getPreferences(this).edit()
                 .putString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, jsonCurrentWeather)
+                .putString(PREF_FOR_FIFE_DAYS_FORECAST_JSON_DATA, jsonForecast)
                 .putLong(LAST_REQUEST_TIME, System.currentTimeMillis())
                 .apply();
         prepareCurrentWeatherData(jsonCurrentWeather);
+        prepareForecastWeatherData(jsonForecast);
     }
     
     private void getAndPrepareLastWeatherData() {
         
         String jsonCurrentWeather = PreferencesManager.getPreferences(this).getString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, null);
-        if (jsonCurrentWeather != null) {
+        String jsonForecast = PreferencesManager.getPreferences(this).getString(PREF_FOR_FIFE_DAYS_FORECAST_JSON_DATA, null);
+        if (jsonCurrentWeather != null && jsonForecast != null) {
             prepareCurrentWeatherData(jsonCurrentWeather);
+            prepareForecastWeatherData(jsonForecast);
         }
     }
     
@@ -474,5 +466,21 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         setWeatherValues(currentWeather);
     }
     
+    private void prepareForecastWeatherData(String jsonForecastWeather) {
+    
+        FifeDaysForecast forecast = mGson.fromJson(jsonForecastWeather, FifeDaysForecast.class);
+        setAdapter(mRecyclerView, forecast.getThreeHourForecast());
+    }
+    
+    private ForecastAdapter setAdapter(RecyclerView recyclerView, List<ThreeHourForecast> itemList) {
+    
+        ForecastAdapter adapter = new ForecastAdapter(itemList);
+        if (recyclerView.getAdapter() == null) {
+            recyclerView.setAdapter(adapter);
+        } else {
+            recyclerView.swapAdapter(adapter, true);
+        }
+        return adapter;
+    }
     
 }

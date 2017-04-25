@@ -3,7 +3,10 @@ package com.hplasplas.task7.models.weather.current;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.hplasplas.task7.models.commonclass.Clouds;
 import com.hplasplas.task7.models.commonclass.Coord;
+import com.hplasplas.task7.models.commonclass.Weather;
+import com.hplasplas.task7.models.commonclass.Wind;
 
 import java.util.List;
 

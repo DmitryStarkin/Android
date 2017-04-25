@@ -3,12 +3,15 @@ package com.hplasplas.task7.models.weather.forecast;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.hplasplas.task7.models.commonclass.Clouds;
+import com.hplasplas.task7.models.commonclass.Weather;
+import com.hplasplas.task7.models.commonclass.Wind;
 
-public class List {
+public class ThreeHourForecast {
 
     @SerializedName("dt")
     @Expose
-    private Integer dt;
+    private long dt;
     @SerializedName("main")
     @Expose
     private Main main;
@@ -34,11 +37,11 @@ public class List {
     @Expose
     private String dtTxt;
 
-    public Integer getDt() {
+    public long getDt() {
         return dt;
     }
 
-    public void setDt(Integer dt) {
+    public void setDt(long dt) {
         this.dt = dt;
     }
 

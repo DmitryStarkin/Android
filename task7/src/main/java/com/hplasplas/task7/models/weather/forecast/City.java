@@ -3,6 +3,7 @@ package com.hplasplas.task7.models.weather.forecast;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.hplasplas.task7.models.commonclass.Coord;
 
 public class City {
 

@@ -7,4 +7,12 @@
     <dimen name="sun_time__text_size">16sp</dimen>
     <dimen name="search_list_text_size">24sp</dimen>
     <dimen name="other_parameters_text_size">16sp</dimen>
+    <dimen name="forecast_item_width">100dp</dimen>
+    <dimen name="forecast_list_height">120dp</dimen>
+    <dimen name="forecast_icon_size">60dp</dimen>
+    <dimen name="forecast_temperature_margin_top">35dp</dimen>
+    <dimen name="forecast_icon_margin_top">12dp</dimen>
+    <dimen name="forecast_date_text_size">16sp</dimen>
+    <dimen name="forecast_time_text_size">16sp</dimen>
+    <dimen name="forecast_temperature_text_size">32sp</dimen>
 </resources>
