@@ -23,7 +23,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--dontobfuscate
+#-dontobfuscate
 
 -keep public class com.starsoft.dbtolls.main.** { *; }
 -keep public class com.starsoft.dbtolls.setting.** { *; }
