@@ -3,7 +3,7 @@
     <string name="about_message">Weather v 1.0b</string>
     <string name="action_about">About</string>
     <string name="city_search">City search</string>
-    <string name="button_ok">Ok</string>
+    <string name="button_ok">OK</string>
     <string name="temperature">%.1f\u00B0</string>
     <string name="pressure">Pressure: %.2f hPa</string>
     <string name="humidity">Humidity: %1$d %%</string>

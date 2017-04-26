@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     public DataBaseTolls mDataBaseTolls;
     @Inject
     public MessageManager mMessageManager;
+    @Inject
+    public  PreferencesManager mPreferencesManager;
     private Toolbar mToolbar;
     private SearchView mSearchView;
     private MenuItem mSearchMenuItem;
@@ -171,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     protected void onResume() {
         
         super.onResume();
-        refreshWeather();
+        tryRefreshWeather();
     }
     
     @Override
@@ -313,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         return getResources().getString(direction);
     }
     
-    private void refreshWeather() {
+    private void tryRefreshWeather() {
         
         showRefreshProgress(mSwipeRefreshLayout);
         if (refreshIntervalIsRight() && isInternetAvailable()) {
@@ -328,11 +330,11 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
         if (cursor != null) {
             cursor.moveToPosition(CursorPosition);
-            refreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
+            tryRefreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
         }
     }
     
-    private void refreshWeather(int cityId) {
+    private void tryRefreshWeather(int cityId) {
         
         showRefreshProgress(mSwipeRefreshLayout);
         if (isInternetAvailable()) {
@@ -347,12 +349,12 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         if (!refreshIntervalIsRight()) {
             hideRefreshProgress(mSwipeRefreshLayout);
-            String interval = mDataTimeUtils.getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0)),
+            String interval = mDataTimeUtils.getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - mPreferencesManager.readLastRequestTime()),
                     REFRESHING_TIME_STAMP_PATTERN);
-            mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_refreshed, interval), SNACK_BAR_MESSAGE_DURATION);
+            mMessageManager.makeSnackbarMessage(mBackground, getResources().getString(R.string.weather_refreshed, interval), SNACK_BAR_MESSAGE_DURATION);
         } else if (!isInternetAvailable()) {
             hideRefreshProgress(mSwipeRefreshLayout);
-            mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.internet_not_available), SNACK_BAR_MESSAGE_DURATION);
+            mMessageManager.makeSnackbarMessage(mBackground, getResources().getString(R.string.internet_not_available), SNACK_BAR_MESSAGE_DURATION);
         } else {
             refreshWeatherData();
         }
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private boolean refreshIntervalIsRight() {
         
         long curTime = System.currentTimeMillis();
-        return curTime > PreferencesManager.getPreferences(this).getLong(LAST_REQUEST_TIME, 0) + MIN_REQUEST_INTERVAL;
+        return curTime > mPreferencesManager.readLastRequestTime() + MIN_REQUEST_INTERVAL;
     }
     
     private boolean isInternetAvailable() {
@@ -381,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void refreshWeatherData() {
         
-        refreshWeatherData(PreferencesManager.getPreferences(this).getInt(PREF_FOR_CURRENT_CITY_ID, DEFAULT_CITY_ID));
+        refreshWeatherData(mPreferencesManager.readCityId());
     }
     
     private void refreshWeatherData(int cityId) {
@@ -426,30 +428,28 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private void weatherGetError() {
         
         hideRefreshProgress(mSwipeRefreshLayout);
-        mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_get_error), SNACK_BAR_MESSAGE_DURATION);
+        mMessageManager.makeSnackbarMessage(mBackground, getResources().getString(R.string.weather_get_error), SNACK_BAR_MESSAGE_DURATION);
     }
     
     private void weatherGetSuccessfully() {
         
         hideRefreshProgress(mSwipeRefreshLayout);
-        mMessageManager.makeSnackbarMessage(mToolbar, getResources().getString(R.string.weather_updated), SNACK_BAR_MESSAGE_DURATION);
+        mMessageManager.makeSnackbarMessage(mBackground, getResources().getString(R.string.weather_updated), SNACK_BAR_MESSAGE_DURATION);
     }
     
     private void writeAndPrepareWeatherData(String jsonCurrentWeather, String jsonForecast) {
         
-        PreferencesManager.getPreferences(this).edit()
-                .putString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, jsonCurrentWeather)
-                .putString(PREF_FOR_FIFE_DAYS_FORECAST_JSON_DATA, jsonForecast)
-                .putLong(LAST_REQUEST_TIME, System.currentTimeMillis())
-                .apply();
+        mPreferencesManager.writeCurrentWeatherData(jsonCurrentWeather);
+        mPreferencesManager.writeForecastWeatherData(jsonForecast);
+        mPreferencesManager.writeCurrentTime();
         prepareCurrentWeatherData(jsonCurrentWeather);
         prepareForecastWeatherData(jsonForecast);
     }
     
     private void getAndPrepareLastWeatherData() {
         
-        String jsonCurrentWeather = PreferencesManager.getPreferences(this).getString(PREF_FOR_CURRENT_WEATHER_JSON_DATA, null);
-        String jsonForecast = PreferencesManager.getPreferences(this).getString(PREF_FOR_FIFE_DAYS_FORECAST_JSON_DATA, null);
+        String jsonCurrentWeather = mPreferencesManager.readCurrentWeatherData();
+        String jsonForecast = mPreferencesManager.readForecastWeatherData();
         if (jsonCurrentWeather != null && jsonForecast != null) {
             prepareCurrentWeatherData(jsonCurrentWeather);
             prepareForecastWeatherData(jsonForecast);
@@ -459,9 +459,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private void prepareCurrentWeatherData(String jsonCurrentWeather) {
         
         CurrentWeather currentWeather = mGson.fromJson(jsonCurrentWeather, CurrentWeather.class);
-        PreferencesManager.getPreferences(this).edit()
-                .putInt(PREF_FOR_CURRENT_CITY_ID, currentWeather.getCityId())
-                .apply();
+        mPreferencesManager.writeCityId(currentWeather.getCityId());
         setWeatherValues(currentWeather);
     }
     

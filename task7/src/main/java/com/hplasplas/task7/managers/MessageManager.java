@@ -35,7 +35,7 @@ public class MessageManager {
     public void makeSnackbarMessage(View parent, String message, int duration) {
         
         Snackbar.make(parent, message, Snackbar.LENGTH_LONG)
-                .setAction(mAppContext.getResources().getString(R.string.button_ok), null)
+                .setAction(R.string.button_ok, v -> {})
                 .setDuration(duration)
                 .show();
     }

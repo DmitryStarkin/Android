@@ -63,23 +63,10 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         }
     }
     
-    
-    
     @Override
     public int getItemCount() {
         
         return mThreeHourForecast.size();
-    }
-    
-    @Override
-    public void onViewRecycled(ViewHolder holder) {
-        
-        int position = holder.getAdapterPosition();
-        if (position != RecyclerView.NO_POSITION) {
-            //mThreeHourForecast.get(position).clearPreview();
-            //activity.stopLoadPreview(position);
-        }
-        super.onViewRecycled(holder);
     }
     
     public void setThreeHourForecast(List<ThreeHourForecast> threeHourForecast) {

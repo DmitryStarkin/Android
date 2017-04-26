@@ -11,6 +11,7 @@ import com.hplasplas.task7.modules.GSONModule;
 import com.hplasplas.task7.modules.MessageManagerModule;
 import com.hplasplas.task7.modules.OpenWeatherMapApiModule;
 import com.hplasplas.task7.modules.PicassoModule;
+import com.hplasplas.task7.modules.PreferencesManagerModule;
 import com.hplasplas.task7.modules.RetrofitModule;
 import com.hplasplas.task7.modules.WeatherImageManagerModule;
 
@@ -25,7 +26,8 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class, DataBaseFactoryModule.class, DbTollsModule.class,
         DownloaderModule.class, GSONModule.class, OpenWeatherMapApiModule.class, PicassoModule.class,
-        RetrofitModule.class, WeatherImageManagerModule.class, DataTimeUtilsModule.class, MessageManagerModule.class})
+        RetrofitModule.class, WeatherImageManagerModule.class, DataTimeUtilsModule.class,
+        MessageManagerModule.class, PreferencesManagerModule.class})
 
 public interface AppComponent {
     

@@ -13,6 +13,7 @@ import com.hplasplas.task7.modules.GSONModule;
 import com.hplasplas.task7.modules.MessageManagerModule;
 import com.hplasplas.task7.modules.OpenWeatherMapApiModule;
 import com.hplasplas.task7.modules.PicassoModule;
+import com.hplasplas.task7.modules.PreferencesManagerModule;
 import com.hplasplas.task7.modules.RetrofitModule;
 import com.hplasplas.task7.modules.WeatherImageManagerModule;
 
@@ -50,6 +51,7 @@ public class App extends Application {
                .retrofitModule(new RetrofitModule())
                .dataTimeUtilsModule(new DataTimeUtilsModule())
                .messageManagerModule(new MessageManagerModule())
+               .preferencesManagerModule(new PreferencesManagerModule())
                .build();
     }
 }
