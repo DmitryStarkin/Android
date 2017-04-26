@@ -5,8 +5,8 @@
     <color name="colorAccent">#FF4081</color>
     <color name="ColorTransparent">#00fffaff</color>
     <color name="colorButtonText">#d9d8d3</color>
-    <color name="TextColorPrimary">#FFFFFF</color>
-    <color name="ColorWeatherValues">#f5faf5</color>
+    <color name="TextColorPrimary">#e5f9f6</color>
+    <color name="ColorWeatherValues">#e5f9f6</color>
     <color name="ProgressPrimary">#FFFFFF</color>
     <color name="ProgressSec">#70716B</color>
 </resources>
