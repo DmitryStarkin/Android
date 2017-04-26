@@ -293,7 +293,8 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     
     private void setWeatherValues(CurrentWeather currentWeather) {
     
-        mImageManager.setBackground(mBackground, currentWeather.getWeather().get(0).getMain(), currentWeather.getWeather().get(0).getId());
+        mImageManager.setBackground(mBackground, currentWeather.getWeather().get(0).getMain(),
+                currentWeather.getWeather().get(0).getIcon(), currentWeather.getWeather().get(0).getId());
         mImageManager.setWeatherIcon(mCurrentWeatherIcon, currentWeather.getWeather().get(0).getIcon());
         mCityName.setText(currentWeather.getCityName());
         mDateTime.setText(mDataTimeUtils.getTimeString(currentWeather.getCalculationDataTime(), WEATHER_TIME_STAMP_PATTERN, MIL_PER_SEC));

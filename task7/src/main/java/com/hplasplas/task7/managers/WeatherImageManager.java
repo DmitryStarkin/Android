@@ -38,22 +38,34 @@ public class WeatherImageManager {
                 .into(imageView);
     }
     
-    public void setBackground(ImageView imageView, String weatherGroup, int weatherId) {
+    public void setBackground(ImageView imageView, String weatherGroup, String weatherIcon, int weatherId) {
         
-        int weatherDrawableId = mAppContext.getResources().getIdentifier(WEATHER_DRAWABLE_PREFIX + (Integer.toString(weatherId)),
-                "drawable", mAppContext.getPackageName());
-        int weatherGroupDrawableId = mAppContext.getResources().getIdentifier(weatherGroup.toLowerCase(Locale.US),
-                "drawable", mAppContext.getPackageName());
-        if (weatherDrawableId == 0) {
-            weatherDrawableId = weatherGroupDrawableId;
-        }
-        if (weatherDrawableId == 0) {
-            weatherDrawableId = R.drawable.default_background;
-        }
-    
         mPicasso
-                .load(weatherDrawableId)
+                .load(calculateDrawableId(weatherGroup, weatherIcon, weatherId))
                 .error(R.drawable.default_background)
                 .into(imageView);
+    }
+    
+    
+    private int calculateDrawableId(String weatherGroup, String weatherIcon, int weatherId) {
+        
+        if(weatherGroup == null || weatherIcon == null){
+            return R.drawable.default_background;
+        }
+        String dayNight = weatherIcon.substring(weatherIcon.length() - 1);
+        int drawableId = mAppContext.getResources().getIdentifier(WEATHER_DRAWABLE_PREFIX + (Integer.toString(weatherId)) + dayNight,
+                "drawable", mAppContext.getPackageName());
+        if(drawableId == 0){
+            drawableId = mAppContext.getResources().getIdentifier(WEATHER_DRAWABLE_PREFIX + (Integer.toString(weatherId)),
+                    "drawable", mAppContext.getPackageName());
+        }
+        if (drawableId == 0) {
+            drawableId = mAppContext.getResources().getIdentifier(weatherGroup.toLowerCase(Locale.US),
+                    "drawable", mAppContext.getPackageName());;
+        }
+        if (drawableId == 0) {
+            drawableId = R.drawable.default_background;
+        }
+        return drawableId;
     }
 }
