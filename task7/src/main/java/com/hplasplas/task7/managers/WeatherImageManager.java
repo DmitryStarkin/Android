@@ -41,8 +41,9 @@ public class WeatherImageManager {
     public void setBackground(ImageView imageView, String weatherGroup, String weatherIcon, int weatherId) {
         
         mPicasso
+                //.load(calculateDrawableId(weatherGroup, weatherIcon, weatherId))
                 .load(calculateDrawableId(weatherGroup, weatherIcon, weatherId))
-                .error(R.drawable.default_background)
+                .error(calculateDrawableId(weatherGroup, weatherIcon, weatherId))
                 .into(imageView);
     }
     
