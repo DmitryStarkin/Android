@@ -23,17 +23,17 @@ import com.hplasplas.task7.modules.WeatherImageManagerModule;
 
 public class App extends Application {
     
-    private static AppComponent sAppComponent;
+    private AppComponent mAppComponent;
     
-    public static AppComponent getAppComponent() {
+    public  AppComponent getAppComponent() {
         
-        return sAppComponent;
+        return mAppComponent;
     }
     
     @Override
     public void onCreate() {
         super.onCreate();
-        sAppComponent = buildComponent();
+        mAppComponent = buildComponent();
     }
     
     @SuppressWarnings("deprecation")
