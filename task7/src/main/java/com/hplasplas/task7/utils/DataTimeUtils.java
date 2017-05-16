@@ -10,12 +10,12 @@ import java.util.Locale;
 
 public class DataTimeUtils {
     
-    public String getTimeString(long time, String timePattern) {
+    public synchronized String getTimeString(long time, String timePattern) {
         
         return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time));
     }
     
-    public String getTimeString(long time, String timePattern, long correction) {
+    public synchronized String getTimeString(long time, String timePattern, long correction) {
         
         return new SimpleDateFormat(timePattern, Locale.US).format(new Date(time * correction));
     }

@@ -1,12 +1,14 @@
 package com.hplasplas.task7.managers;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import com.hplasplas.task7.R;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import static com.hplasplas.task7.setting.Constants.ICON_DOWNLOAD_URL;
@@ -30,12 +32,25 @@ public class WeatherImageManager {
     
     public void setWeatherIcon(ImageView imageView, String iconId) {
         
-        String imageUrl = ICON_DOWNLOAD_URL + iconId + ICON_FILE_SUFFIX;
         mPicasso
-                .load(imageUrl)
+                .load(buildIconURL(iconId))
                 .memoryPolicy(MemoryPolicy.NO_STORE)
                 .error(R.drawable.ic_highlight_off_red_500_24dp)
                 .into(imageView);
+    }
+    
+    public Bitmap getWeatherIcon(String iconId) throws IOException {
+    
+        return mPicasso
+                .load(buildIconURL(iconId))
+                .memoryPolicy(MemoryPolicy.NO_STORE)
+                .error(R.drawable.ic_highlight_off_red_500_24dp)
+                .get();
+    }
+    
+    private String buildIconURL(String iconId){
+        
+        return ICON_DOWNLOAD_URL + iconId + ICON_FILE_SUFFIX;
     }
     
     public void setBackground(ImageView imageView, String weatherGroup, String weatherIcon, int weatherId) {

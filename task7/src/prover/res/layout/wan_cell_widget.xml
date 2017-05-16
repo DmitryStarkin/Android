@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="@dimen/wan_cell_widget_layaut_min_width"
+              android:layout_height="@dimen/wan_cell_widget_layaut_min_height"
+              android:background="@drawable/box1"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_city"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="@integer/city_name_weight"
+        android:background="@color/ColorTransparent"
+        android:gravity="center_vertical"
+        android:text="@string/default_text"
+        android:textSize="@dimen/w_city_text_size"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="@integer/weather_desc_layout_weight"
+        android:background="@color/ColorTransparent"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/widget_weather_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="@integer/w_icon_weight"
+            android:background="@color/ColorTransparent"
+            app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/widget_temperature"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="@integer/w_temperature_weight"
+            android:background="@color/ColorTransparent"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/default_text"
+            android:textSize="@dimen/w_temperature_text_size"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_updated"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="@integer/date_weight"
+        android:background="@color/ColorTransparent"
+        android:gravity="center_vertical"
+        android:text="@string/default_text"
+        android:textSize="@dimen/w_date_time__text_size"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText"/>
+</LinearLayout>

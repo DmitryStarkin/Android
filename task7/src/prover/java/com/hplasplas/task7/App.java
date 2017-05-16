@@ -15,6 +15,7 @@ import com.hplasplas.task7.modules.OpenWeatherMapApiModule;
 import com.hplasplas.task7.modules.PicassoModule;
 import com.hplasplas.task7.modules.PreferencesManagerModule;
 import com.hplasplas.task7.modules.RetrofitModule;
+import com.hplasplas.task7.modules.WeatherDataProviderModule;
 import com.hplasplas.task7.modules.WeatherImageManagerModule;
 
 /**
@@ -23,9 +24,9 @@ import com.hplasplas.task7.modules.WeatherImageManagerModule;
 
 public class App extends Application {
     
-    private AppComponent mAppComponent;
+    private static AppComponent mAppComponent;
     
-    public  AppComponent getAppComponent() {
+    public static AppComponent getAppComponent() {
         
         return mAppComponent;
     }
@@ -52,6 +53,7 @@ public class App extends Application {
                .dataTimeUtilsModule(new DataTimeUtilsModule())
                .messageManagerModule(new MessageManagerModule())
                .preferencesManagerModule(new PreferencesManagerModule())
+               .weatherDataProviderModule(new WeatherDataProviderModule())
                .build();
     }
 }

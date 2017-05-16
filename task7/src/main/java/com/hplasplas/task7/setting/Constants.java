@@ -20,6 +20,7 @@ public final class Constants {
     public static final String WEATHER_TIME_STAMP_PATTERN = "E, d MMM y, HH:mm";
     public static final String SUN_TIME_STAMP_PATTERN = "HH:mm";
     public static final String REFRESHING_TIME_STAMP_PATTERN = "mm 'min' ss 'sec'";
+    public static final String WIDGET_TIME_STAMP_PATTERN = "E, d MMM, HH:mm";
     public static final String FORECAST_TIME_STAMP_PATTERN = "HH:mm";
     public static final String FORECAST_DATE_STAMP_PATTERN = "dd.MM.yy";
     

@@ -6,13 +6,22 @@ android {
     buildToolsVersion "25.0.3"
 
     defaultConfig {
-        applicationId "com.hplasplas.dstweather"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 2
-        versionName "1.2"
         jackOptions {
             enabled false
+        }
+    }
+    productFlavors {
+        basever {
+            applicationId "com.hplasplas.dstweather"
+            versionName "1.2"
+        }
+
+        prover {
+            applicationId "com.hplasplas.dstweather_pro"
+            versionName "1.2p"
         }
     }
     buildTypes {

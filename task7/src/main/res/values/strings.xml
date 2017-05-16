@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Weather</string>
     <string name="about_message">Weather v 1.1b</string>
     <string name="action_about">About</string>
     <string name="city_search">City search</string>

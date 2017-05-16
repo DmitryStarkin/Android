@@ -1,0 +1,80 @@
+package com.hplasplas.task7.services;
+
+import android.app.IntentService;
+import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.support.annotation.Nullable;
+import android.widget.RemoteViews;
+
+import com.hplasplas.task7.App;
+import com.hplasplas.task7.R;
+import com.hplasplas.task7.managers.WeatherDataProvider;
+import com.hplasplas.task7.managers.WeatherImageManager;
+import com.hplasplas.task7.models.weather.current.CurrentWeather;
+import com.hplasplas.task7.receivers.WeatherWidgetProvider;
+import com.hplasplas.task7.utils.DataTimeUtils;
+
+import java.io.IOException;
+
+import javax.inject.Inject;
+
+import static com.hplasplas.task7.setting.Constants.MIL_PER_SEC;
+import static com.hplasplas.task7.setting.Constants.WIDGET_TIME_STAMP_PATTERN;
+
+/**
+ * Created by StarkinDG on 14.05.2017.
+ */
+
+public class WeatherWidgetService extends IntentService {
+    
+    @Inject
+    public WeatherImageManager mImageManager;
+    @Inject
+    public DataTimeUtils mDataTimeUtils;
+    @Inject
+    public WeatherDataProvider mWeatherDataProvider;
+    
+    public WeatherWidgetService() {
+        
+        super("WeatherWidgetService");
+        App.getAppComponent().inject(this);
+    }
+    
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        
+        super.onStartCommand(intent, flags, startId);
+        return Service.START_NOT_STICKY;
+    }
+    
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        
+        CurrentWeather currentWeather;
+        currentWeather = mWeatherDataProvider.getSavedWeatherData();
+        updateWidgets(currentWeather);
+        currentWeather = mWeatherDataProvider.getCurrentWeather();
+        updateWidgets(currentWeather);
+    }
+    
+    private void updateWidgets(CurrentWeather currentWeather) {
+        
+        if (currentWeather != null) {
+            RemoteViews remoteView = new RemoteViews(this.getPackageName(), R.layout.wan_cell_widget);
+            remoteView.setTextViewText(R.id.widget_city, currentWeather.getCityName());
+            remoteView.setTextViewText(R.id.widget_temperature, getResources().getString(R.string.temperature, currentWeather.getMain().getTemp()));
+            remoteView.setTextViewText(R.id.widget_updated, mDataTimeUtils.getTimeString(currentWeather.getCalculationDataTime(),
+                    WIDGET_TIME_STAMP_PATTERN, MIL_PER_SEC));
+            try {
+                remoteView.setImageViewBitmap(R.id.widget_weather_icon, mImageManager.getWeatherIcon(currentWeather.getWeather().get(0).getIcon()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+            appWidgetManager.updateAppWidget(new ComponentName(this, WeatherWidgetProvider.class), remoteView);
+        }
+    }
+}
