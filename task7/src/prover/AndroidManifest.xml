@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.hplasplas.task7">
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
 
         >
@@ -11,7 +11,9 @@
             <meta-data android:name="android.appwidget.provider"
                        android:resource="@xml/weather_appwidget_provider" />
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="update_all_widgets"/>
             </intent-filter>
         </receiver>
     </application>

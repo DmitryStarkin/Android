@@ -2,10 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="@dimen/wan_cell_widget_layaut_min_width"
-              android:layout_height="@dimen/wan_cell_widget_layaut_min_height"
+              android:id="@+id/wan_cell_widget_layout"
+              android:layout_width="match_parent"
+              android:layout_height="32dp"
+              android:layout_gravity="center_vertical|center_horizontal"
+              android:layout_margin="@dimen/w_layout_margin"
               android:background="@drawable/box1"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:padding="@dimen/w_layout_paging"
+              android:paddingBottom="@dimen/w_layout_paging">
 
     <TextView
         android:id="@+id/widget_city"
@@ -13,11 +18,10 @@
         android:layout_height="match_parent"
         android:layout_weight="@integer/city_name_weight"
         android:background="@color/ColorTransparent"
-        android:gravity="center_vertical"
+        android:gravity="center_horizontal|center_vertical"
         android:text="@string/default_text"
         android:textSize="@dimen/w_city_text_size"
-        android:textStyle="bold"
-        tools:ignore="HardcodedText"/>
+        android:textStyle="bold"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,8 +36,9 @@
             android:layout_height="match_parent"
             android:layout_weight="@integer/w_icon_weight"
             android:background="@color/ColorTransparent"
+            android:gravity="center_horizontal|center_vertical"
             app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription,NestedWeights"/>
 
         <TextView
             android:id="@+id/widget_temperature"
@@ -44,8 +49,7 @@
             android:gravity="center_horizontal|center_vertical"
             android:text="@string/default_text"
             android:textSize="@dimen/w_temperature_text_size"
-            android:textStyle="bold"
-            tools:ignore="HardcodedText"/>
+            android:textStyle="bold"/>
 
     </LinearLayout>
 
@@ -55,9 +59,9 @@
         android:layout_height="match_parent"
         android:layout_weight="@integer/date_weight"
         android:background="@color/ColorTransparent"
-        android:gravity="center_vertical"
+        android:gravity="top|center_horizontal"
         android:text="@string/default_text"
         android:textSize="@dimen/w_date_time__text_size"
         android:textStyle="bold"
-        tools:ignore="HardcodedText"/>
+        tools:padding="4dp"/>
 </LinearLayout>

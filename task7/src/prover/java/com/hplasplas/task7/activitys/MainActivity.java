@@ -1,5 +1,6 @@
 package com.hplasplas.task7.activitys;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
@@ -20,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.hplasplas.task7.App;
+import com.hplasplas.task7.BuildConfig;
 import com.hplasplas.task7.R;
 import com.hplasplas.task7.adapters.ForecastAdapter;
 import com.hplasplas.task7.managers.MessageManager;
@@ -34,7 +36,23 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.hplasplas.task7.setting.Constants.*;
+import static com.hplasplas.task7.setting.Constants.CITY_QUERY_BEGIN_SEARCH_PREFIX;
+import static com.hplasplas.task7.setting.Constants.CITY_QUERY_BEGIN_SEARCH_SUFFIX;
+import static com.hplasplas.task7.setting.Constants.CITY_QUERY_FULL_SEARCH_PREFIX;
+import static com.hplasplas.task7.setting.Constants.CITY_QUERY_FULL_SEARCH_SUFFIX;
+import static com.hplasplas.task7.setting.Constants.COLUMNS_CITY_ID;
+import static com.hplasplas.task7.setting.Constants.COLUMNS_CITY_NAME;
+import static com.hplasplas.task7.setting.Constants.DEBUG;
+import static com.hplasplas.task7.setting.Constants.MIL_PER_SEC;
+import static com.hplasplas.task7.setting.Constants.REFRESH_INDICATOR_END_OFFSET;
+import static com.hplasplas.task7.setting.Constants.REFRESH_INDICATOR_START_OFFSET;
+import static com.hplasplas.task7.setting.Constants.SNACK_BAR_MESSAGE_DURATION;
+import static com.hplasplas.task7.setting.Constants.SUGGESTION_QUERY_TAG;
+import static com.hplasplas.task7.setting.Constants.SUN_TIME_STAMP_PATTERN;
+import static com.hplasplas.task7.setting.Constants.UPDATE_ALL_WIDGETS;
+import static com.hplasplas.task7.setting.Constants.WEATHER_TIME_STAMP_PATTERN;
+import static com.hplasplas.task7.setting.Constants.WIND_DIRECTION_DIVIDER;
+import static com.hplasplas.task7.setting.Constants.WIND_DIRECTION_PREFIX;
 
 public class MainActivity extends AppCompatActivity implements DataBaseTolls.onCursorReadyListener {
     
@@ -160,8 +178,9 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         super.onResume();
         mWeatherDataProvider.registerErrorListener(this::showErrorMessage);
-        mWeatherDataProvider.registerCurrentWeatherReadyListener(this::showCurrentWeather);
-        mWeatherDataProvider.registerForecastReadyListener(forecast -> setAdapter(mRecyclerView, forecast.getThreeHourForecast()));
+        mWeatherDataProvider.registerCurrentWeatherReadyListener(this::showCurrentWeather, Thread.currentThread().getName());
+        mWeatherDataProvider.registerForecastReadyListener(forecast -> setAdapter(mRecyclerView, forecast.getThreeHourForecast()),
+                Thread.currentThread().getName());
         tryRefreshWeather();
     }
     
@@ -184,6 +203,15 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         mWeatherDataProvider.cancelCalls();
         mWeatherDataProvider.unRegisterListeners();
         closeCursor(mSearchView);
+        updateWidgets();
+    }
+    
+    private void updateWidgets(){
+        
+        if(BuildConfig.FLAVOR.equals("prover")){
+            Intent intent = new Intent(UPDATE_ALL_WIDGETS);
+            sendBroadcast(intent);
+        }
     }
     
     private void showErrorMessage(String errMessage){

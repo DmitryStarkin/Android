@@ -37,6 +37,7 @@ public class WeatherDataProvider {
     private CurrentWeatherReadyListener mCurrentWeatherReadyListener;
     private ForecastReadyListener mForecastReadyListener;
     private ErrorListener mErrorListener;
+    private String mMainThreadName;
     
     public WeatherDataProvider(Context context, OpenWeatherMapApi openWeatherMapApi, PreferencesManager preferencesManager,
                                Gson gson, DataTimeUtils dataTimeUtils) {
@@ -50,11 +51,10 @@ public class WeatherDataProvider {
     
     public void tryEnqueueWeatherAndForecastData() {
         
+        getSavedWeatherData();
+        getSavedForecastData();
         if (isInternetAvailable() && refreshIntervalIsRight()) {
-        enqueueWeatherAndForecastData(mPreferencesManager.readCityId());
-        } else {
-            getSavedWeatherData();
-            getSavedForecastData();
+            enqueueWeatherAndForecastData(mPreferencesManager.readCityId());
         }
     }
     
@@ -72,9 +72,9 @@ public class WeatherDataProvider {
         if (!refreshIntervalIsRight()) {
             String interval = mDataTimeUtils.getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - mPreferencesManager.readLastRequestTime()),
                     REFRESHING_TIME_STAMP_PATTERN);
-            sendError( mAppContext.getResources().getString(R.string.weather_refreshed, interval));
+            sendError(mAppContext.getResources().getString(R.string.weather_refreshed, interval));
         } else if (!isInternetAvailable()) {
-    
+            
             sendError(mAppContext.getResources().getString(R.string.internet_not_available));
         } else {
             tryEnqueueWeatherAndForecastData();
@@ -90,10 +90,11 @@ public class WeatherDataProvider {
             public void onResponse(Call<String> call, Response<String> response) {
                 
                 if (response.body() != null) {
-                    String currentWeatherResponse =  response.body();
+                    String currentWeatherResponse = response.body();
                     mForecastWeatherCall.enqueue(new Callback<String>() {
                         @Override
                         public void onResponse(Call<String> call, Response<String> response) {
+                            
                             if (response.body() != null) {
                                 writeAndPrepareCurrentWeatherData(currentWeatherResponse);
                                 writeAndPrepareForecastData(response.body());
@@ -104,6 +105,7 @@ public class WeatherDataProvider {
                         
                         @Override
                         public void onFailure(Call<String> call, Throwable t) {
+                            
                             weatherGetError();
                         }
                     });
@@ -114,10 +116,10 @@ public class WeatherDataProvider {
             
             @Override
             public void onFailure(Call<String> call, Throwable t) {
+                
                 weatherGetError();
             }
         });
-        
     }
     
     public void enqueueCurrentWeatherData(int cityId) {
@@ -128,37 +130,38 @@ public class WeatherDataProvider {
         
     }
     
-    public CurrentWeather getCurrentWeather(){
+    public CurrentWeather getCurrentWeather() {
         
-       return  getCurrentWeather(mPreferencesManager.readCityId());
+        return getCurrentWeather(mPreferencesManager.readCityId());
     }
     
-    public FifeDaysForecast getForecast(){
+    public FifeDaysForecast getForecast() {
         
-        return  getForecast(mPreferencesManager.readCityId());
+        return getForecast(mPreferencesManager.readCityId());
     }
     
-    public CurrentWeather getCurrentWeather(int cityId){
-        if(isWeatherUpdateAvailable()) {
-        try {
-            Response<String> response = mOpenWeatherMapApi.getCurrentWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY).execute();
-            if (response.body() != null) {
-                return writeAndPrepareCurrentWeatherData(response.body());
-            } else {
+    public CurrentWeather getCurrentWeather(int cityId) {
+        
+        if (isWeatherUpdateAvailable()) {
+            try {
+                Response<String> response = mOpenWeatherMapApi.getCurrentWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY).execute();
+                if (response.body() != null) {
+                    return writeAndPrepareCurrentWeatherData(response.body());
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
                 return null;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
         } else {
             return null;
         }
     }
     
-    public FifeDaysForecast getForecast(int cityId){
+    public FifeDaysForecast getForecast(int cityId) {
         
-        if(isWeatherUpdateAvailable()) {
+        if (isWeatherUpdateAvailable()) {
             try {
                 Response<String> response = mOpenWeatherMapApi.getFifeDaysWeather(cityId, UNITS_PARAMETER_VALUE, API_KEY).execute();
                 if (response.body() != null) {
@@ -180,13 +183,15 @@ public class WeatherDataProvider {
         return isInternetAvailable() && refreshIntervalIsRight();
     }
     
-    private synchronized CurrentWeather writeAndPrepareCurrentWeatherData(String jsonCurrentWeather){
+    private synchronized CurrentWeather writeAndPrepareCurrentWeatherData(String jsonCurrentWeather) {
+        
         mPreferencesManager.writeCurrentWeatherData(jsonCurrentWeather);
         mPreferencesManager.writeCurrentTime();
         return prepareCurrentWeatherData(jsonCurrentWeather);
     }
     
-    private synchronized FifeDaysForecast writeAndPrepareForecastData(String jsonForecast){
+    private synchronized FifeDaysForecast writeAndPrepareForecastData(String jsonForecast) {
+        
         mPreferencesManager.writeForecastWeatherData(jsonForecast);
         mPreferencesManager.writeCurrentTime();
         return prepareForecastWeatherData(jsonForecast);
@@ -194,12 +199,12 @@ public class WeatherDataProvider {
     
     private void weatherGetError() {
         
-            sendError( mAppContext.getResources().getString(R.string.weather_get_error));
+        sendError(mAppContext.getResources().getString(R.string.weather_get_error));
     }
     
-    private void sendError(String errMessage){
+    private void sendError(String errMessage) {
         
-        if (mErrorListener != null ) {
+        if (mErrorListener != null) {
             mErrorListener.onError(errMessage);
         }
     }
@@ -218,7 +223,7 @@ public class WeatherDataProvider {
         
         String jsonForecast = mPreferencesManager.readForecastWeatherData();
         if (jsonForecast != null) {
-           return prepareForecastWeatherData(jsonForecast);
+            return prepareForecastWeatherData(jsonForecast);
         } else {
             return null;
         }
@@ -233,8 +238,7 @@ public class WeatherDataProvider {
         
         CurrentWeather currentWeather = mGson.fromJson(jsonCurrentWeather, CurrentWeather.class);
         mPreferencesManager.writeCityId(currentWeather.getCityId());
-        if (mCurrentWeatherReadyListener != null) {
-             
+        if (mCurrentWeatherReadyListener != null && isMainThread()) {
             mCurrentWeatherReadyListener.onCurrentWeatherReady(currentWeather, isNew);
         }
         return currentWeather;
@@ -243,10 +247,15 @@ public class WeatherDataProvider {
     private synchronized FifeDaysForecast prepareForecastWeatherData(String jsonForecastWeather) {
         
         FifeDaysForecast forecast = mGson.fromJson(jsonForecastWeather, FifeDaysForecast.class);
-        if (mForecastReadyListener != null) {
+        if (mForecastReadyListener != null && isMainThread()) {
             mForecastReadyListener.onForecastReady(forecast);
         }
         return forecast;
+    }
+    
+    private boolean isMainThread() {
+    
+        return mMainThreadName != null && Thread.currentThread().getName().equals(mMainThreadName);
     }
     
     private boolean refreshIntervalIsRight() {
@@ -273,15 +282,16 @@ public class WeatherDataProvider {
         }
     }
     
-    public void registerCurrentWeatherReadyListener(CurrentWeatherReadyListener listener) {
+    public void registerCurrentWeatherReadyListener(CurrentWeatherReadyListener listener, String treadName) {
         
         mCurrentWeatherReadyListener = listener;
-        
+        mMainThreadName = treadName;
     }
     
-    public void registerForecastReadyListener(ForecastReadyListener listener) {
+    public void registerForecastReadyListener(ForecastReadyListener listener, String treadName) {
         
         mForecastReadyListener = listener;
+        mMainThreadName = treadName;
     }
     
     public void registerErrorListener(ErrorListener listener) {
@@ -297,14 +307,17 @@ public class WeatherDataProvider {
     public void unRegisterCurrentWeatherReadyListener() {
         
         mCurrentWeatherReadyListener = null;
+        mMainThreadName = null;
     }
     
     public void unRegisterForecastReadyListener() {
-    
+        
         mForecastReadyListener = null;
+        mMainThreadName = null;
     }
     
     public void unRegisterListeners() {
+        
         unRegisterCurrentWeatherReadyListener();
         unRegisterForecastReadyListener();
         unRegisterErrorListener();

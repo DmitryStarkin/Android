@@ -71,5 +71,6 @@ public final class Constants {
     public static final int REFRESH_INDICATOR_END_OFFSET = 10;
     public static final int NUMBER_THREAD_FOR_QUERY = 1;
     public static final int SNACK_BAR_MESSAGE_DURATION = 5000;
+    public static final String UPDATE_ALL_WIDGETS = "update_all_widgets";
 }
 

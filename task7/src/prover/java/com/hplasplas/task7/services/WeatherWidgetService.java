@@ -1,6 +1,7 @@
 package com.hplasplas.task7.services;
 
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -10,6 +11,7 @@ import android.widget.RemoteViews;
 
 import com.hplasplas.task7.App;
 import com.hplasplas.task7.R;
+import com.hplasplas.task7.activitys.MainActivity;
 import com.hplasplas.task7.managers.WeatherDataProvider;
 import com.hplasplas.task7.managers.WeatherImageManager;
 import com.hplasplas.task7.models.weather.current.CurrentWeather;
@@ -61,8 +63,9 @@ public class WeatherWidgetService extends IntentService {
     
     private void updateWidgets(CurrentWeather currentWeather) {
         
+        RemoteViews remoteView = new RemoteViews(this.getPackageName(), R.layout.wan_cell_widget);
+        
         if (currentWeather != null) {
-            RemoteViews remoteView = new RemoteViews(this.getPackageName(), R.layout.wan_cell_widget);
             remoteView.setTextViewText(R.id.widget_city, currentWeather.getCityName());
             remoteView.setTextViewText(R.id.widget_temperature, getResources().getString(R.string.temperature, currentWeather.getMain().getTemp()));
             remoteView.setTextViewText(R.id.widget_updated, mDataTimeUtils.getTimeString(currentWeather.getCalculationDataTime(),
@@ -72,9 +75,14 @@ public class WeatherWidgetService extends IntentService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-            appWidgetManager.updateAppWidget(new ComponentName(this, WeatherWidgetProvider.class), remoteView);
         }
+        
+        Intent startActivityIntent = new Intent(this.getApplicationContext(), MainActivity.class);
+        startActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, startActivityIntent, 0);
+        remoteView.setOnClickPendingIntent(R.id.wan_cell_widget_layout, pendingIntent);
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+        appWidgetManager.updateAppWidget(new ComponentName(this, WeatherWidgetProvider.class), remoteView);
+        
     }
 }

@@ -2,10 +2,14 @@ package com.hplasplas.task7.receivers;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 
 import com.hplasplas.task7.services.WeatherWidgetService;
+
+import static com.hplasplas.task7.setting.Constants.UPDATE_ALL_WIDGETS;
 
 /**
  * Created by StarkinDG on 14.05.2017.
@@ -14,10 +18,39 @@ import com.hplasplas.task7.services.WeatherWidgetService;
 public class WeatherWidgetProvider extends AppWidgetProvider {
     
     @Override
+    public void onReceive(Context context, Intent intent) {
+        
+        super.onReceive(context, intent);
+        if(intent.getAction().equals(UPDATE_ALL_WIDGETS) || intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)){
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context.getApplicationContext());
+            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context.getApplicationContext(), WeatherWidgetProvider.class));
+            startService(context, appWidgetIds);
+        }
+    }
+        
+    @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         
         super.onUpdate(context, appWidgetManager, appWidgetIds);
         startService(context, appWidgetIds);
+    }
+    
+    @Override
+    public void onEnabled(Context context) {
+    
+        PackageManager packageManager = context.getPackageManager();
+        packageManager.setComponentEnabledSetting(
+                new ComponentName(context, WeatherWidgetProvider.class),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+    }
+    
+    @Override
+    public void onDisabled(Context context) {
+    
+        PackageManager packageManager = context.getPackageManager();
+        packageManager.setComponentEnabledSetting(
+                new ComponentName(context, WeatherWidgetProvider.class),
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
     }
     
     private void startService(Context context, int[] appWidgetIds) {
