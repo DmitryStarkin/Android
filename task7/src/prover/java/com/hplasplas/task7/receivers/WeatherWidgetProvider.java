@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 
 import com.hplasplas.task7.services.WeatherWidgetService;
 
@@ -33,24 +32,6 @@ public class WeatherWidgetProvider extends AppWidgetProvider {
         
         super.onUpdate(context, appWidgetManager, appWidgetIds);
         startService(context, appWidgetIds);
-    }
-    
-    @Override
-    public void onEnabled(Context context) {
-    
-        PackageManager packageManager = context.getPackageManager();
-        packageManager.setComponentEnabledSetting(
-                new ComponentName(context, WeatherWidgetProvider.class),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-    }
-    
-    @Override
-    public void onDisabled(Context context) {
-    
-        PackageManager packageManager = context.getPackageManager();
-        packageManager.setComponentEnabledSetting(
-                new ComponentName(context, WeatherWidgetProvider.class),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
     }
     
     private void startService(Context context, int[] appWidgetIds) {

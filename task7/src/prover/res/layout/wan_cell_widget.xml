@@ -4,7 +4,7 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:id="@+id/wan_cell_widget_layout"
               android:layout_width="match_parent"
-              android:layout_height="32dp"
+              android:layout_height="match_parent"
               android:layout_gravity="center_vertical|center_horizontal"
               android:layout_margin="@dimen/w_layout_margin"
               android:background="@drawable/box1"

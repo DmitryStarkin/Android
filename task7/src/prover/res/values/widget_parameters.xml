@@ -4,7 +4,7 @@
     <dimen name="wan_cell_widget_min_height">37dp</dimen>
 
     <dimen name="w_temperature_text_size">32sp</dimen>
-    <dimen name="w_city_text_size">10sp</dimen>
+    <dimen name="w_city_text_size">12sp</dimen>
     <dimen name="w_date_time__text_size">10sp</dimen>
     <dimen name="w_background_padding">0dp</dimen>
     <dimen name="w_background_corner_radius">4dp</dimen>
@@ -12,9 +12,9 @@
     <dimen name="w_layout_paging">0dp</dimen>
     <dimen name="w_layout_margin">0dp</dimen>
 
-    <integer name="city_name_weight">5</integer>
+    <integer name="city_name_weight">4</integer>
     <integer name="weather_desc_layout_weight">2</integer>
-    <integer name="date_weight">5</integer>
+    <integer name="date_weight">4</integer>
 
     <integer name="w_temperature_weight">2</integer>
     <integer name="w_icon_weight">3</integer>
