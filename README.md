@@ -1,3 +1,3 @@
-**H++ Android beginner developer homework**
+**H++ Android developer**
 
-This repository contains homework of course in the Android beginner developer from H++
+The repository contains applications developed on the course in the Android beginner developer from H++
