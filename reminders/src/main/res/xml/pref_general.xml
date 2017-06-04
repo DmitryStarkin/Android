@@ -1,0 +1,45 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/lib/com.hplasplas.reminders">
+    <PreferenceCategory
+        android:key="pref_key_settings"
+        android:title="@string/pref_header">
+
+        <SwitchPreference
+            android:clickable="true"
+            android:defaultValue="false"
+            android:enabled="true"
+            android:key="@string/notifications_enabled_pref_name"
+            android:selectable="true"
+            android:summaryOff="@string/notifications_disabled_description"
+            android:summaryOn="@string/notifications_enabled_description"
+            android:switchTextOff="@string/no"
+            android:switchTextOn="@string/yes"/>
+
+        <com.starsoft.prefdialogs.NumberPickerPreferencesDialog
+            android:defaultValue="1"
+            android:key="@string/notification_interval_pref_name"
+            android:summary="@string/max_period"
+            android:title="@string/notification_period"
+            custom:maxValue="30"
+            custom:minValue="1"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_other_settings"
+        android:title="@string/pref_header_other_general">
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="@string/default_notifications_text"
+            android:inputType="textPersonName"
+            android:key="@string/notifications_text_pref_name"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="false"
+            android:summary="@string/enter_text"
+            android:title="@string/notification_text"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

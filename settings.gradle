@@ -1,1 +1,1 @@
-include ':intentServiseUtil', ':rvclicksupport', ':prefDialogs', ':task2', ':task3', ':task4', ':task5', ':task6', ':bmutil', ':task7', ':dbtolls', ':customwidgets'
+include ':intentServiseUtil', ':rvclicksupport', ':prefDialogs', ':task2', ':task3', ':task4', ':reminders', ':cam_capture', ':bmutil', ':weather', ':dbtolls', ':customwidgets'

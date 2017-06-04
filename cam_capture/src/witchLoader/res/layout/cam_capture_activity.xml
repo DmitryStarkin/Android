@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.hplasplas.cam_capture.activitys.CamCapture">
+
+    <ImageView
+        android:id="@+id/foto_frame"
+        android:layout_width="296dp"
+        android:layout_height="392dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        />
+
+    <Button
+        android:id="@+id/foto_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/button_text"
+        app:layout_constraintTop_toBottomOf="@+id/foto_frame"
+        app:layout_constraintDimensionRatio=""
+        app:layout_constraintRight_toLeftOf="@+id/files_in_folder"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/foto_frame"
+        app:layout_constraintHorizontal_bias="0.0"/>
+
+    <ProgressBar
+        android:id="@+id/mainProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/foto_frame"
+        app:layout_constraintLeft_toLeftOf="@+id/foto_frame"
+        app:layout_constraintRight_toRightOf="@+id/foto_frame"
+        app:layout_constraintTop_toTopOf="@+id/foto_frame"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/photo_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:scrollbars="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/foto_button"
+        tools:layout_editor_absoluteY="500dp"/>
+
+    <TextView
+        android:id="@+id/files_in_folder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/foto_button"
+        app:layout_constraintRight_toRightOf="@+id/foto_frame"
+        app:layout_constraintTop_toTopOf="@+id/foto_button"
+        app:layout_constraintVertical_bias="0.6"
+        tools:textAlignment="center"
+        tools:textSize="18sp"/>
+
+</android.support.constraint.ConstraintLayout>
