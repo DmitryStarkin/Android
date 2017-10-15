@@ -1,67 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:id="@+id/wan_cell_widget_layout"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_gravity="center_vertical|center_horizontal"
-              android:layout_margin="@dimen/w_layout_margin"
-              android:background="@drawable/box1"
-              android:orientation="vertical"
-              android:padding="@dimen/w_layout_paging"
-              android:paddingBottom="@dimen/w_layout_paging">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/wan_cell_widget_margin"
+    android:padding="@dimen/wan_cell_element_padding"
+    android:visibility="visible">
 
-    <TextView
-        android:id="@+id/widget_city"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="@integer/city_name_weight"
-        android:background="@color/ColorTransparent"
-        android:gravity="center_horizontal|center_vertical"
-        android:text="@string/default_text"
-        android:textSize="@dimen/w_city_text_size"
-        android:textStyle="bold"/>
+        android:layout_gravity="center_vertical|fill_horizontal"
+        android:layout_margin="@dimen/w_layout_margin"
+        android:alpha="1"
+        android:padding="@dimen/w_layout_paging"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget3x1_bg"
+        android:visibility="visible"
+        app:srcCompat="@drawable/widget3x1_bg"
+        tools:ignore="ContentDescription"/>
 
     <LinearLayout
+        android:id="@+id/wan_cell_widget_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="@integer/weather_desc_layout_weight"
-        android:background="@color/ColorTransparent"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/widget_weather_icon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="@integer/w_icon_weight"
-            android:background="@color/ColorTransparent"
-            android:gravity="center_horizontal|center_vertical"
-            app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
-            tools:ignore="ContentDescription,NestedWeights"/>
+        android:layout_gravity="top|bottom|center_vertical|fill_vertical|center_horizontal|fill_horizontal|center|fill|start|end"
+        android:layout_margin="@dimen/wan_cell_element_margin"
+        android:orientation="vertical"
+        android:padding="@dimen/wan_cell_element_padding">
 
         <TextView
-            android:id="@+id/widget_temperature"
+            android:id="@+id/widget_city"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="@integer/w_temperature_weight"
+            android:layout_weight="@integer/city_name_weight"
             android:background="@color/ColorTransparent"
-            android:gravity="center_horizontal|center_vertical"
+            android:gravity="top|center_horizontal"
             android:text="@string/default_text"
-            android:textSize="@dimen/w_temperature_text_size"
+            android:textColor="@color/text_color"
+            android:textColorHighlight="@color/TextColorPrimary"
+            android:textSize="@dimen/w_city_text_size"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="@integer/weather_desc_layout_weight"
+            android:background="@color/ColorTransparent"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/widget_weather_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="@integer/w_icon_weight"
+                android:background="@color/ColorTransparent"
+                android:gravity="center_horizontal|center_vertical"
+                app:srcCompat="@drawable/ic_highlight_off_red_500_24dp"
+                tools:ignore="ContentDescription,NestedWeights"/>
+
+            <TextView
+                android:id="@+id/widget_temperature"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="@integer/w_temperature_weight"
+                android:background="@color/ColorTransparent"
+                android:gravity="top|center_horizontal"
+                android:text="@string/default_text"
+                android:textColor="@color/text_color"
+                android:textColorHighlight="@color/TextColorPrimary"
+                android:textSize="@dimen/w_temperature_text_size"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_updated"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="@integer/date_weight"
+            android:background="@color/ColorTransparent"
+            android:gravity="top|center_horizontal"
+            android:text="@string/default_text"
+            android:textColor="@color/text_color"
+            android:textColorHighlight="@color/TextColorPrimary"
+            android:textSize="@dimen/w_date_time__text_size"
             android:textStyle="bold"/>
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/widget_updated"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="@integer/date_weight"
-        android:background="@color/ColorTransparent"
-        android:gravity="top|center_horizontal"
-        android:text="@string/default_text"
-        android:textSize="@dimen/w_date_time__text_size"
-        android:textStyle="bold"
-        tools:padding="4dp"/>
-</LinearLayout>
+</FrameLayout>
