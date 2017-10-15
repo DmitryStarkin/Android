@@ -7,7 +7,7 @@
     <string name="pressure">Pressure: %.2f hPa</string>
     <string name="humidity">Humidity: %1$d %%</string>
     <string name="wind">"Wind: %1$.2f m/sec, %2$s"</string>
-    <string name="default_text">No data</string>
+    <string name="default_text">Load…</string>
     <string name="sunrise">Sunrise:</string>
     <string name="sunset">Sunset:</string>
     <string name="cloudiness">Cloudiness: %1$d %%</string>
