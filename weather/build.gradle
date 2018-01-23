@@ -1,26 +1,26 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
+//apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
 
-        jackOptions {
-            enabled false
-        }
     }
+    flavorDimensions "api"
     productFlavors {
         basever {
+            dimension "api"
             versionCode 2
             applicationId "com.hplasplas.dstweather"
             versionName "1.2"
         }
 
         prover {
+            dimension "api"
             versionCode 3
             applicationId "com.hplasplas.dstweather_pro"
             versionName "1.2.1p"

@@ -2,22 +2,23 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
-        jackOptions {
-            enabled true
-        }
     }
+
+    flavorDimensions "api"
     productFlavors {
         witchLoader {
+            dimension "api"
             applicationId "com.hplasplas.cam_capture.useLoader"
             versionName "1.0"
         }
         witchThreadPool {
+            dimension "api"
             applicationId "com.hplasplas.cam_capture.useThreadPool"
             versionName "1.0b"
         }
