@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2017 Dmitry Starkin Contacts: t0506803080@gmail.com. All rights reserved
+ *
+ */
+
 package com.hplasplas.weather.adapters;
 
 import android.content.Context;
@@ -22,9 +27,7 @@ import static com.hplasplas.weather.setting.Constants.FORECAST_DATE_STAMP_PATTER
 import static com.hplasplas.weather.setting.Constants.FORECAST_TIME_STAMP_PATTERN;
 import static com.hplasplas.weather.setting.Constants.MIL_PER_SEC;
 
-/**
- * Created by StarkinDG on 25.04.2017.
- */
+
 
 public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHolder> {
     

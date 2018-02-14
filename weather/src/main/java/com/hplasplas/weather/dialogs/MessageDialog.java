@@ -1,3 +1,8 @@
+
+/**
+ * Copyright © 2017 Dmitry Starkin Contacts: t0506803080@gmail.com. All rights reserved
+ *
+ */
 package com.hplasplas.weather.dialogs;
 
 import android.app.Dialog;

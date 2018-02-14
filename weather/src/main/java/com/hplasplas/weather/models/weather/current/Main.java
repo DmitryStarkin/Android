@@ -1,4 +1,7 @@
-
+/**
+ * Copyright © 2017 Dmitry Starkin Contacts: t0506803080@gmail.com. All rights reserved
+ *
+ */
 package com.hplasplas.weather.models.weather.current;
 
 import com.google.gson.annotations.Expose;
