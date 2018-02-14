@@ -8,10 +8,6 @@ import android.support.v7.app.AppCompatDialogFragment;
 
 import com.hplasplas.weather.R;
 
-/**
- * Created by StarkinDG on 11.03.2017.
- */
-
 public class MessageDialog extends AppCompatDialogFragment {
     
     public static final String DIALOG_MESSAGE_TAG = "DialogMessage";
