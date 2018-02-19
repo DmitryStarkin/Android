@@ -62,4 +62,9 @@ public class MessageManager {
     
         MessageDialog.newInstance(message, icon).show(activity.getSupportFragmentManager(), MESSAGE_DIALOG_TAG);
     }
+    
+    public void makeDialogMessage(AppCompatActivity activity, String message, int icon, int bodyId){
+        
+        MessageDialog.newInstance(message, icon, bodyId).show(activity.getSupportFragmentManager(), MESSAGE_DIALOG_TAG);
+    }
 }

@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
+import android.view.LayoutInflater;
 
 import com.hplasplas.weather.R;
 
@@ -31,12 +32,25 @@ public class MessageDialog extends AppCompatDialogFragment {
     
     public static final String DIALOG_MESSAGE_TAG = "DialogMessage";
     public static final String ICON_DIALOG_TAG = "DialogIcon";
+    public static final String BODY_DIALOG_TAG = "DialogBody";
+    
+    public static MessageDialog newInstance(String message, int icon, int bodyId) {
+        
+        MessageDialog dialog = new MessageDialog();
+        Bundle args = new Bundle();
+        args.putInt(ICON_DIALOG_TAG, icon);
+        args.putInt(BODY_DIALOG_TAG, bodyId);
+        args.putString(DIALOG_MESSAGE_TAG, message);
+        dialog.setArguments(args);
+        return dialog;
+    }
     
     public static MessageDialog newInstance(String message, int icon) {
         
         MessageDialog dialog = new MessageDialog();
         Bundle args = new Bundle();
         args.putInt(ICON_DIALOG_TAG, icon);
+        args.putInt(BODY_DIALOG_TAG, 0);
         args.putString(DIALOG_MESSAGE_TAG, message);
         dialog.setArguments(args);
         return dialog;
@@ -47,6 +61,11 @@ public class MessageDialog extends AppCompatDialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MessageDialogStyle);
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        
+        if (getArguments().getInt(BODY_DIALOG_TAG) != 0) {
+            builder.setView(inflater.inflate(getArguments().getInt(BODY_DIALOG_TAG), null));
+        }
         
         builder.setTitle(getArguments().getString(DIALOG_MESSAGE_TAG))
                 .setIcon(getArguments().getInt(ICON_DIALOG_TAG))

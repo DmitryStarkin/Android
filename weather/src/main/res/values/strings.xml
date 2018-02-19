@@ -1,12 +1,11 @@
 <resources>
-    <string name="about_message">Weather v 1.1b
-    Copyright © 2018. Dmitry Starkin
-    Contacts: t0506803080@gmail.com
-    distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-    see http://www.gnu.org/licenses/ for more details.
-    </string>
+    <string name="about_message_title">Weather v 1.1b</string>
+    <string name="about_message_body">
+Copyright © 2018. Dmitry Starkin\nContacts: t0506803080@gmail.com\n\n
+Distributed in the hope that it will be useful,\nbut
+WITHOUT ANY WARRANTY; nwithout even\nthe implied
+warranty of MERCHANTABILITY or\nFITNESS FOR A PARTICULAR PURPOSE.\nsee:
+http://www.gnu.org/licenses/ for more details.</string>
     <string name="action_about">About</string>
     <string name="city_search">City search</string>
     <string name="button_ok">OK</string>

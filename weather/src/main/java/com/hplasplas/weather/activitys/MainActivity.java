@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         int id = item.getItemId();
         if (id == R.id.action_about) {
-            mMessageManager.makeDialogMessage(this, getString(R.string.about_message), R.drawable.ic_info_outline_white_24dp);
+            mMessageManager.makeDialogMessage(this, getString(R.string.about_message_title), R.drawable.ic_info_outline_white_24dp, R.layout.about_message_body);
             return true;
         }
         return super.onOptionsItemSelected(item);

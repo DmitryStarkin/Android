@@ -15,4 +15,5 @@
     <dimen name="forecast_date_text_size">16sp</dimen>
     <dimen name="forecast_time_text_size">16sp</dimen>
     <dimen name="forecast_temperature_text_size">32sp</dimen>
+    <dimen name="about_text_paging">0dp</dimen>
 </resources>
