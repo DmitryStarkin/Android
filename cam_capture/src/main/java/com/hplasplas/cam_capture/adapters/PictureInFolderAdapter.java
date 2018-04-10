@@ -49,7 +49,7 @@ public class PictureInFolderAdapter extends RecyclerView.Adapter<PictureInFolder
     public PictureInFolderAdapter(ArrayList<ListItemModel> PictureFilesList, CamCapture activity) {
         
         this.mFilesList = PictureFilesList;
-        this.activity = activity;
+        this.activity = activity;//must change to listener
     }
     
     @Override
