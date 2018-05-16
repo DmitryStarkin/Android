@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "26.0.2"
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 16
@@ -40,13 +40,13 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile project(':rvclicksupport')
-    witchThreadPoolCompile 'com.android.support.constraint:constraint-layout:1.0.2'
-    witchThreadPoolCompile 'com.android.support:design:25.3.1'
-    witchThreadPoolCompile project(path: ':bmutil')
-    witchThreadPoolCompile 'com.android.support:cardview-v7:25.3.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation 'com.android.support:recyclerview-v7:25.3.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation project(':rvclicksupport')
+    witchThreadPoolImplementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    witchThreadPoolImplementation 'com.android.support:design:25.3.1'
+    witchThreadPoolImplementation project(path: ':bmutil')
+    witchThreadPoolImplementation 'com.android.support:cardview-v7:25.3.1'
 }

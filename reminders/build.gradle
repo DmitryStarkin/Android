@@ -28,8 +28,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile project(':intentServiseUtil')
-    compile project(':prefDialogs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation project(':intentServiseUtil')
+    implementation project(':prefDialogs')
 }
