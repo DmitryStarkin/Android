@@ -8,4 +8,4 @@ the database opens and closes automatically (no active tasks),
 the callbacks are separated for data and errors for the possibility
 of using lambda expressions Java 8.
 You can also simple add a ready database from assets or the file system.
-This library is under development and does not have full functionality
+**This library is under development and does not have full functionality**
