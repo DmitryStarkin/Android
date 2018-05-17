@@ -20,6 +20,8 @@ package com.hplasplas.weather;
 
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.hplasplas.weather.components.AppComponent;
 import com.hplasplas.weather.components.DaggerAppComponent;
 import com.hplasplas.weather.modules.AppModule;
@@ -35,6 +37,7 @@ import com.hplasplas.weather.modules.RetrofitModule;
 import com.hplasplas.weather.modules.SearchPlaceProviderModule;
 import com.hplasplas.weather.modules.WeatherDataProviderModule;
 import com.hplasplas.weather.modules.WeatherImageManagerModule;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by StarkinDG on 06.04.2017.
@@ -52,6 +55,11 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Crashlytics crashlyticsKit = new Crashlytics.Builder()
+                .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
+                .build();
+    
+        Fabric.with(this, crashlyticsKit);
         mAppComponent = buildComponent();
     }
     
