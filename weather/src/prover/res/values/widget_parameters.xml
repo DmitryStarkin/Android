@@ -21,8 +21,8 @@
     <dimen name="w_layout_margin">0dp</dimen>
 
     <integer name="city_name_weight">8</integer>
-    <integer name="weather_desc_layout_weight">5</integer>
-    <integer name="date_weight">8</integer>
+    <integer name="weather_desc_layout_weight">1</integer>
+    <integer name="date_weight">5</integer>
 
     <integer name="w_temperature_weight">2</integer>
     <integer name="w_icon_weight">3</integer>
