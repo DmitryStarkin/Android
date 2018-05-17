@@ -90,7 +90,8 @@ public class WeatherDataProvider {
         if (!refreshIntervalIsRight()) {
             String interval = mDataTimeUtils.getTimeString(MIN_REQUEST_INTERVAL - (System.currentTimeMillis() - mPreferencesManager.readLastRequestTime()),
                     REFRESHING_TIME_STAMP_PATTERN);
-            sendError(mAppContext.getResources().getString(R.string.weather_refreshed, interval));
+//            sendError(mAppContext.getResources().getString(R.string.weather_refreshed, interval));
+            sendError(mAppContext.getResources().getString(R.string.weather_refreshed_right_now));
         } else if (!isInternetAvailable()) {
             
             sendError(mAppContext.getResources().getString(R.string.internet_not_available));

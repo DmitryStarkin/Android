@@ -19,6 +19,7 @@ http://www.gnu.org/licenses/ for more details.</string>
     <string name="cloudiness">Cloudiness: %1$d %%</string>
     <string name="internet_not_available">Internet not available</string>
     <string name="weather_refreshed">Update will be available after %s</string>
+    <string name="weather_refreshed_right_now">Weather update right now</string>
     <string name="weather_get_error">Error while update weather</string>
     <string name="weather_updated">Weather updated</string>
     <string name="updated">Weather updated</string>

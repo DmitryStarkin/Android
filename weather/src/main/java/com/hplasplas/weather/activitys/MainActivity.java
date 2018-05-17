@@ -20,20 +20,14 @@
 package com.hplasplas.weather.activitys;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -42,7 +36,6 @@ import com.hplasplas.weather.App;
 import com.hplasplas.weather.BuildConfig;
 import com.hplasplas.weather.R;
 import com.hplasplas.weather.adapters.ForecastAdapter;
-import com.hplasplas.weather.interfaces.MainContract;
 import com.hplasplas.weather.managers.MessageManager;
 import com.hplasplas.weather.managers.WeatherDataProvider;
 import com.hplasplas.weather.managers.WeatherImageManager;
@@ -65,7 +58,7 @@ import static com.hplasplas.weather.setting.Constants.WEATHER_TIME_STAMP_PATTERN
 import static com.hplasplas.weather.setting.Constants.WIND_DIRECTION_DIVIDER;
 import static com.hplasplas.weather.setting.Constants.WIND_DIRECTION_PREFIX;
 
-public class MainActivity extends AppCompatActivity implements MainContract.SearchCustomer {
+public class MainActivity extends SearchPlaceActivity {
     
     private final String TAG = getClass().getSimpleName();
     
@@ -77,11 +70,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
     public WeatherDataProvider mWeatherDataProvider;
     @Inject
     public MessageManager mMessageManager;
-    @Inject
-    public MainContract.SearchPlaceProvider mSearchPlaceProvider;
     private Toolbar mToolbar;
-    private SearchView mSearchView;
-    private MenuItem mSearchMenuItem;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ImageView mCurrentWeatherIcon;
     private ImageView mBackground;
@@ -95,17 +84,13 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
     private TextView mCloudiness;
     private TextView mSunrise;
     private TextView mSunset;
-    private ProgressBar mCityFindBar;
     private RecyclerView mRecyclerView;
-    private boolean clearTextIfNoResult;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
         App.getAppComponent().inject(this);
-        getLifecycle().addObserver(mSearchPlaceProvider);
-        
         setContentView(R.layout.activity_main);
         findViews();
         adjustViews();
@@ -116,71 +101,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
     public boolean onCreateOptionsMenu(Menu menu) {
         
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        mSearchMenuItem = menu.findItem(R.id.action_search);
-        mSearchView = (SearchView) mSearchMenuItem.getActionView();
-        mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
-        mSearchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                
-                createSuggestionAdapter();
-                return true;
-            }
-            
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                
-                if (DEBUG) {
-                    Log.d(TAG, "onMenuItemActionCollapse: ");
-                }
-                mSearchPlaceProvider.stopSearch();
-                mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
-                closeCursor(mSearchView);
-                mCityFindBar.setVisibility(View.INVISIBLE);
-                return true;
-            }
-        });
-        
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                
-                refreshCityList(query, true);
-                return true;
-            }
-            
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                
-                if (DEBUG) {
-                    Log.d(TAG, "onQueryTextChange: ");
-                }
-                if (newText.length() > 1) {
-                    
-                    refreshCityList(newText, false);
-                } else {
-                    closeCursor(mSearchView);
-                }
-                return true;
-            }
-        });
-        
-        mSearchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
-            
-            @Override
-            public boolean onSuggestionSelect(int position) {
-                
-                return false;
-            }
-            
-            @Override
-            public boolean onSuggestionClick(int position) {
-                
-                refreshWeatherWithCursor(position);
-                mSearchMenuItem.collapseActionView();
-                return true;
-            }
-        });
+        super.onCreateOptionsMenu(menu);
         return true;
     }
     
@@ -212,8 +133,24 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
         super.onPause();
         mWeatherDataProvider.cancelCalls();
         mWeatherDataProvider.unRegisterListeners();
-        closeCursor(mSearchView);
         updateWidgets();
+    }
+    
+    @Override
+    int getSearchMenuItemId() {
+        
+        return R.id.action_search;
+    }
+    
+    @Override
+    ProgressBar getSearchProgressBar() {
+        
+        return (ProgressBar) findViewById(R.id.city_find_bar);
+    }
+    
+    @Override
+    void searchedPlaceSelected(int placeId) {
+        tryRefreshWeather(placeId);
     }
     
     private void updateWidgets() {
@@ -244,43 +181,28 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
         setWeatherValues(currentWeather);
     }
     
-    private void closeCursor(SearchView searchView) {
-        
-        if (searchView != null) {
-            CursorAdapter adapter = searchView.getSuggestionsAdapter();
-            if (adapter != null) {
-                Cursor cursor = adapter.swapCursor(null);
-                if (cursor != null && !cursor.isClosed()) {
-                    cursor.close();
-                }
-            }
-        }
-    }
-    
     private void findViews() {
         
-        mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        mCityFindBar = (ProgressBar) findViewById(R.id.city_find_bar);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
-        mCurrentWeatherIcon = (ImageView) findViewById(R.id.weather_icon);
-        mBackground = (ImageView) findViewById(R.id.background_image);
-        mCityName = (TextView) findViewById(R.id.city_name);
-        mDateTime = (TextView) findViewById(R.id.date_time);
-        mTemperature = (TextView) findViewById(R.id.forecast_temperature);
-        mPressure = (TextView) findViewById(R.id.pressure);
-        mHumidity = (TextView) findViewById(R.id.humidity);
-        mWindDescription = (TextView) findViewById(R.id.wind_description);
-        mCloudiness = (TextView) findViewById(R.id.cloudiness);
-        mSunrise = (TextView) findViewById(R.id.sunrise);
-        mSunset = (TextView) findViewById(R.id.sunset);
-        mWeatherDescription = (TextView) findViewById(R.id.weather_description);
-        mRecyclerView = (RecyclerView) findViewById(R.id.forecast_list);
+        mToolbar = findViewById(R.id.toolbar_actionbar);
+        mSwipeRefreshLayout =  findViewById(R.id.srl_container);
+        mCurrentWeatherIcon =  findViewById(R.id.weather_icon);
+        mBackground = findViewById(R.id.background_image);
+        mCityName =  findViewById(R.id.city_name);
+        mDateTime = findViewById(R.id.date_time);
+        mTemperature = findViewById(R.id.forecast_temperature);
+        mPressure =  findViewById(R.id.pressure);
+        mHumidity =  findViewById(R.id.humidity);
+        mWindDescription = findViewById(R.id.wind_description);
+        mCloudiness = findViewById(R.id.cloudiness);
+        mSunrise =  findViewById(R.id.sunrise);
+        mSunset = findViewById(R.id.sunset);
+        mWeatherDescription = findViewById(R.id.weather_description);
+        mRecyclerView =  findViewById(R.id.forecast_list);
     }
     
     private void adjustViews() {
         
         setSupportActionBar(mToolbar);
-        mCityFindBar.setVisibility(View.INVISIBLE);
         mSwipeRefreshLayout.setOnRefreshListener(this::refreshWeatherWitchMessage);
         mSwipeRefreshLayout.setProgressViewOffset(true, REFRESH_INDICATOR_START_OFFSET,
                 REFRESH_INDICATOR_END_OFFSET);
@@ -290,45 +212,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
         
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-    }
-    
-    private void createSuggestionAdapter() {
-        
-        if (mSearchView.getSuggestionsAdapter() == null) {
-            int[] to = {R.id.city_item, R.id.country};
-            SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.city_search_item,
-                    null, COLUMNS_PLACE_NAME, to, 0);
-            mSearchView.setSuggestionsAdapter(adapter);
-        }
-    }
-    
-    private void refreshCityList(String query, boolean isFinalQuery) {
-        
-        clearTextIfNoResult = isFinalQuery;
-        mSearchPlaceProvider.getNewSearchResultCursor(query, isFinalQuery, this);
-        mCityFindBar.setVisibility(View.VISIBLE);
-    }
-    
-    @Override
-    public void onNewPlaceCursorReady(MainContract.SearchCursor cursor, MainContract.SearchCustomer whoAsked) {
-        if (DEBUG) {
-            Log.d(TAG, "onCursorReady: ");
-        }
-        if (whoAsked == this) {
-            if (mSearchMenuItem == null || !mSearchMenuItem.isActionViewExpanded()) {
-                cursor.close();
-            } else {
-                Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
-                if (oldCursor != null && !oldCursor.isClosed()) {
-                    oldCursor.close();
-                }
-                if (clearTextIfNoResult && (cursor == null || !cursor.moveToFirst())) {
-                    mSearchView.setQuery(null, false);
-                    mSearchView.setQueryHint(getResources().getString(R.string.no_result));
-                }
-                mCityFindBar.setVisibility(View.INVISIBLE);
-            }
-        }
     }
     
     private void setWeatherValues(CurrentWeather currentWeather) {
@@ -360,15 +243,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.Sear
         
         showRefreshProgress(mSwipeRefreshLayout);
         mWeatherDataProvider.tryEnqueueWeatherAndForecastData();
-    }
-    
-    private void refreshWeatherWithCursor(int CursorPosition) {
-        
-        Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
-        if (cursor != null) {
-            cursor.moveToPosition(CursorPosition);
-            tryRefreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_PLACE_ID)));
-        }
     }
     
     private void tryRefreshWeather(int cityId) {

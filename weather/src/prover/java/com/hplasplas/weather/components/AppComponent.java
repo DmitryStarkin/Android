@@ -19,6 +19,7 @@
 package com.hplasplas.weather.components;
 
 import com.hplasplas.weather.activitys.MainActivity;
+import com.hplasplas.weather.activitys.SearchPlaceActivity;
 import com.hplasplas.weather.adapters.ForecastAdapter;
 import com.hplasplas.weather.modules.AppModule;
 import com.hplasplas.weather.modules.DataTimeUtilsModule;
@@ -52,6 +53,7 @@ import dagger.Component;
 public interface AppComponent {
     
     void inject(MainActivity mainActivity);
+    void inject(SearchPlaceActivity searchPlaceActivity);
     void inject(ForecastAdapter forecastAdapter);
     void inject(WeatherWidgetService weatherWidgetService);
 }

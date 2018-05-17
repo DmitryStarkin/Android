@@ -20,12 +20,17 @@
 package com.hplasplas.weather.managers;
 
 import android.database.Cursor;
+import android.util.Log;
 
 import com.hplasplas.weather.interfaces.MainContract;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 
+import static com.hplasplas.weather.setting.Constants.DEBUG;
+
 //This File Created at 16.05.2018 15:38.
 public class InDataBasePlaceSearcher implements MainContract.SearchPlaceProvider, DataBaseTolls.onCursorReadyListener {
+    
+    private final String TAG = getClass().getSimpleName();
     
     private static final String CITY_QUERY_BEGIN_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name LIKE \'";
     private static final String CITY_QUERY_BEGIN_SEARCH_SUFFIX = "%\' LIMIT 10";
@@ -44,13 +49,19 @@ public class InDataBasePlaceSearcher implements MainContract.SearchPlaceProvider
     
     @Override
     public void onCustomerAttached(MainContract.SearchCustomer searchListener) {
-        
+    
+        if (DEBUG) {
+            Log.d(TAG, "onCustomerAttached: ");
+        }
         mSearchListener = searchListener;
     }
     
     @Override
     public void onCustomerDetached(MainContract.SearchCustomer searchListener) {
     
+        if (DEBUG) {
+            Log.d(TAG, "onCustomerDetached: ");
+        }
         stopSearch();
         mSearchListener = null;
     }
