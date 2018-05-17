@@ -28,8 +28,6 @@ import com.starsoft.dbtolls.main.DataBaseTolls;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.hplasplas.weather.setting.Constants.DB_FILE_NAME;
-
 /**
  * Created by StarkinDG on 14.04.2017.
  */
@@ -37,16 +35,18 @@ import static com.hplasplas.weather.setting.Constants.DB_FILE_NAME;
 public class CityDbFactory implements DataBaseFactory {
     
     private Context appContext;
+    private String mDbFileName;
     
-    public CityDbFactory(Context context){
+    public CityDbFactory(Context context, String dbFileName){
         appContext = context;
+        mDbFileName = dbFileName;
     }
     
     @Override
     public void createDataBase(SQLiteDatabase db, DataBaseTolls dataBaseTolls, DataBaseTolls.DbReplacer replacer) {
         
         try {
-            InputStream inputStream = appContext.getAssets().open(DB_FILE_NAME);
+            InputStream inputStream = appContext.getAssets().open(mDbFileName);
             replacer.replaceFrom(inputStream);
         } catch (IOException e) {
             e.printStackTrace();

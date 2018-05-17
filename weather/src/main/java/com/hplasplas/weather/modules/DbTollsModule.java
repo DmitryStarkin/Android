@@ -20,6 +20,7 @@ package com.hplasplas.weather.modules;
 
 import android.content.Context;
 
+import com.hplasplas.weather.utils.CityDbFactory;
 import com.starsoft.dbtolls.main.DataBaseFactory;
 import com.starsoft.dbtolls.main.DataBaseTolls;
 import com.starsoft.dbtolls.main.DbTollsBuilder;
@@ -29,16 +30,23 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 
-import static com.hplasplas.weather.setting.Constants.DB_FILE_NAME;
-import static com.hplasplas.weather.setting.Constants.DB_VERSION;
-import static com.hplasplas.weather.setting.Constants.NUMBER_THREAD_FOR_QUERY;
-
 /**
  * Created by StarkinDG on 15.04.2017.
  */
 
 @Module
 public class DbTollsModule {
+    
+    private static final String DB_FILE_NAME = "city.db";
+    private static final int DB_VERSION = 1;
+    private static final int NUMBER_THREAD_FOR_QUERY = 1;
+    
+    @Provides
+    @Singleton
+    public DataBaseFactory provideDataBaseFactory(Context context){
+        
+        return  new CityDbFactory(context, DB_FILE_NAME);
+    }
     
     @Provides
     @Singleton

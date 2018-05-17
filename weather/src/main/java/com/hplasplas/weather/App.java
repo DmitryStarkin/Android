@@ -23,7 +23,6 @@ import android.app.Application;
 import com.hplasplas.weather.components.AppComponent;
 import com.hplasplas.weather.components.DaggerAppComponent;
 import com.hplasplas.weather.modules.AppModule;
-import com.hplasplas.weather.modules.DataBaseFactoryModule;
 import com.hplasplas.weather.modules.DataTimeUtilsModule;
 import com.hplasplas.weather.modules.DbTollsModule;
 import com.hplasplas.weather.modules.DownloaderModule;
@@ -33,6 +32,7 @@ import com.hplasplas.weather.modules.OpenWeatherMapApiModule;
 import com.hplasplas.weather.modules.PicassoModule;
 import com.hplasplas.weather.modules.PreferencesManagerModule;
 import com.hplasplas.weather.modules.RetrofitModule;
+import com.hplasplas.weather.modules.SearchPlaceProviderModule;
 import com.hplasplas.weather.modules.WeatherDataProviderModule;
 import com.hplasplas.weather.modules.WeatherImageManagerModule;
 
@@ -60,8 +60,8 @@ public class App extends Application {
         
        return DaggerAppComponent.builder()
                .appModule(new AppModule(this))
-               .dataBaseFactoryModule(new DataBaseFactoryModule())
                .dbTollsModule(new DbTollsModule())
+               .searchPlaceProviderModule(new SearchPlaceProviderModule())
                .downloaderModule(new DownloaderModule())
                .gSONModule(new GSONModule())
                .openWeatherMapApiModule(new OpenWeatherMapApiModule())

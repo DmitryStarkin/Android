@@ -22,7 +22,6 @@ package com.hplasplas.weather.activitys;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -43,37 +42,30 @@ import com.hplasplas.weather.App;
 import com.hplasplas.weather.BuildConfig;
 import com.hplasplas.weather.R;
 import com.hplasplas.weather.adapters.ForecastAdapter;
+import com.hplasplas.weather.interfaces.MainContract;
 import com.hplasplas.weather.managers.MessageManager;
 import com.hplasplas.weather.managers.WeatherDataProvider;
 import com.hplasplas.weather.managers.WeatherImageManager;
 import com.hplasplas.weather.models.weather.current.CurrentWeather;
 import com.hplasplas.weather.models.weather.forecast.ThreeHourForecast;
 import com.hplasplas.weather.utils.DataTimeUtils;
-import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import static com.hplasplas.weather.setting.Constants.CITY_QUERY_BEGIN_SEARCH_PREFIX;
-import static com.hplasplas.weather.setting.Constants.CITY_QUERY_BEGIN_SEARCH_SUFFIX;
-import static com.hplasplas.weather.setting.Constants.CITY_QUERY_FULL_SEARCH_PREFIX;
-import static com.hplasplas.weather.setting.Constants.CITY_QUERY_FULL_SEARCH_SUFFIX;
-import static com.hplasplas.weather.setting.Constants.COLUMNS_CITY_ID;
-import static com.hplasplas.weather.setting.Constants.COLUMNS_CITY_NAME;
 import static com.hplasplas.weather.setting.Constants.DEBUG;
 import static com.hplasplas.weather.setting.Constants.MIL_PER_SEC;
 import static com.hplasplas.weather.setting.Constants.REFRESH_INDICATOR_END_OFFSET;
 import static com.hplasplas.weather.setting.Constants.REFRESH_INDICATOR_START_OFFSET;
 import static com.hplasplas.weather.setting.Constants.SNACK_BAR_MESSAGE_DURATION;
-import static com.hplasplas.weather.setting.Constants.SUGGESTION_QUERY_TAG;
 import static com.hplasplas.weather.setting.Constants.SUN_TIME_STAMP_PATTERN;
 import static com.hplasplas.weather.setting.Constants.UPDATE_ALL_WIDGETS;
 import static com.hplasplas.weather.setting.Constants.WEATHER_TIME_STAMP_PATTERN;
 import static com.hplasplas.weather.setting.Constants.WIND_DIRECTION_DIVIDER;
 import static com.hplasplas.weather.setting.Constants.WIND_DIRECTION_PREFIX;
 
-public class MainActivity extends AppCompatActivity implements DataBaseTolls.onCursorReadyListener {
+public class MainActivity extends AppCompatActivity implements MainContract.SearchCustomer {
     
     private final String TAG = getClass().getSimpleName();
     
@@ -84,9 +76,9 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     @Inject
     public WeatherDataProvider mWeatherDataProvider;
     @Inject
-    public DataBaseTolls mDataBaseTolls;
-    @Inject
     public MessageManager mMessageManager;
+    @Inject
+    public MainContract.SearchPlaceProvider mSearchPlaceProvider;
     private Toolbar mToolbar;
     private SearchView mSearchView;
     private MenuItem mSearchMenuItem;
@@ -105,14 +97,14 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     private TextView mSunset;
     private ProgressBar mCityFindBar;
     private RecyclerView mRecyclerView;
-    private boolean mClearText;
+    private boolean clearTextIfNoResult;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
         App.getAppComponent().inject(this);
-        mDataBaseTolls.setOnCursorReadyListener(this);
+        getLifecycle().addObserver(mSearchPlaceProvider);
         
         setContentView(R.layout.activity_main);
         findViews();
@@ -127,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         mSearchMenuItem = menu.findItem(R.id.action_search);
         mSearchView = (SearchView) mSearchMenuItem.getActionView();
         mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
-        MenuItemCompat.setOnActionExpandListener(mSearchMenuItem, new MenuItemCompat.OnActionExpandListener() {
+        mSearchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
                 
@@ -141,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 if (DEBUG) {
                     Log.d(TAG, "onMenuItemActionCollapse: ");
                 }
-                mDataBaseTolls.clearAllTasks();
+                mSearchPlaceProvider.stopSearch();
                 mSearchView.setQueryHint(getResources().getString(R.string.search_hint));
                 closeCursor(mSearchView);
                 mCityFindBar.setVisibility(View.INVISIBLE);
@@ -153,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
             @Override
             public boolean onQueryTextSubmit(String query) {
                 
-                refreshCityList(CITY_QUERY_FULL_SEARCH_PREFIX + query + CITY_QUERY_FULL_SEARCH_SUFFIX, true);
+                refreshCityList(query, true);
                 return true;
             }
             
@@ -165,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
                 }
                 if (newText.length() > 1) {
                     
-                    refreshCityList(CITY_QUERY_BEGIN_SEARCH_PREFIX + newText + CITY_QUERY_BEGIN_SEARCH_SUFFIX, false);
+                    refreshCityList(newText, false);
                 } else {
                     closeCursor(mSearchView);
                 }
@@ -218,38 +210,37 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     protected void onPause() {
         
         super.onPause();
-        mDataBaseTolls.clearAllTasks();
         mWeatherDataProvider.cancelCalls();
         mWeatherDataProvider.unRegisterListeners();
         closeCursor(mSearchView);
         updateWidgets();
     }
     
-    private void updateWidgets(){
+    private void updateWidgets() {
         
-        if(BuildConfig.FLAVOR.equals("prover")){
+        if (BuildConfig.FLAVOR.equals("prover")) {
             Intent intent = new Intent(UPDATE_ALL_WIDGETS);
             sendBroadcast(intent);
         }
     }
     
-    private void showErrorMessage(String errMessage){
+    private void showErrorMessage(String errMessage) {
         
         hideRefreshProgress(mSwipeRefreshLayout);
-        if(errMessage != null){
-        mMessageManager.makeSnackbarMessage(mBackground, errMessage, SNACK_BAR_MESSAGE_DURATION);
+        if (errMessage != null) {
+            mMessageManager.makeSnackbarMessage(mBackground, errMessage, SNACK_BAR_MESSAGE_DURATION);
         }
     }
     
     private void showCurrentWeather(CurrentWeather currentWeather, boolean isNew) {
-    
+        
         if (DEBUG) {
             Log.d(TAG, "showCurrentWeather: ");
         }
         hideRefreshProgress(mSwipeRefreshLayout);
-        if (isNew){
+        if (isNew) {
             mMessageManager.makeSnackbarMessage(mBackground, getResources().getString(R.string.weather_updated), SNACK_BAR_MESSAGE_DURATION);
-    }
+        }
         setWeatherValues(currentWeather);
     }
     
@@ -267,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     }
     
     private void findViews() {
-    
+        
         mToolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         mCityFindBar = (ProgressBar) findViewById(R.id.city_find_bar);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_container);
@@ -306,42 +297,42 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         if (mSearchView.getSuggestionsAdapter() == null) {
             int[] to = {R.id.city_item, R.id.country};
             SimpleCursorAdapter adapter = new SimpleCursorAdapter(MainActivity.this, R.layout.city_search_item,
-                    null, COLUMNS_CITY_NAME, to, 0);
+                    null, COLUMNS_PLACE_NAME, to, 0);
             mSearchView.setSuggestionsAdapter(adapter);
         }
     }
     
-    private void refreshCityList(String query, boolean clearText) {
+    private void refreshCityList(String query, boolean isFinalQuery) {
         
-        mClearText = clearText;
-        mDataBaseTolls.getDataUsingSQLCommand(SUGGESTION_QUERY_TAG, query);
+        clearTextIfNoResult = isFinalQuery;
+        mSearchPlaceProvider.getNewSearchResultCursor(query, isFinalQuery, this);
         mCityFindBar.setVisibility(View.VISIBLE);
     }
     
     @Override
-    public void onCursorReady(Cursor cursor) {
-        
+    public void onNewPlaceCursorReady(MainContract.SearchCursor cursor, MainContract.SearchCustomer whoAsked) {
         if (DEBUG) {
             Log.d(TAG, "onCursorReady: ");
         }
-        if (mSearchMenuItem == null || !mSearchMenuItem.isActionViewExpanded()) {
-            cursor.close();
-        } else {
-            Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
-            if (oldCursor != null && !oldCursor.isClosed()) {
-                oldCursor.close();
+        if (whoAsked == this) {
+            if (mSearchMenuItem == null || !mSearchMenuItem.isActionViewExpanded()) {
+                cursor.close();
+            } else {
+                Cursor oldCursor = mSearchView.getSuggestionsAdapter().swapCursor(cursor);
+                if (oldCursor != null && !oldCursor.isClosed()) {
+                    oldCursor.close();
+                }
+                if (clearTextIfNoResult && (cursor == null || !cursor.moveToFirst())) {
+                    mSearchView.setQuery(null, false);
+                    mSearchView.setQueryHint(getResources().getString(R.string.no_result));
+                }
+                mCityFindBar.setVisibility(View.INVISIBLE);
             }
-            if (mClearText && (cursor == null || !cursor.moveToFirst())) {
-                mSearchView.setQuery(null, false);
-                mSearchView.setQueryHint(getResources().getString(R.string.no_result));
-            }
-            mCityFindBar.setVisibility(View.INVISIBLE);
         }
-        
     }
     
     private void setWeatherValues(CurrentWeather currentWeather) {
-    
+        
         mImageManager.setBackground(mBackground, currentWeather.getWeather().get(0).getMain(),
                 currentWeather.getWeather().get(0).getIcon(), currentWeather.getWeather().get(0).getId());
         mImageManager.setWeatherIcon(mCurrentWeatherIcon, currentWeather.getWeather().get(0).getIcon());
@@ -369,7 +360,6 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         
         showRefreshProgress(mSwipeRefreshLayout);
         mWeatherDataProvider.tryEnqueueWeatherAndForecastData();
-           
     }
     
     private void refreshWeatherWithCursor(int CursorPosition) {
@@ -377,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         Cursor cursor = mSearchView.getSuggestionsAdapter().getCursor();
         if (cursor != null) {
             cursor.moveToPosition(CursorPosition);
-            tryRefreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_CITY_ID)));
+            tryRefreshWeather(cursor.getInt(cursor.getColumnIndex(COLUMNS_PLACE_ID)));
         }
     }
     
@@ -388,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     }
     
     private void refreshWeatherWitchMessage() {
-    
+        
         mWeatherDataProvider.tryEnqueueWeatherWitchMessage();
     }
     
@@ -403,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
     }
     
     private ForecastAdapter setAdapter(RecyclerView recyclerView, List<ThreeHourForecast> itemList) {
-    
+        
         if (DEBUG) {
             Log.d(TAG, "setAdapter: ");
         }
@@ -415,5 +405,4 @@ public class MainActivity extends AppCompatActivity implements DataBaseTolls.onC
         }
         return adapter;
     }
-    
 }

@@ -16,29 +16,28 @@
  *     You should have received a copy of the GNU General Public License
  *     along with weather  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package com.hplasplas.weather.modules;
 
-import android.content.Context;
+//This File Created at 17.05.2018 10:24.
 
-import com.hplasplas.weather.utils.CityDbFactory;
-import com.starsoft.dbtolls.main.DataBaseFactory;
+import com.hplasplas.weather.interfaces.MainContract;
+import com.hplasplas.weather.managers.InDataBasePlaceSearcher;
+import com.starsoft.dbtolls.main.DataBaseTolls;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 
-/**
- * Created by StarkinDG on 15.04.2017.
- */
-
 @Module
-public class DataBaseFactoryModule {
+public class SearchPlaceProviderModule {
     
     @Provides
     @Singleton
-    public DataBaseFactory provideDataBaseFactory(Context context){
+    public MainContract.SearchPlaceProvider provideSearchPlaceProvider(DataBaseTolls dataBaseTolls){
         
-        return  new CityDbFactory(context);
+        return new InDataBasePlaceSearcher(dataBaseTolls);
     }
+    
 }

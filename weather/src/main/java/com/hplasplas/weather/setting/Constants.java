@@ -70,19 +70,6 @@ public final class Constants {
     public static final String ICON_DOWNLOAD_URL = "http://openweathermap.org/img/w/";
     public static final String ICON_FILE_SUFFIX = ".png";
     
-    //DB seting
-    public static final String DB_FILE_NAME = "city.db";
-    public static final int DB_VERSION = 1;
-    public static final String[] COLUMNS_CITY_NAME = {"name", "country"};
-    public static final String COLUMNS_CITY_ID = "id";
-    
-    //db Query
-    public static final String CITY_QUERY_BEGIN_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name LIKE \'";
-    public static final String CITY_QUERY_BEGIN_SEARCH_SUFFIX = "%\' LIMIT 10";
-    public static final String CITY_QUERY_FULL_SEARCH_PREFIX = "SELECT _id, id, name, country FROM city_data WHERE name = \'";
-    public static final String CITY_QUERY_FULL_SEARCH_SUFFIX = "\'";
-    public static final int SUGGESTION_QUERY_TAG = 0;
-    
     //other
     public static final String WEATHER_DRAWABLE_PREFIX = "w_";
     public static final int REFRESH_INDICATOR_START_OFFSET = 0;
