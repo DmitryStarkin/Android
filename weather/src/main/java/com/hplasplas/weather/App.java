@@ -21,6 +21,7 @@ package com.hplasplas.weather;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.core.CrashlyticsCore;
 import com.hplasplas.weather.components.AppComponent;
 import com.hplasplas.weather.components.DaggerAppComponent;
@@ -57,6 +58,7 @@ public class App extends Application {
         super.onCreate();
         Crashlytics crashlyticsKit = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
+                .answers(new Answers())
                 .build();
     
         Fabric.with(this, crashlyticsKit);
