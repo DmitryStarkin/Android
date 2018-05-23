@@ -36,9 +36,9 @@ android {
 
         prover {
             dimension "api"
-            versionCode 4
+            versionCode 5
             applicationId "com.hplasplas.dstweather_pro"
-            versionName "1.2.2p"
+            versionName "1.2.3p"
         }
     }
     buildTypes {
