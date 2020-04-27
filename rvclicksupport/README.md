@@ -28,3 +28,4 @@ ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener(new ItemClickSuppor
     }
 });
 ```
+[see also](https://github.com/DmitryStarkin/RecyclerViewClickSupport/blob/master/README.md)
